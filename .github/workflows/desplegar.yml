@@ -1,0 +1,39 @@
+# Sube la app a Hostinger por FTP en cada push a main (cifrados.tiempodedios.mx).
+# Necesita 3 secretos en GitHub → Settings → Secrets and variables → Actions:
+#   FTP_SERVIDOR, FTP_USUARIO, FTP_CONTRASENA
+name: Desplegar en Hostinger
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  ftp:
+    runs-on: ubuntu-latest
+    env:
+      LISTO: ${{ secrets.FTP_SERVIDOR != '' && secrets.FTP_USUARIO != '' && secrets.FTP_CONTRASENA != '' }}
+    steps:
+      - name: Faltan los datos de FTP
+        if: env.LISTO != 'true'
+        run: echo "::warning::Agrega FTP_SERVIDOR, FTP_USUARIO y FTP_CONTRASENA en Settings → Secrets para desplegar."
+      - uses: actions/checkout@v4
+        if: env.LISTO == 'true'
+      - name: Pruebas del motor
+        if: env.LISTO == 'true'
+        run: node test/cifrado.test.js
+      - name: Subir por FTP
+        if: env.LISTO == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVIDOR }}
+          username: ${{ secrets.FTP_USUARIO }}
+          password: ${{ secrets.FTP_CONTRASENA }}
+          server-dir: ./
+          exclude: |
+            **/.git*
+            **/.git*/**
+            .github/**
+            test/**
+            docs/**
+            supabase/**
+            README.md
+            CLAUDE.md
