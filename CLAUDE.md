@@ -17,5 +17,8 @@ Librería de cifrados compartida por todos los ministerios de Tiempo de Dios: tr
 ## Probar
 `cd app && python3 -m http.server 8000`. Sin `config.publico.js` lleno corre en modo local (IndexedDB).
 
-## Despliegue (pendiente)
-Hostinger con `.htaccess` que sirve solo `app/` (igual que la Bitácora). Sugerido: `cifrados.tiempodedios.mx`. Después: Capacitor para Mac y iPhone con el mismo código.
+## Despliegue
+- Producción: `cifrados.tiempodedios.mx` (Hostinger). Repo privado `github.com/DESSuarez/cifrados-tdd`, rama `main`.
+- El sitio `tiempodedios.mx` ya usa su conexión GitHub de Hostinger para la Bitácora, así que Cifrados se sube con GitHub Actions por FTP (`.github/workflows/desplegar.yml`) en cada push. Secretos: `FTP_SERVIDOR`, `FTP_USUARIO`, `FTP_CONTRASENA` (cuenta FTP limitada a la carpeta del subdominio). El `.htaccess` sirve solo `app/`.
+- Supabase: proyecto propio `cifrados-tdd` (no el de la Bitácora, para no mezclar cuentas).
+- Después: Capacitor para Mac y iPhone con el mismo código.
