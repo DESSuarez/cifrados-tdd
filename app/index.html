@@ -1,0 +1,1726 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Cifrados Tiempo de Dios</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1B1C1A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>/* Tema y menú guardados por navegador (mismo esquema que la Bitácora) */
+try{var t=localStorage.getItem("cifrados-tema");if(t==="dia")document.documentElement.dataset.theme="light";else if(t==="noche")document.documentElement.dataset.theme="dark";else if(t==="retro")document.documentElement.dataset.theme="retro";
+if(localStorage.getItem("cifrados-lateral")==="oculta")document.documentElement.dataset.lateral="oculta"}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Tokens idénticos a la Bitácora TDD: Night, Flame (Música), Baby blue, Deep sea green, Sol, Lavanda, Rosa */
+:root{
+  --night:#1B1C1A; --flame:#FF3D1A; --baby:#98D5E0; --sea:#457A7F; --sol:#F2B33D;
+  --bg:#FFFFFF; --surface:#F4F7F7; --fg:#1B1C1A; --muted:#5E6766; --line:#DDE5E5;
+  --sea-text:#3A6A6F; --baby-ink:#2B7B8A; --baby-soft:#E3F3F6; --flame-soft:#FFE7E1; --sea-soft:#E2EEEF;
+  --sol-ink:#8A5A00; --sol-soft:#FDF1D8;
+  --lav:#7E5BD0; --lav-ink:#5E3FAE; --lav-soft:#EEE8FA; --rosa:#D9558E; --rosa-ink:#B23A70; --rosa-soft:#FBE6EF;
+  --band:#1B1C1A;
+  --area:var(--flame); --area-ink:var(--flame); --area-soft:var(--flame-soft); --on-area:#FFFFFF;
+  --display:"Archivo","Arial Black","Helvetica Neue",Arial,sans-serif;
+  --body:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --acorde:var(--flame); --tam:20px; --inter:1.35;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1B1C1A; --surface:#242623; --fg:#F5F7F6; --muted:#A3ADAC; --line:#353835;
+  --sea-text:#8CC3C8; --baby-ink:#98D5E0; --baby-soft:#203033; --flame-soft:#3A2019; --sea-soft:#1F3133; --sol-ink:#F2B33D; --sol-soft:#352B17; --band:#121311; --lav:#9A7BE6; --lav-ink:#B9A3EE; --lav-soft:#2A2440; --rosa:#E06A9C; --rosa-ink:#F08BB7; --rosa-soft:#3A1F2B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1B1C1A; --surface:#242623; --fg:#F5F7F6; --muted:#A3ADAC; --line:#353835;
+  --sea-text:#8CC3C8; --baby-ink:#98D5E0; --baby-soft:#203033; --flame-soft:#3A2019; --sea-soft:#1F3133; --sol-ink:#F2B33D; --sol-soft:#352B17; --band:#121311; --lav:#9A7BE6; --lav-ink:#B9A3EE; --lav-soft:#2A2440; --rosa:#E06A9C; --rosa-ink:#F08BB7; --rosa-soft:#3A1F2B; color-scheme:dark}
+:root[data-theme="retro"]{
+  --night:#0B0221; --flame:#FF2E88; --baby:#00E5FF; --sea:#2BFF88; --sol:#FFE600;
+  --bg:#0B0221; --surface:#170A3A; --fg:#F4ECFF; --muted:#B9A6E8; --line:#3A2373;
+  --sea-text:#2BFF88; --baby-ink:#00E5FF; --baby-soft:#06283B; --flame-soft:#3A0A2A; --sea-soft:#08301F;
+  --sol-ink:#FFE600; --sol-soft:#3A3305; --band:#05010F;
+  --lav:#B266FF; --lav-ink:#C99BFF; --lav-soft:#24104A; --rosa:#FF6EC7; --rosa-ink:#FF9AD8; --rosa-soft:#3A0A2E; color-scheme:dark}
+:root[data-theme="retro"] body{background:radial-gradient(1200px 600px at 70% -10%,#2A0B5A 0%,transparent 60%),var(--bg)}
+:root[data-theme="retro"] .band{background:linear-gradient(180deg,#05010F 0%,#1A0640 70%,#3A0A5C 100%)}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--area-ink)}
+:focus-visible{outline:3px solid var(--baby);outline-offset:2px;border-radius:6px}
+
+/* ---------- Menú lateral (igual que la Bitácora) ---------- */
+.shell{display:flex;min-height:100vh}
+.maincol{flex:1;min-width:0}
+.side{width:264px;flex:none;position:sticky;top:0;height:100vh;height:100dvh;display:flex;flex-direction:column;gap:6px;background:var(--surface);border-right:1px solid var(--line);padding:24px 12px 20px;z-index:40}
+.sidetop{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 6px 10px}
+.sbrand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg);min-width:0}
+.sbrand img{border-radius:9px;background:#1B1C1A;padding:4px;flex:none}
+.sbrand b{display:block;font-family:var(--display);font-weight:900;font-size:16px;line-height:1.1}
+.sbrand small{display:block;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.sideclose,.hamb{display:none;width:40px;height:40px;border-radius:10px;border:0;background:transparent;place-items:center;padding:0;color:inherit}
+.sideclose svg,.hamb svg{width:22px;height:22px}
+.areanav{display:flex;flex-direction:column;gap:2px;flex:1;min-height:0;overflow-y:auto;margin:0 -6px;padding:0 6px;scrollbar-width:thin}
+.sidesec{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);padding:16px 10px 6px}
+.areanav a{position:relative;display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;color:var(--fg);text-decoration:none;font-weight:700;font-size:14.5px}
+.areanav a:hover{background:color-mix(in srgb,var(--fg) 7%,transparent)}
+.areanav a[aria-current="page"]{background:color-mix(in srgb,var(--c) 20%,transparent)}
+.areanav a[aria-current="page"]::before{content:"";position:absolute;left:-6px;top:9px;bottom:9px;width:4px;border-radius:4px;background:var(--c)}
+.areanav .ic{width:30px;height:30px;flex:none;border-radius:9px;background:var(--c);color:var(--on,#fff);display:grid;place-items:center}
+.areanav .ic svg{width:16px;height:16px}
+.areanav .lb{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.areanav .cnt{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:1px 8px}
+.areanav .cnt:empty{display:none}
+.minsel{margin:0 4px 4px;height:40px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);padding:0 10px;font-weight:700;width:calc(100% - 8px)}
+.sync{display:flex;align-items:center;gap:8px;font:500 12px var(--mono);color:var(--muted);padding:8px 10px;border-radius:10px;background:var(--bg);border:1px solid var(--line);cursor:pointer;text-align:left}
+.sync i{width:9px;height:9px;border-radius:50%;flex:none;background:#1DB954}
+.sync.pend i{background:var(--sol)}.sync.off i{background:var(--muted)}.sync.local i{background:var(--baby-ink)}.sync.err i{background:var(--flame)}
+.userbar{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+.acct{flex:1;min-width:0;display:flex;align-items:center;gap:10px;height:48px;padding:0 10px 0 7px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);text-align:left;text-decoration:none}
+.acct:hover{border-color:var(--flame)}
+.av{width:32px;height:32px;border-radius:50%;background:var(--flame);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+.acct>span:not(.av){flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.acct b{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.acct small{font-size:11.5px;color:var(--muted)}
+.temabtn{width:48px;height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);display:grid;place-items:center;padding:0}
+.temabtn svg{width:20px;height:20px}
+.mtop{display:none;align-items:center;gap:6px;margin:-8px 0 -4px -8px}
+@media (max-width:900px){
+  .side{position:fixed;left:0;top:0;bottom:0;width:min(296px,86vw);transform:translateX(-104%);transition:transform .22s ease;box-shadow:0 0 48px rgba(0,0,0,.35);visibility:hidden}
+  body.menu-abierto .side{transform:none;visibility:visible}
+  .sideback{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:35}
+  .sideclose,.hamb{display:grid}
+  .mtop{display:flex}
+  body.menu-abierto{overflow:hidden}
+}
+.sidetoggle{width:34px;height:34px;flex:none;border-radius:9px;border:0;background:transparent;color:var(--muted);display:grid;place-items:center;padding:0}
+.sidetoggle svg{width:19px;height:19px}.sidetoggle:hover{background:var(--bg);color:var(--fg)}
+.sideborde{display:none}
+@media (min-width:901px){
+  :root{--suave:cubic-bezier(.22,.8,.24,1)}
+  .side{position:fixed;left:0;top:0;bottom:0;height:auto;border:1px solid transparent;border-right-color:var(--line);transition:transform .38s var(--suave),left .38s var(--suave),top .38s var(--suave),bottom .38s var(--suave),border-radius .38s var(--suave),box-shadow .38s var(--suave)}
+  .maincol{margin-left:264px;transition:margin-left .38s var(--suave)}
+  .mtop{display:flex;max-height:0;opacity:0;overflow:hidden;margin:0 0 -20px -8px;pointer-events:none;transition:max-height .38s var(--suave),opacity .25s ease,margin .38s var(--suave)}
+  html[data-lateral="oculta"] .maincol{margin-left:0}
+  html[data-lateral="oculta"] .side{left:10px;top:10px;bottom:10px;border-radius:18px;border-color:var(--line);box-shadow:0 24px 64px rgba(0,0,0,.28);transform:translateX(calc(-100% - 24px))}
+  html[data-lateral="oculta"].asoma .side{transform:none}
+  html[data-lateral="oculta"] .sideborde{display:block;position:fixed;left:0;top:0;bottom:0;width:14px;z-index:39}
+  html[data-lateral="oculta"] .mtop{max-height:48px;opacity:1;margin:-16px 0 0 -8px;pointer-events:auto}
+  html[data-lateral="oculta"] .hamb{display:grid}
+}
+@media (max-width:900px){.sidetoggle{display:none}}
+@media (prefers-reduced-motion:reduce){.side,.maincol,.mtop{transition:none!important}}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---------- Banda ---------- */
+.band{background:var(--band);color:#fff;border-bottom:8px solid var(--area)}
+.band .wrap{padding-block:44px 0;display:flex;flex-direction:column;gap:18px}
+.brandrow{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#C9D2D1}
+.areatag{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:var(--area);color:var(--on-area);font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px 4px 8px;border-radius:6px;line-height:1.2}
+.areatag svg{width:14px;height:14px}
+.titleblock{display:flex;flex-direction:column;gap:10px}
+h1{font-family:var(--display);font-weight:900;font-stretch:112%;font-size:clamp(30px,6vw,48px);line-height:1;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 em{font-style:normal;color:var(--area)}
+.sub{font-family:var(--mono);font-size:13px;color:#C9D2D1;display:flex;gap:6px 14px;flex-wrap:wrap}
+.sub b{color:#fff;font-weight:500}
+.navbtn{background:transparent;border:1.5px solid #4A4D49;color:#fff;border-radius:999px;height:36px;min-width:36px;padding:0 14px;font-weight:600;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.navbtn:hover{border-color:var(--baby);color:var(--baby)}
+.navbtn.on{background:var(--area);border-color:var(--area);color:var(--on-area)}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;min-height:8px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{background:transparent;border:0;color:#B9C3C2;padding:14px 14px 16px;font-family:var(--display);font-weight:800;font-size:15px;border-bottom:4px solid transparent;white-space:nowrap;text-decoration:none}
+.tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--area)}
+.tab .count{font-family:var(--mono);font-weight:500;font-size:12px;margin-left:6px;color:var(--baby)}
+.setbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--mono);font-size:13px;color:#C9D2D1}
+.setbar .sp{flex:1}
+
+main .wrap{padding-block:32px 120px;display:flex;flex-direction:column;gap:24px}
+.status{font-size:13px;color:var(--muted);font-family:var(--mono)}
+
+/* ---------- Formularios ---------- */
+.field{height:46px;border:1.5px solid var(--line);background:var(--bg);border-radius:10px;padding:0 14px;min-width:0;width:100%}
+textarea.field{height:auto;padding:12px 14px;line-height:1.5;resize:vertical}
+.field:focus{border-color:var(--area-ink);outline:none}
+label.lb{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px}
+label.lb small{font-weight:500;color:var(--muted)}
+.btn{height:46px;border:0;border-radius:10px;padding:0 20px;font-family:var(--display);font-weight:800;font-size:15px;background:var(--area);color:var(--on-area);white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn:hover{filter:brightness(.94)}
+.btn svg{width:18px;height:18px;flex:none}
+.btn.ghost{background:transparent;color:var(--fg);border:1.5px solid var(--line);font-weight:700}
+.btn.ghost:hover{border-color:var(--area-ink)}
+.btn.sm{height:34px;padding:0 12px;font-size:13px;border-radius:8px}
+.btn.xs{height:28px;padding:0 9px;font-size:12px;border-radius:7px}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.on{background:var(--area);color:var(--on-area);border-color:var(--area)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row .sp{flex:1}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.chip{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 9px;border-radius:99px;background:var(--surface);color:var(--muted);font-weight:700;font-size:12px;white-space:nowrap;border:1px solid var(--line)}
+.chip.tono{font-family:var(--mono);font-weight:500;color:var(--fg)}
+.chip.mio{background:var(--flame-soft);color:var(--flame);border-color:transparent}
+.chip.pista{background:var(--baby-soft);color:var(--baby-ink);border-color:transparent}
+.tchip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:99px;border:1.5px solid var(--line);font-size:13px;font-weight:700;color:var(--fg);background:var(--bg);cursor:pointer}
+.tchip:hover{border-color:var(--c,var(--area))}
+.tchip.on{background:var(--c,var(--area));border-color:var(--c,var(--area));color:#fff}
+.tchip small{font-family:var(--mono);font-weight:500;opacity:.8}
+.caja{border:1px solid var(--line);border-radius:16px;padding:18px;background:var(--surface)}
+.caja h3{margin:0 0 10px;font-family:var(--display);font-weight:900;font-size:18px}
+.caja>p{margin:0 0 10px;color:var(--muted)}
+.empty{border:1.5px dashed var(--line);border-radius:14px;padding:26px 22px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.empty strong{font-family:var(--display);font-size:18px;font-weight:800}
+.empty p{margin:0;color:var(--muted);max-width:60ch}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--night);color:#fff;padding:10px 18px;border-radius:99px;font-weight:600;font-size:14px;border:1.5px solid var(--sea);z-index:90;max-width:calc(100% - 32px);text-align:center}
+dialog{border:0;border-radius:18px;padding:0;background:var(--bg);color:var(--fg);max-width:min(560px,calc(100vw - 32px));width:100%;box-shadow:0 30px 80px rgba(0,0,0,.4)}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+.dlg{padding:22px;display:flex;flex-direction:column;gap:14px}
+.dlg h2{margin:0;font-family:var(--display);font-weight:900;font-size:22px}
+.dlg p{margin:0;color:var(--muted)}
+
+/* ---------- Librería ---------- */
+.buscador{display:grid;grid-template-columns:1fr auto auto;gap:8px}
+@media (max-width:640px){.buscador{grid-template-columns:1fr 1fr}.buscador .field{grid-column:1/-1}}
+.letra-h{font:500 12px var(--mono);letter-spacing:.12em;color:var(--muted);padding:14px 4px 6px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:2}
+.songs{list-style:none;margin:0;padding:0}
+.srow{display:flex;align-items:center;gap:12px;padding:12px 6px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}
+.srow:hover{background:var(--surface)}
+.srow>div{flex:1;min-width:0}
+.srow b{display:block;font-family:var(--display);font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow small{color:var(--muted);font-size:13px}
+.srow .chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+
+/* ---------- Canción ---------- */
+.ctrls{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin:-32px calc(-1 * max(16px,env(safe-area-inset-left,0px))) 0;padding:10px max(16px,env(safe-area-inset-left,0px));display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+@media (max-width:640px){.ctrls{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.ctrls::-webkit-scrollbar{display:none}.ctrls>*{flex:none}}
+.tonobox{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
+.tonobox button{width:38px;height:38px;border:0;background:transparent;font-weight:800;font-size:18px}
+.tonobox button:hover{background:var(--surface)}
+/* sin flecha nativa: chocaba con la línea divisoria */
+.tonobox select{-webkit-appearance:none;appearance:none;height:38px;border:0;border-inline:1.5px solid var(--line);border-radius:0;background:var(--bg);color:var(--fg);font:800 16px var(--display);padding:0 6px;width:64px;text-align:center;text-align-last:center;cursor:pointer}
+.tonobox select:focus{outline:none;background:var(--surface)}
+.ctl{height:38px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);padding:0 12px;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.ctl:hover{border-color:var(--area-ink)}
+.ctl.on{background:var(--area);border-color:var(--area);color:var(--on-area)}
+.ctl select{border:0;background:transparent;font-weight:700}
+.ctl svg{width:16px;height:16px}
+.secchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+.secchips button{flex:none;height:28px;border-radius:99px;border:0;padding:0 11px 0 9px;font-weight:800;font-size:12px;background:color-mix(in srgb,var(--sc) 16%,transparent);color:var(--fg);display:inline-flex;align-items:center;gap:6px}
+.secchips button::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--sc);flex:none}
+.secchips button.vivo{background:var(--sc);color:#fff}
+.cuerpo{font-size:var(--tam);line-height:var(--inter)}
+.cuerpo.dos{columns:2;column-gap:48px}
+@media (max-width:760px){.cuerpo.dos{columns:1}}
+.csec{break-inside:avoid;margin:0 0 1.1em;scroll-margin-top:90px;border-radius:12px;transition:background .3s}
+.csec.vivo{background:color-mix(in srgb,var(--flame) 8%,transparent);box-shadow:-10px 0 0 color-mix(in srgb,var(--flame) 8%,transparent),10px 0 0 color-mix(in srgb,var(--flame) 8%,transparent)}
+.csn{display:inline-flex;align-items:center;gap:8px;margin:0 0 .35em;font:900 .62em var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--fg)}
+.csn::before{content:"";width:5px;height:1.25em;border-radius:3px;background:var(--sc)}
+.sinsec .csn::before{display:none}
+.cl{white-space:pre-wrap;min-height:1em}
+.cl-con{display:flex;flex-wrap:wrap;align-items:flex-end;white-space:normal;margin:.15em 0}
+.cw{display:inline-flex;white-space:nowrap}
+.cp{display:inline-flex;flex-direction:column}
+.ca-row{font-size:.86em;line-height:1.2;min-height:1.2em}
+.cly{white-space:pre}
+.ck{font-family:var(--display);font-weight:800;color:var(--acorde);padding-right:.45em;font-stretch:105%}
+.ck.cr{color:var(--muted);font-weight:500}
+.ck.ca{font-family:var(--mono);font-weight:500;color:var(--muted);font-size:.85em;font-style:normal}
+.ck.cx{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.cl-ac{display:flex;flex-wrap:wrap;gap:.2em .6em;margin:.15em 0}
+.cl-ac .ck{font-size:.86em}
+.cvac{height:.6em}
+.cnota{margin:.2em 0;font:500 .7em var(--mono);color:var(--muted)}
+.ctab{font:500 .7em/1.3 var(--mono);background:var(--surface);border-radius:10px;padding:10px 12px;overflow-x:auto;margin:.3em 0}
+.sinacordes .ca-row,.sinacordes .cl-ac{display:none}
+.panelx{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.tonos-eq{display:flex;flex-wrap:wrap;gap:8px}
+.notas{white-space:pre-wrap;font-size:14px;color:var(--muted);margin:0}
+.escenario .side,.escenario .band,.escenario .panelx,.escenario .noesc{display:none!important}
+.escenario .maincol{margin-left:0!important}
+.escenario main .wrap{max-width:none}
+.escx{display:none}.escenario .escx{display:inline-flex}
+
+/* Reproductor de pistas */
+.player{display:flex;flex-direction:column;gap:10px}
+.pl-top{display:flex;align-items:center;gap:10px}
+.playbtn{width:48px;height:48px;border-radius:50%;border:0;background:var(--area);color:#fff;display:grid;place-items:center;flex:none}
+.playbtn svg{width:20px;height:20px}
+.pl-top>div{flex:1;min-width:0}
+.pl-top b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-top small{font:500 12px var(--mono);color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--area)}
+.pl-ctl{display:grid;grid-template-columns:auto 1fr auto;gap:8px 10px;align-items:center;font-size:13px;font-weight:700}
+.pl-ctl output{font:500 12px var(--mono);min-width:64px;text-align:right}
+.tracks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.tracks li{display:flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.tracks li.on{border-color:var(--area)}
+.tracks li span{flex:1;min-width:0}
+.tracks small{color:var(--muted);font:500 11.5px var(--mono)}
+
+/* ---------- Sets ---------- */
+.sets{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.setcard{display:grid;grid-template-columns:76px 1fr auto;gap:14px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);text-decoration:none;color:var(--fg)}
+.setcard:hover{border-color:var(--area)}
+.setcard time{font:500 12px/1.3 var(--mono);color:var(--muted);text-align:center;border-right:1px solid var(--line);padding-right:12px}
+.setcard time b{display:block;font:900 26px var(--display);color:var(--fg)}
+.setcard h3{margin:0;font-family:var(--display);font-weight:800;font-size:17px}
+.setcard p{margin:2px 0 0;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.items{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.item{display:grid;grid-template-columns:auto 28px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.item .num{font:900 18px var(--display);color:var(--muted);text-align:center}
+.item .tit a{font-family:var(--display);font-weight:800;color:var(--fg);text-decoration:none;font-size:16px}
+.item .tit small{display:block;color:var(--muted);font-size:12.5px}
+.item .opts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.item select,.item input{height:34px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);padding:0 8px;font-size:13px}
+.item .mov{display:flex;flex-direction:column}
+.item .mov button{border:0;background:none;color:var(--muted);height:18px;width:24px;padding:0;line-height:1}
+.item .mov button:hover{color:var(--fg)}
+@media (max-width:640px){.item{grid-template-columns:auto 22px 1fr}.item .opts{grid-column:1/-1;justify-content:flex-start}}
+.resultados{list-style:none;margin:6px 0 0;padding:0;border:1px solid var(--line);border-radius:12px;max-height:280px;overflow:auto;background:var(--bg)}
+.resultados button{display:flex;width:100%;gap:8px;align-items:center;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:10px 12px}
+.resultados button:hover{background:var(--surface)}
+.resultados button span{flex:1}
+.vivoind{display:inline-flex;align-items:center;gap:6px}
+.vivoind i{width:8px;height:8px;border-radius:50%;background:#1DB954;animation:lat 1.4s infinite}
+@keyframes lat{50%{opacity:.3}}
+
+/* ---------- Constructor ---------- */
+.ed-pasos{display:flex;gap:6px;flex-wrap:wrap}
+.ed-cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:980px){.ed-cols{grid-template-columns:1fr}}
+.preview{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--surface)}
+.preview .cuerpo{--tam:16px}
+.paleta{position:sticky;top:0;z-index:5;display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.paleta .acb{height:34px;min-width:44px;padding:0 10px;border-radius:8px;border:1.5px solid var(--line);background:var(--bg);font:800 15px var(--display);color:var(--acorde)}
+.paleta .acb.on{background:var(--acorde);color:#fff;border-color:var(--acorde)}
+.paleta .acb.goma{color:var(--muted)}
+.paleta input{height:34px;width:96px;border:1.5px dashed var(--line);border-radius:8px;padding:0 8px;background:var(--bg)}
+.edlin{display:flex;flex-wrap:wrap;align-items:flex-end;margin:6px 0;font-size:18px}
+.edsec{margin:16px 0 4px;font:900 12px var(--display);letter-spacing:.08em;text-transform:uppercase;display:flex;gap:8px;align-items:center}
+.edsec::before{content:"";width:5px;height:16px;border-radius:3px;background:var(--sc)}
+.sil{display:inline-flex;flex-direction:column;border:0;background:none;padding:0 1px;border-radius:6px;cursor:pointer;font:inherit;color:var(--fg);text-align:left}
+.sil:hover{background:color-mix(in srgb,var(--acorde) 14%,transparent)}
+.sil .a{font:800 .8em var(--display);color:var(--acorde);min-height:1.25em;line-height:1.25}
+.sil .s{border-bottom:2px dotted color-mix(in srgb,var(--muted) 50%,transparent);white-space:pre}
+.sil.con .s{border-bottom-color:var(--acorde)}
+.gap{white-space:pre;display:inline-flex;flex-direction:column}
+.gap .a{min-height:1.25em;font:800 .8em var(--display);color:var(--acorde);line-height:1.25}
+.addend{border:1.5px dashed var(--line);background:none;border-radius:6px;font-size:12px;height:24px;padding:0 6px;color:var(--muted);margin-left:6px;align-self:flex-end}
+.chipac{display:inline-flex;align-items:center;height:28px;padding:0 9px;border-radius:7px;border:1.5px solid var(--line);font:800 14px var(--display);color:var(--acorde);background:var(--bg);margin:0 4px 0 0;cursor:pointer}
+.edhelp{font-size:13px;color:var(--muted);margin:0}
+.secbtns{display:flex;gap:6px;flex-wrap:wrap}
+.secbtns button{height:30px;border-radius:99px;border:0;padding:0 11px;font-weight:800;font-size:12px;background:color-mix(in srgb,var(--sc) 18%,transparent);border-left:4px solid var(--sc);color:var(--fg)}
+textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
+
+/* ---------- Señas ---------- */
+.senas{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.sena{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--surface);display:flex;flex-direction:column}
+.escena{position:relative;aspect-ratio:4/3;background:var(--band);display:grid;place-items:center;overflow:hidden;border-bottom:6px solid var(--sc)}
+.escena .mano{font-size:76px;line-height:1;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+.escena .let{position:absolute;left:12px;top:10px;font:900 26px var(--display);color:var(--sc);font-stretch:112%}
+.escena .foto{position:absolute;inset:0;background-repeat:no-repeat}
+.sena .tx{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px}
+.sena h3{margin:0;font-family:var(--display);font-weight:900;font-size:17px}
+.sena p{margin:0;font-size:13.5px;color:var(--muted)}
+.sena p b{color:var(--fg)}
+.m-pulso .mano,.m-pulso .foto{animation:pulso 1.4s ease-in-out infinite}
+.m-subir .mano,.m-subir .foto{animation:subir 2s ease-in-out infinite}
+.m-bajar .mano,.m-bajar .foto{animation:bajar 2s ease-in-out infinite}
+.m-girar .mano{animation:girar 1.6s linear infinite}.m-girar .foto{animation:girarf 1.6s linear infinite}
+.m-arco .mano,.m-arco .foto{animation:arco 2.2s ease-in-out infinite}
+.m-cortar .mano,.m-cortar .foto{animation:cortar 1.6s ease-in infinite}
+.m-toque .mano,.m-toque .foto{animation:toque 1.2s ease-in-out infinite}
+.m-lado .mano,.m-lado .foto{animation:lado .8s ease-in-out infinite alternate}
+.m-contar .mano{animation:pulso .9s ease-in-out infinite}
+.m-quieto .mano,.m-quieto .foto{animation:quieto 3s ease-in-out infinite}
+@keyframes pulso{0%,100%{transform:scale(1)}20%{transform:scale(1.15)}40%{transform:scale(1)}60%{transform:scale(1.15)}}
+@keyframes subir{0%{transform:translateY(40px) rotate(-8deg);opacity:.4}70%{transform:translateY(-30px) rotate(0);opacity:1}100%{transform:translateY(-30px);opacity:0}}
+@keyframes bajar{0%{transform:translateY(-36px);opacity:.4}70%{transform:translateY(30px);opacity:1}100%{transform:translateY(30px);opacity:0}}
+@keyframes girar{from{transform:rotate(0) translateX(18px) rotate(0)}to{transform:rotate(360deg) translateX(18px) rotate(-360deg)}}
+@keyframes girarf{from{transform:rotate(0) translateX(3%) rotate(0) scale(1.08)}to{transform:rotate(360deg) translateX(3%) rotate(-360deg) scale(1.08)}}
+@keyframes arco{0%{transform:translate(-60px,20px) rotate(-20deg)}50%{transform:translate(0,-26px) rotate(0)}100%{transform:translate(60px,20px) rotate(20deg)}}
+@keyframes cortar{0%,40%{transform:scale(1.1)}55%{transform:scale(.7)}60%,100%{transform:scale(.8);opacity:.6}}
+@keyframes toque{0%,100%{transform:translateY(0)}40%{transform:translateY(-22px)}55%{transform:translateY(-14px)}}
+@keyframes lado{from{transform:translateX(-26px) rotate(-6deg)}to{transform:translateX(26px) rotate(6deg)}}
+@keyframes quieto{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@media (prefers-reduced-motion:reduce){.escena *{animation:none!important}}
+.practica{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.practica .escena{width:100%;border-radius:14px}
+.practica .grande{font:900 32px var(--display)}
+
+/* ---------- Login ---------- */
+.login{min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--band)}
+.login .card{width:min(420px,100%);background:var(--bg);border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:14px;border-top:8px solid var(--flame)}
+.login h1{font-size:32px;color:var(--fg)}
+.login p{margin:0;color:var(--muted)}
+
+/* ---------- Ajustes ---------- */
+.muestra{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--bg)}
+.colores{display:flex;gap:8px;flex-wrap:wrap}
+.colores button{width:34px;height:34px;border-radius:50%;border:3px solid var(--bg);box-shadow:0 0 0 1.5px var(--line)}
+.colores button.on{box-shadow:0 0 0 3px var(--fg)}
+.miembros{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.miembros li{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.miembros li>span:not(.av){flex:1;min-width:0}
+.miembros a{color:var(--fg);text-decoration:none}.miembros a:hover{text-decoration:underline}
+.miembros select{height:32px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg)}
+.codigo{font:500 20px var(--mono);letter-spacing:.2em;background:var(--bg);border:1.5px dashed var(--line);border-radius:10px;padding:6px 14px}
+
+@media print{
+  .side,.band,.ctrls,.panelx,.noesc,.toast,.secchips{display:none!important}
+  .maincol{margin:0!important}
+  body{background:#fff;color:#000}
+  .cuerpo{--tam:13pt}
+  main .wrap{padding:0}
+  .printhead{display:block!important}
+}
+.printhead{display:none;margin-bottom:12px}
+.printhead h2{margin:0;font-family:var(--display);font-weight:900}
+
+/* ---------- v2: notación, auto, tonos arriba, filtros, misa, bloques ---------- */
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg);height:38px}
+.seg button{border:0;background:transparent;padding:0 11px;font-weight:700;font-size:13px;white-space:nowrap;color:var(--fg)}
+.seg button+button{border-left:1.5px solid var(--line)}
+.seg button.on{background:var(--area);color:var(--on-area)}
+.autobox{padding:0;gap:0;overflow:hidden}
+.autobox button{height:100%;border:0;background:transparent;padding:0 10px;font-weight:700;font-size:13px;color:var(--fg)}
+.autobox button.on{background:var(--area);color:var(--on-area)}
+.autobox #tauto{border-right:1.5px solid var(--line)}
+.autobox #vmenos,.autobox #vmas{width:30px;padding:0;font-size:16px}
+.autobox output{font:500 13px var(--mono);min-width:22px;text-align:center}
+.tonosbar{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-top:-8px}
+.tonosbar .tbl{font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.tonosbar .sp{flex:1}
+.tonosbar .fijo{cursor:default;background:var(--flame-soft);color:var(--flame);border-color:transparent}
+.fsel{height:34px;border:1.5px solid var(--line);border-radius:99px;background:var(--bg);padding:0 12px;font-weight:700;font-size:13px;max-width:220px}
+.fsel.on{border-color:var(--area);color:var(--area-ink)}
+.filtros{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:-8px}
+.momento{border:1px solid var(--line);border-left:5px solid var(--sea);border-radius:14px;padding:12px 14px;background:var(--surface);display:flex;flex-direction:column;gap:8px}
+.momento h3{margin:0;font:900 15px var(--display);letter-spacing:.06em;text-transform:uppercase}
+.estr{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 0 2px;border-top:1px dashed var(--line);margin-top:4px}
+.blq{display:inline-flex;align-items:center;gap:2px;height:32px;padding:0 4px 0 2px;border-radius:9px;background:color-mix(in srgb,var(--sc) 18%,var(--bg));border:1.5px solid color-mix(in srgb,var(--sc) 55%,transparent);font-weight:800;font-size:13px;user-select:none;touch-action:none}
+.blqa{cursor:grab;color:var(--muted);padding:0 4px;font-size:12px;letter-spacing:-2px}
+.blqn{padding:0 4px}
+.blq button{border:0;background:none;color:var(--muted);width:22px;height:22px;border-radius:6px;padding:0;font-size:12px}
+.blq button:hover{background:var(--bg);color:var(--fg)}
+.blq.arrastra{opacity:.5;cursor:grabbing}
+.blq.sobre{outline:2px dashed var(--area);outline-offset:2px}
+.solic{margin-top:12px;padding:10px;border-radius:12px;background:var(--flame-soft)}
+.solic b{display:block;margin-bottom:6px}
+</style>
+</head>
+<body data-area="musica">
+<div id="app"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.publico.js"></script>
+<script src="cifrado.js"></script>
+<script src="senas.js"></script>
+<script src="datos.js"></script>
+<script>
+"use strict";
+const D = DATOS, C = CIF, esc = C.esc;
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const ls = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+function toast(msg) { $$(".toast").forEach(x => x.remove()); const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2800); }
+
+const IC = {
+  lib: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 19V5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2zM8 7h6M8 11h6"/></svg>',
+  set: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
+  mas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  mano: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5a1.5 1.5 0 0 1 3 0v6M11 11V4a1.5 1.5 0 0 1 3 0v7M14 11V5.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-1a6 6 0 0 1-5-3l-2.4-4a1.5 1.5 0 0 1 2.5-1.6L8 15"/></svg>',
+  gente: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>',
+  ajus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
+  play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>',
+  pausa: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>',
+  sol: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  luna: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
+  menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  lado: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg>',
+  nota: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
+  amigos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M19 8v6M16 11h6"/></svg>',
+};
+
+// ---------- Estado de la interfaz ----------
+const st = {
+  min: ls.get("cifrados-min", null),
+  estilo: Object.assign({ tam: 20, color: "flame", inter: 1.35, cols: 1, latina: false, nashville: false, sinAcordes: false }, ls.get("cifrados-estilo", {})),
+  q: "", tab: ls.get("cifrados-tab", "tdd"), fArtista: "", fTono: "", fTags: [], fMio: false, fPista: false,
+  tonoVista: {},  // por canción en esta sesión
+  capo: {},
+  editando: false, arrastrando: false, abiertos: new Set(),
+  dirigir: false, seguir: ls.get("cifrados-seguir", true),
+};
+// una sola notación: americano (C D E), latino (Do Re Mi) o Nashville (1 4 5)
+if (!st.estilo.notacion) st.estilo.notacion = st.estilo.nashville ? "nashville" : st.estilo.latina ? "latino" : "americano";
+delete st.estilo.nashville; delete st.estilo.latina;
+const NOTACIONES = [["americano", "C D E"], ["latino", "Do Re Mi"], ["nashville", "1 4 5"]];
+const opNotacion = () => ({ nashville: st.estilo.notacion === "nashville", latina: st.estilo.notacion === "latino" });
+const COLORES = { flame: "--flame", sea: "--sea", baby: "--baby-ink", sol: "--sol-ink", lav: "--lav", rosa: "--rosa", fg: "--fg" };
+function aplicarEstilo() {
+  const r = document.documentElement.style, e = st.estilo;
+  r.setProperty("--tam", e.tam + "px"); r.setProperty("--inter", e.inter); r.setProperty("--acorde", `var(${COLORES[e.color] || "--flame"})`);
+}
+function guardarEstilo() {
+  ls.set("cifrados-estilo", st.estilo); aplicarEstilo();
+  const p = miPerfil(); if (p) D.guardar("cif_perfiles", { ...p, estilo: st.estilo });
+}
+
+// ---------- Quién soy y qué puedo hacer ----------
+const yo = () => D.estado.usuario;
+const miPerfil = () => yo() && D.uno("cif_perfiles", yo().id);
+const nombreDe = id => { const p = D.uno("cif_perfiles", id); return p ? p.nombre || "Sin nombre" : "Alguien"; };
+const iniciales = n => String(n || "?").trim().split(/\s+/).slice(0, 2).map(x => x[0]).join("").toUpperCase();
+const esSuper = () => !D.nube || !!(miPerfil() && miPerfil().superadmin);
+const membresias = () => yo() ? D.lista("cif_miembros").filter(m => m.persona_id === yo().id) : [];
+function misMins() {
+  const todos = D.lista("cif_ministerios").sort((a, b) => a.nombre.localeCompare(b.nombre));
+  if (esSuper()) return todos;
+  const ids = new Set(membresias().map(m => m.ministerio_id));
+  return todos.filter(m => ids.has(m.id));
+}
+function rolEn(minId) { if (esSuper()) return "admin"; const m = yo() && D.uno("cif_miembros", minId + "|" + yo().id); return m ? m.rol : null; }
+const esMusico = () => esSuper() || membresias().some(m => m.rol !== "lector");
+const editaSet = s => s && ["admin", "musico"].includes(rolEn(s.ministerio_id));
+function minActual() {
+  const ms = misMins();
+  if (!ms.length) return null;
+  return ms.find(m => m.id === st.min) || ms[0];
+}
+const canciones = () => D.lista("cif_canciones").filter(c => !c.borrada).sort((a, b) => a.titulo.localeCompare(b.titulo, "es", { sensitivity: "base" }));
+const tonosDe = cid => D.lista("cif_tonos").filter(t => t.cancion_id === cid);
+const miTono = cid => yo() && D.uno("cif_tonos", cid + "|" + yo().id);
+const tracksDe = cid => D.lista("cif_tracks").filter(t => t.cancion_id === cid).sort((a, b) => a.nombre.localeCompare(b.nombre));
+const artistas = () => D.lista("cif_perfiles").filter(p => p.artista || (yo() && p.id === yo().id)).sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+function personasMin(minId) {
+  const ids = new Set(D.lista("cif_miembros").filter(m => m.ministerio_id === minId).map(m => m.persona_id));
+  return D.lista("cif_perfiles").filter(p => ids.has(p.id)).sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+}
+// Amigos: solicitudes aceptadas en cualquier dirección
+const amistadCon = id => yo() && D.lista("cif_amistades").find(a => (a.de === yo().id && a.para === id) || (a.para === yo().id && a.de === id));
+const amigos = () => yo() ? D.lista("cif_amistades").filter(a => a.estado === "aceptada" && (a.de === yo().id || a.para === yo().id)).map(a => (a.de === yo().id ? a.para : a.de)) : [];
+const pendAmigos = () => yo() ? D.lista("cif_amistades").filter(a => a.estado === "pendiente" && a.para === yo().id) : [];
+const pendMin = () => D.lista("cif_solicitudes").filter(s => s.estado === "pendiente" && rolEn(s.ministerio_id) === "admin" && (!yo() || s.persona_id !== yo().id));
+// Suscripción: el desarrollador la activa por ministerio (fecha de vigencia)
+const hoyISO = () => new Date().toISOString().slice(0, 10);
+const suscrito = () => esSuper() || misMins().some(m => m.suscripcion_hasta && m.suscripcion_hasta >= hoyISO() && rolEn(m.id) !== "lector");
+// Tipos de canción y misa
+const MOMENTOS = [["entrada", "Entrada"], ["piedad", "Piedad"], ["gloria", "Gloria"], ["aleluya", "Aleluya"], ["ofertorio", "Ofertorio"], ["santo", "Santo"], ["cordero", "Cordero"], ["comunion", "Comunión"], ["salida", "Salida"]];
+const RE_MOMENTO = { entrada: /entrada|venimos|vine a adorar/, piedad: /piedad|kyrie|senor ten/, gloria: /\bgloria\b/, aleluya: /aleluya/, ofertorio: /ofertorio|ofrenda|te entrego|esto que/, santo: /\bsanto\b/, cordero: /cordero|agnus/, comunion: /comunion|eucarist|pan de vida|quedate/, salida: /salida|madre|maria|ave maria/ };
+const nombreMomento = k => (MOMENTOS.find(m => m[0] === k) || [k, "Otros"])[1];
+const esLiturgica = c => (c.etiquetas || []).some(t => norm(t).startsWith("liturg")) || /^misa\b/i.test(c.titulo || "");
+const esTDD = c => norm(c.autor).includes("tiempo de dios");
+function momentoDe(c) { const t = norm(c.titulo + " " + (c.etiquetas || []).join(" ")); for (const [k] of MOMENTOS) if (RE_MOMENTO[k].test(t)) return k; return null; }
+const ETIQUETAS_SUG = ["Alabanza", "Adoración", "Litúrgica", "Espíritu Santo", "Mariana", "Eucaristía", "Sanación", "Navidad", "Cuaresma", "Pascua", "Infantil", "Himno"];
+
+// ---------- Ruteo ----------
+function ruta() {
+  const h = location.hash.replace(/^#\/?/, "");
+  const [v, ...p] = h.split("/").map(decodeURIComponent);
+  return { v: v || "libreria", p };
+}
+window.addEventListener("hashchange", () => { cerrarMenu(); st.editando = false; render(); window.scrollTo(0, 0); });
+
+let renderPend = false;
+D.alCambiar(() => {
+  // no redibujar mientras alguien escribe (como en la Bitácora)
+  const a = document.activeElement;
+  if (st.editando || st.arrastrando || (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && a.closest("main"))) { renderPend = true; return; }
+  render();
+});
+document.addEventListener("focusout", () => setTimeout(() => { if (renderPend && !st.editando) { const a = document.activeElement; if (!(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && a.closest("main"))) { renderPend = false; render(); } } }, 200));
+
+// ---------- Armazón ----------
+function shell(band, main) {
+  const r = ruta(), ms = misMins(), m = minActual(), nSets = m ? D.lista("cif_sets").filter(s => !s.borrada && s.ministerio_id === m.id).length : "";
+  const nav = (href, v, label, ic, c, cnt) => `<a href="#${href}" style="--c:var(${c})" ${r.v === v || (v === "libreria" && r.v === "cancion" && r.p[1] !== "set") || (v === "sets" && (r.v === "set" || (r.v === "cancion" && r.p[1] === "set"))) || (v === "nueva" && r.v === "editar") ?'aria-current="page"' : ""}><span class="ic">${ic}</span><span class="lb">${label}</span><span class="cnt">${cnt ?? ""}</span></a>`;
+  const p = miPerfil(), nm = p ? p.nombre : (yo() && yo().email) || "";
+  return `<div class="shell">
+  <aside class="side" id="side">
+    <div class="sidetop"><a class="sbrand" href="#libreria"><img src="favicon.png" width="34" height="34" alt=""><span><b>Cifrados</b><small>Tiempo de Dios</small></span></a>
+      <button class="sidetoggle" id="ocultarLat" title="Ocultar menú (⌘\\)" aria-label="Ocultar menú">${IC.lado}</button>
+      <button class="sideclose" id="cerrarMenu" aria-label="Cerrar menú">${IC.x}</button></div>
+    ${ms.length > 1 ? `<select class="minsel" id="minsel" aria-label="Ministerio">${ms.map(x => `<option value="${x.id}" ${m && x.id === m.id ? "selected" : ""}>${esc(x.nombre)}</option>`).join("")}</select>` : ""}
+    <nav class="areanav">
+      <div class="sidesec">Música</div>
+      ${nav("libreria", "libreria", "Librería", IC.lib, "--flame", canciones().length)}
+      ${nav("sets", "sets", m ? "Sets · " + esc(m.nombre) : "Sets", IC.set, "--sea", nSets)}
+      ${esMusico() ? nav("nueva", "nueva", "Nueva canción", IC.mas, "--sol") : ""}
+      <div class="sidesec">Equipo</div>
+      ${nav("senas", "senas", "Señas para dirigir", IC.mano, "--lav")}
+      ${nav("ministerios", "ministerios", "Ministerios", IC.gente, "--rosa", pendMin().length || "")}
+      ${nav("amigos", "amigos", "Amigos y sus tonos", IC.amigos, "--sea", pendAmigos().length || "")}
+      ${nav("ajustes", "ajustes", "Mi perfil y estilo", IC.ajus, "--baby-ink")}
+    </nav>
+    <button class="sync" id="syncb" title="Sincronizar ahora"><i></i><span id="synct">…</span></button>
+    <div class="userbar"><a class="acct" href="#ajustes"><span class="av">${esc(iniciales(nm))}</span><span><b>${esc(nm)}</b><small>${esc(m ? m.nombre + " · " + (rolEn(m.id) || "") : D.nube ? "Sin ministerio" : "Modo local")}</small></span></a>
+      <button class="temabtn" id="temab" title="Día / Noche / Retro / Auto">${document.documentElement.dataset.theme === "dark" || document.documentElement.dataset.theme === "retro" ? IC.luna : IC.sol}</button></div>
+  </aside>
+  <div class="sideborde" id="sideborde"></div>
+  <div class="maincol">
+    <header class="band"><div class="wrap">
+      <div class="mtop"><button class="hamb" id="abrirMenu" aria-label="Abrir menú">${IC.menu}</button><span class="brandrow">Cifrados · Tiempo de Dios</span></div>
+      ${band}
+    </div></header>
+    <main><div class="wrap">${main}</div></main>
+  </div></div>`;
+}
+function bandHTML({ tag = "Música", titulo, sub = "", tabs = "", extra = "" }) {
+  return `<span class="areatag">${IC.nota} ${esc(tag)}</span><div class="titleblock"><h1>${titulo}</h1>${sub ? `<div class="sub">${sub}</div>` : ""}${extra}</div><nav class="tabs">${tabs}</nav>`;
+}
+function tabsHTML(lista, actual, attr = "data-tab") {
+  return lista.map(([k, l, n]) => `<button class="tab" ${attr}="${k}" aria-selected="${k === actual}">${esc(l)}${n !== undefined ? `<span class="count">${n}</span>` : ""}</button>`).join("");
+}
+
+function render() {
+  aplicarEstilo();
+  const app = $("#app");
+  if (D.nube && !yo()) { app.innerHTML = vLogin(); enlazarLogin(); return; }
+  const r = ruta();
+  if (r.v !== "cancion") detenerAutoscroll();
+  let out;
+  try {
+    out = r.v === "cancion" ? vCancion(r.p) : r.v === "sets" ? vSets() : r.v === "set" ? vSet(r.p[0]) : r.v === "nueva" ? vEditor(null) : r.v === "editar" ? vEditor(r.p[0]) :
+      r.v === "senas" ? vSenas() : r.v === "ministerios" ? vMinisterios() : r.v === "ajustes" ? vAjustes() : r.v === "amigos" ? vAmigos() : r.v === "persona" ? vPersona(r.p[0]) : vLibreria();
+  } catch (e) { console.error(e); out = { band: bandHTML({ titulo: "Algo falló" }), main: `<p class="status">${esc(e.message)}</p>`, }; }
+  const y = window.scrollY;
+  app.innerHTML = shell(out.band, out.main);
+  enlazarShell();
+  if (out.after) out.after();
+  if (r.v === "cancion" || r.v === "set") window.scrollTo(0, y);
+  pintarSync(D.estado);
+}
+
+// ---------- Menú, tema, sincronización ----------
+function cerrarMenu() { document.body.classList.remove("menu-abierto"); $$(".sideback").forEach(x => x.remove()); }
+function enlazarShell() {
+  $("#abrirMenu").onclick = () => {
+    if (matchMedia("(min-width:901px)").matches) { document.documentElement.classList.toggle("asoma"); return; }
+    document.body.classList.add("menu-abierto"); const b = document.createElement("div"); b.className = "sideback"; b.onclick = cerrarMenu; document.body.appendChild(b);
+  };
+  $("#cerrarMenu").onclick = cerrarMenu;
+  $("#ocultarLat").onclick = alternarLateral;
+  const sb = $("#sideborde"); if (sb) sb.onmouseenter = () => document.documentElement.classList.add("asoma");
+  $("#side").onmouseleave = () => document.documentElement.classList.remove("asoma");
+  $("#temab").onclick = () => {
+    const orden = ["auto", "dia", "noche", "retro"], act = ls.get("cifrados-tema-v", "auto");
+    const sig = orden[(orden.indexOf(act) + 1) % orden.length]; aplicarTema(sig);
+    toast({ auto: "Apariencia automática", dia: "Modo día", noche: "Modo noche", retro: "👾 Modo retro" }[sig]);
+  };
+  $("#syncb").onclick = () => { if (!D.nube) return toast("Modo local: falta configurar Supabase en config.publico.js"); D.sincronizar(); toast("Sincronizando…"); };
+  const ms = $("#minsel"); if (ms) ms.onchange = () => { st.min = ms.value; ls.set("cifrados-min", st.min); render(); };
+}
+function alternarLateral() {
+  const h = document.documentElement, oc = h.dataset.lateral === "oculta";
+  if (oc) delete h.dataset.lateral; else h.dataset.lateral = "oculta";
+  h.classList.remove("asoma");
+  try { localStorage.setItem("cifrados-lateral", oc ? "visible" : "oculta"); } catch (e) {}
+}
+document.addEventListener("keydown", e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "\\") { e.preventDefault(); alternarLateral(); }
+  if (ruta().v === "cancion" && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || "")) {
+    if (e.key === "ArrowRight" && ctxSet) { e.preventDefault(); irItem(ctxSet.i + 1); }
+    if (e.key === "ArrowLeft" && ctxSet) { e.preventDefault(); irItem(ctxSet.i - 1); }
+    if (e.key === " " && !e.metaKey) { e.preventDefault(); alternarAutoscroll(); }
+    if (e.key === "Escape") document.body.classList.remove("escenario");
+  }
+});
+function aplicarTema(t) {
+  ls.set("cifrados-tema-v", t);
+  try { if (t === "auto") localStorage.removeItem("cifrados-tema"); else localStorage.setItem("cifrados-tema", t); } catch (e) {}
+  const h = document.documentElement;
+  if (t === "dia") h.dataset.theme = "light"; else if (t === "noche") h.dataset.theme = "dark"; else if (t === "retro") h.dataset.theme = "retro"; else delete h.dataset.theme;
+  render();
+}
+function pintarSync(e) {
+  const b = $("#syncb"), t = $("#synct"); if (!b) return;
+  b.className = "sync";
+  if (!e.nube) { b.classList.add("local"); t.textContent = "Modo local · este dispositivo"; return; }
+  if (!e.enLinea) { b.classList.add("off"); t.textContent = `Sin conexión · ${e.pendientes ? e.pendientes + " por subir" : "todo guardado aquí"}`; return; }
+  if (e.error) { b.classList.add("err"); t.textContent = e.error; return; }
+  if (e.sincronizando || e.pendientes) { b.classList.add("pend"); t.textContent = e.pendientes ? `Subiendo ${e.pendientes} cambio${e.pendientes > 1 ? "s" : ""}…` : "Sincronizando…"; return; }
+  t.textContent = "En tiempo real · al día";
+}
+D.alEstado(pintarSync);
+
+// ================= LIBRERÍA =================
+// Tres pestañas: Tiempo de Dios (primero), el resto y litúrgicas. Filtros por artista, tono y etiquetas.
+const grupoDe = c => (esLiturgica(c) ? "liturgicas" : esTDD(c) ? "tdd" : "otras");
+function vLibreria() {
+  const todas = canciones();
+  const n = { tdd: 0, otras: 0, liturgicas: 0 }; todas.forEach(c => n[grupoDe(c)]++);
+  const enTab = todas.filter(c => grupoDe(c) === st.tab);
+  const conMio = new Set(yo() ? D.lista("cif_tonos").filter(t => t.persona_id === yo().id).map(t => t.cancion_id) : []);
+  const conPista = new Set(D.lista("cif_tracks").map(t => t.cancion_id));
+  const autores = [...new Set(enTab.map(c => c.autor).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+  const tonosUsados = C.TONOS.filter(t => enTab.some(c => c.tono === t));
+  const tags = [...new Set(todas.flatMap(c => c.etiquetas || []))].sort((a, b) => a.localeCompare(b, "es"));
+  const q = norm(st.q);
+  let lista = enTab.filter(c => !q || norm(c.titulo + " " + c.autor + " " + (c.etiquetas || []).join(" ")).includes(q) || (q.length > 3 && norm(c.contenido.replace(/\[[^\]]*\]/g, "")).includes(q)));
+  if (st.fArtista) lista = lista.filter(c => c.autor === st.fArtista);
+  if (st.fTono) lista = lista.filter(c => c.tono === st.fTono);
+  if (st.fTags.length) lista = lista.filter(c => (c.etiquetas || []).some(t => st.fTags.includes(t)));
+  if (st.fMio) lista = lista.filter(c => conMio.has(c.id));
+  if (st.fPista) lista = lista.filter(c => conPista.has(c.id));
+  const hayFiltro = st.fArtista || st.fTono || st.fTags.length || st.fMio || st.fPista;
+  const fila = c => {
+    const mt = miTono(c.id);
+    return `<li><a class="srow" href="#cancion/${c.id}"><div><b>${esc(c.titulo)}</b><small>${esc(c.autor || "—")}${(c.etiquetas || []).length ? " · " + esc(c.etiquetas.join(", ")) : ""}</small></div><span class="chips">
+      ${c.tono ? `<span class="chip tono">${esc(c.tono)}</span>` : ""}${mt ? `<span class="chip mio" title="Tu tono">★ ${esc(mt.tono)}</span>` : ""}${conPista.has(c.id) ? `<span class="chip pista">♫ pista</span>` : ""}${c.bpm ? `<span class="chip tono">${c.bpm} bpm</span>` : ""}</span></a></li>`;
+  };
+  let filas = "";
+  if (st.tab === "liturgicas" && !q) {
+    // agrupadas por momento de la misa
+    const grupos = new Map(MOMENTOS.map(([k]) => [k, []])); grupos.set(null, []);
+    lista.forEach(c => grupos.get(momentoDe(c)).push(c));
+    grupos.forEach((cs, k) => { if (cs.length) filas += `<li class="letra-h">${esc(k ? nombreMomento(k).toUpperCase() : "OTRAS")}</li>` + cs.map(fila).join(""); });
+  } else {
+    let letra = "";
+    lista.forEach(c => {
+      const l = (norm(c.titulo)[0] || "#").toUpperCase(), L = /[A-Z]/.test(l) ? l : "#";
+      if (L !== letra && !q) { filas += `<li class="letra-h">${L}</li>`; letra = L; }
+      filas += fila(c);
+    });
+  }
+  const vacio = { tdd: ["Aún no hay canciones de Tiempo de Dios", "Aquí aparecen las canciones cuyo artista es Tiempo de Dios. Edita una canción y escribe «Tiempo de Dios» en Autor."],
+    otras: ["Aún no hay canciones", "Importa tu exportación de SongbookPro (.sbp), archivos ChordPro o crea una con el constructor."],
+    liturgicas: ["Aún no hay canciones litúrgicas", "Ponle la etiqueta «Litúrgica» a una canción (o un título que empiece con «Misa»)."] }[st.tab];
+  const main = `
+    <div class="buscador"><input class="field" id="q" type="search" placeholder="Buscar por título, autor o letra…" value="${esc(st.q)}" autocomplete="off">
+      ${esMusico() ? `<a class="btn" href="#nueva">${IC.mas} Nueva</a>${suscrito() ? `<button class="btn ghost" id="imp">Importar</button>` : ""}` : ""}</div>
+    <div class="filtros">
+      <select class="fsel ${st.fArtista ? "on" : ""}" id="fart" aria-label="Artista"><option value="">Todos los artistas</option>${autores.map(a => `<option ${a === st.fArtista ? "selected" : ""}>${esc(a)}</option>`).join("")}</select>
+      <select class="fsel ${st.fTono ? "on" : ""}" id="fton" aria-label="Tono"><option value="">Cualquier tono</option>${tonosUsados.map(t => `<option ${t === st.fTono ? "selected" : ""}>${t}</option>`).join("")}</select>
+      <button class="tchip ${st.fMio ? "on" : ""}" data-f="fMio">★ Con mi tono</button>
+      <button class="tchip ${st.fPista ? "on" : ""}" data-f="fPista">♫ Con pista</button>
+      ${tags.map(t => `<button class="tchip ${st.fTags.includes(t) ? "on" : ""}" data-tag="${esc(t)}" style="--c:var(--sea)">#${esc(t)}</button>`).join("")}
+      ${hayFiltro ? `<button class="tchip" id="flimpia" style="--c:var(--muted)">✕ Quitar filtros</button>` : ""}
+    </div>
+    ${lista.length ? `<p class="status" style="margin:0">${lista.length} de ${enTab.length}</p><ul class="songs">${filas}</ul>`
+      : enTab.length ? `<div class="empty"><strong>Nada con esos filtros</strong><p>Prueba con otra palabra o quita filtros.</p></div>`
+      : `<div class="empty"><strong>${vacio[0]}</strong><p>${vacio[1]}</p>${st.tab !== "tdd" || !todas.length ? `<div class="row">${suscrito() && esMusico() ? `<button class="btn" id="imp2">Importar de SongbookPro</button>` : ""}${esMusico() ? `<a class="btn ghost" href="#nueva">Crear una</a>` : ""}</div>` : `<button class="btn ghost" data-ir-tab="otras">Ver las demás canciones (${n.otras})</button>`}</div>`}`;
+  return {
+    band: bandHTML({ titulo: "La <em>librería</em>", sub: `<span><b>${todas.length}</b> canciones</span><span>compartidas con todos los ministerios</span>`,
+      tabs: tabsHTML([["tdd", "Tiempo de Dios", n.tdd], ["otras", "Otras canciones", n.otras], ["liturgicas", "Litúrgicas", n.liturgicas]], st.tab) }),
+    main,
+    after() {
+      const qi = $("#q");
+      qi.oninput = () => { st.q = qi.value; const pos = qi.selectionStart; render(); const nq = $("#q"); nq.focus(); nq.setSelectionRange(pos, pos); };
+      const ponTab = t => { st.tab = t; ls.set("cifrados-tab", t); st.fArtista = ""; st.fTono = ""; render(); };
+      $$("[data-tab]").forEach(b => b.onclick = () => ponTab(b.dataset.tab));
+      $$("[data-ir-tab]").forEach(b => b.onclick = () => ponTab(b.dataset.irTab));
+      $("#fart").onchange = e => { st.fArtista = e.target.value; e.target.blur(); render(); };
+      $("#fton").onchange = e => { st.fTono = e.target.value; e.target.blur(); render(); };
+      $$("[data-f]").forEach(b => b.onclick = () => { st[b.dataset.f] = !st[b.dataset.f]; render(); });
+      $$("[data-tag]").forEach(b => b.onclick = () => { const t = b.dataset.tag; st.fTags = st.fTags.includes(t) ? st.fTags.filter(x => x !== t) : st.fTags.concat(t); render(); });
+      const fl = $("#flimpia"); if (fl) fl.onclick = () => { st.fArtista = st.fTono = ""; st.fTags = []; st.fMio = st.fPista = false; render(); };
+      [$("#imp"), $("#imp2")].forEach(b => b && (b.onclick = abrirImportar));
+    },
+  };
+}
+
+// ================= CANCIÓN =================
+let ctxSet = null, vivo = null;
+function vCancion(p) {
+  const c = D.uno("cif_canciones", p[0]);
+  if (!c || c.borrada) return { band: bandHTML({ titulo: "No encontré esa canción" }), main: `<a class="btn ghost" href="#libreria">← A la librería</a>` };
+  // contexto de set: #cancion/<id>/set/<setId>/<i>
+  ctxSet = null;
+  if (p[1] === "set") {
+    const s = D.uno("cif_sets", p[2]), i = +p[3] || 0;
+    if (s) ctxSet = { s, i, item: s.items[i] };
+  }
+  const original = c.tono || C.adivinaTono(c.contenido) || "C";
+  const mt = miTono(c.id);
+  const tono = st.tonoVista[c.id] || (ctxSet && ctxSet.item && ctxSet.item.tono) || (mt && mt.tono) || original;
+  const capo = st.capo[c.id] ?? (ctxSet ? 0 : (mt && mt.capo) || 0);
+  const semis = C.distancia(original, tono) - capo;
+  const forma = C.transportaTono(tono, -capo);
+  const e = st.estilo;
+  // en un set, la estructura en bloques del set manda sobre la de la canción
+  const orden = ctxSet && ctxSet.item && ctxSet.item.estructura && ctxSet.item.estructura.length ? ctxSet.item.estructura : c.orden;
+  const html = e.sinAcordes ? C.aHTML(c.contenido, { soloLetra: true, orden }) : C.aHTML(c.contenido, { semis, tonoFinal: forma, orden, ...opNotacion() });
+  const secs = orden && orden.length ? orden : [...new Set(C.secciones(c.contenido))];
+  const tracks = tracksDe(c.id);
+
+  // Tonos: primero los de mi ministerio, mis amigos y yo; el resto en "Otros"
+  const cercanos = new Set([yo() && yo().id, ...amigos(), ...(minActual() ? personasMin(minActual().id).map(x => x.id) : [])]);
+  const tonos = tonosDe(c.id).sort((a, b) => nombreDe(a.persona_id).localeCompare(nombreDe(b.persona_id)));
+  const tonosCerca = tonos.filter(t => cercanos.has(t.persona_id)), tonosLejos = tonos.filter(t => !cercanos.has(t.persona_id));
+  const chipTono = t => `<button class="tchip ${t.tono === tono && (t.capo || 0) === capo ? "on" : ""}" data-tono="${esc(t.tono)}" data-capo="${t.capo || 0}" title="Ver en el tono de ${esc(nombreDe(t.persona_id))}">${yo() && t.persona_id === yo().id ? "★ Yo" : esc(nombreDe(t.persona_id))} <small>${esc(t.tono)}${t.capo ? " c" + t.capo : ""}</small></button>`;
+  const esMio = mt && mt.tono === tono && (mt.capo || 0) === capo;
+  const puedeOtros = (esSuper() || membresias().some(m => m.rol === "admin")) && artistas().length > 1;
+
+  let setbar = "";
+  if (ctxSet) {
+    const n = ctxSet.s.items.length, it = ctxSet.item || {};
+    setbar = `<div class="setbar"><a class="navbtn" href="#set/${ctxSet.s.id}">← ${esc(ctxSet.s.nombre)}</a><span>${ctxSet.i + 1} de ${n}${it.momento ? " · " + esc(nombreMomento(it.momento)) : ""}${it.persona_id ? " · dirige " + esc(nombreDe(it.persona_id)) : ""}</span><span class="sp"></span>
+      ${D.nube ? `<button class="navbtn ${st.dirigir ? "on" : ""}" id="dirigir" title="Los demás ven la canción y sección que tú marques">📡 Dirigir</button><button class="navbtn ${st.seguir ? "on" : ""}" id="seguir" title="Abrir lo que marque quien dirige">${st.seguir ? '<span class="vivoind"><i></i>Siguiendo</span>' : "Seguir"}</button>` : ""}
+      <button class="navbtn" id="prev" ${ctxSet.i <= 0 ? "disabled" : ""}>‹</button><button class="navbtn" id="next" ${ctxSet.i >= n - 1 ? "disabled" : ""}>›</button></div>`;
+  }
+  const sub = [c.autor && `<span>${esc(c.autor)}</span>`, `<span>Original <b>${esc(original)}</b></span>`, c.bpm && `<span><b>${c.bpm}</b> bpm</span>`, c.compas && `<span><b>${esc(c.compas)}</b></span>`, capo ? `<span>Capo <b>${capo}</b> · formas de <b>${esc(forma)}</b></span>` : ""].filter(Boolean).join("");
+  const opTonos = C.TONOS.filter(t => t.endsWith("m") === original.endsWith("m")).map(t => `<option ${t === tono ? "selected" : ""}>${t}</option>`).join("");
+
+  const main = `
+  <div class="printhead"><h2>${esc(c.titulo)}</h2><div>${esc(c.autor || "")} · Tono ${esc(tono)}${capo ? " · Capo " + capo : ""}${c.bpm ? " · " + c.bpm + " bpm" : ""}</div></div>
+  <div class="ctrls">
+    <div class="tonobox" title="Tono"><button id="tmenos" aria-label="Bajar medio tono">−</button><select id="tsel" aria-label="Tono">${opTonos}</select><button id="tmas" aria-label="Subir medio tono">+</button></div>
+    <label class="ctl" title="Capo">Capo <select id="capo">${[0, 1, 2, 3, 4, 5, 6, 7].map(n => `<option ${n === capo ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+    <div class="seg" role="radiogroup" aria-label="Notación">${NOTACIONES.map(([k, l]) => `<button role="radio" aria-checked="${e.notacion === k}" class="${e.notacion === k && !e.sinAcordes ? "on" : ""}" data-not="${k}">${l}</button>`).join("")}<button role="radio" aria-checked="${!!e.sinAcordes}" class="${e.sinAcordes ? "on" : ""}" data-not="letra" title="Solo letra (para voces)">Letra</button></div>
+    <div class="ctl autobox" title="Desplazamiento automático (barra espaciadora; + y − cambian la velocidad)"><button id="tauto" class="${autoscroll.on ? "on" : ""}">${autoscroll.on ? "❚❚" : "▼"} Auto</button><button id="vmenos" aria-label="Más lento">−</button><output id="vval">${nivelVel()}</output><button id="vmas" aria-label="Más rápido">+</button></div>
+    <button class="ctl" id="amenos" title="Letra más chica">A−</button><button class="ctl" id="amas" title="Letra más grande">A+</button>
+    <button class="ctl ${e.cols === 2 ? "on" : ""}" id="tcols" title="Dos columnas">▥</button>
+    <button class="ctl" id="tesc" title="Modo escenario">⤢</button>
+    <button class="ctl escx" id="tescx">Salir</button>
+    <span class="sp" style="flex:1"></span>
+    ${esMusico() ? `<a class="ctl noesc" href="#editar/${c.id}">✎ Editar</a>` : ""}
+    <button class="ctl noesc" id="tprint" title="Imprimir o guardar PDF">⎙</button>
+  </div>
+  <div class="tonosbar noesc">
+    <span class="tbl">Tonos</span>
+    <button class="tchip ${tono === original && !capo ? "on" : ""}" data-tono="${esc(original)}" data-capo="0">Original <small>${esc(original)}</small></button>
+    ${tonosCerca.map(chipTono).join("")}
+    ${tonosLejos.length ? (st.verOtros ? tonosLejos.map(chipTono).join("") : `<button class="tchip" id="votros" style="--c:var(--muted)">Otros ${tonosLejos.length}</button>`) : ""}
+    <span class="sp"></span>
+    ${esMio ? `<span class="tchip on fijo">★ Es tu tono</span><button class="btn xs ghost" id="qmio" title="Quitar mi tono">Quitar</button>`
+      : `<button class="btn sm" id="gmio">★ Este es mi tono · ${esc(tono)}${capo ? " c" + capo : ""}</button>`}
+    ${puedeOtros ? `<select class="fsel" id="gpara" aria-label="Guardar tono para otra persona"><option value="">Guardar para…</option>${artistas().filter(a => a.id !== yo().id).map(a => `<option value="${a.id}">${esc(a.nombre)}</option>`).join("")}</select>` : ""}
+    ${ctxSet && editaSet(ctxSet.s) && ctxSet.item && ctxSet.item.tono !== tono ? `<button class="btn xs ghost" id="gset">Usar ${esc(tono)} en este set</button>` : ""}
+  </div>
+  ${secs.length > 1 ? `<div class="secchips noesc">${secs.map(s => `<button data-ir="${esc(s)}" style="--sc:var(${C.colorSeccion(s)})">${esc(s)}</button>`).join("")}</div>` : ""}
+  <article class="cuerpo ${e.cols === 2 ? "dos" : ""} ${e.sinAcordes ? "sinacordes" : ""}" id="cuerpo">${html}</article>
+  <div class="panelx">
+    <section class="caja"><h3>Pistas</h3>
+      ${tracks.length ? `<ul class="tracks">${tracks.map(t => `<li class="${rep.track && rep.track.id === t.id ? "on" : ""}"><button class="btn xs" data-pista="${t.id}">${rep.track && rep.track.id === t.id && rep.sonando ? "❚❚" : "▶"}</button><span><b>${esc(t.nombre)}</b><br><small>${esc(t.tipo)}${t.tono ? " · grabada en " + esc(t.tono) : ""}${t.subido_por ? " · subió " + esc(nombreDe(t.subido_por)) : ""}</small></span>${esMusico() ? `<button class="btn xs ghost" data-bpista="${t.id}" title="Quitar">✕</button>` : ""}</li>`).join("")}</ul>` : `<p>Sin pistas. Las pistas que suba cualquier músico le aparecen a todos y siguen el tono que estás viendo.</p>`}
+      <div id="playerbox"></div>
+      ${esMusico() ? `<label class="btn sm ghost" style="margin-top:10px;cursor:pointer">＋ Subir pista<input type="file" id="subpista" accept="audio/*" hidden></label>` : ""}
+    </section>
+    ${c.notas || c.liga ? `<section class="caja"><h3>Notas</h3>${c.notas ? `<p class="notas">${esc(c.notas)}</p>` : ""}${c.liga ? `<p style="margin-top:8px"><a href="${esc(c.liga)}" target="_blank" rel="noopener">Escuchar referencia ↗</a></p>` : ""}</section>` : ""}
+  </div>`;
+  return {
+    band: bandHTML({ tag: ctxSet ? "En vivo" : "Canción", titulo: esc(c.titulo), sub, extra: setbar }),
+    main,
+    after() {
+      const ponTono = t => { st.tonoVista[c.id] = t; render(); if (rep.track && rep.auto) ajustarPitch(); };
+      $("#tsel").onchange = ev => { ev.target.blur(); ponTono(ev.target.value); };
+      $("#tmenos").onclick = () => ponTono(C.transportaTono(tono, -1));
+      $("#tmas").onclick = () => ponTono(C.transportaTono(tono, 1));
+      $("#capo").onchange = ev => { ev.target.blur(); st.capo[c.id] = +ev.target.value; render(); };
+      $$("[data-not]").forEach(b => b.onclick = () => {
+        const k = b.dataset.not;
+        if (k === "letra") st.estilo.sinAcordes = !st.estilo.sinAcordes; else { st.estilo.notacion = k; st.estilo.sinAcordes = false; }
+        guardarEstilo(); render();
+      });
+      $("#tcols").onclick = () => { st.estilo.cols = st.estilo.cols === 2 ? 1 : 2; guardarEstilo(); render(); };
+      $("#amenos").onclick = () => { st.estilo.tam = Math.max(12, st.estilo.tam - 2); guardarEstilo(); };
+      $("#amas").onclick = () => { st.estilo.tam = Math.min(44, st.estilo.tam + 2); guardarEstilo(); };
+      $("#tauto").onclick = alternarAutoscroll;
+      $("#vmenos").onclick = () => cambiarVel(-1);
+      $("#vmas").onclick = () => cambiarVel(1);
+      $("#tesc").onclick = () => { document.body.classList.add("escenario"); document.documentElement.requestFullscreen?.().catch(() => {}); };
+      $("#tescx").onclick = () => { document.body.classList.remove("escenario"); if (document.fullscreenElement) document.exitFullscreen(); };
+      $("#tprint").onclick = () => window.print();
+      $$("[data-ir]").forEach(b => b.onclick = () => { irSeccion(b.dataset.ir); if (st.dirigir && vivo) vivo.enviar({ i: ctxSet.i, sec: b.dataset.ir }); });
+      $$("[data-tono]").forEach(b => b.onclick = () => { st.tonoVista[c.id] = b.dataset.tono; st.capo[c.id] = +b.dataset.capo; render(); if (rep.track && rep.auto) ajustarPitch(); });
+      const vo = $("#votros"); if (vo) vo.onclick = () => { st.verOtros = true; render(); };
+      const g = $("#gmio"); if (g) g.onclick = async () => {
+        await D.guardar("cif_tonos", { cancion_id: c.id, persona_id: yo().id, tono, capo });
+        const pf = miPerfil(); if (pf && !pf.artista) await D.guardar("cif_perfiles", { ...pf, artista: true });
+        toast(`Guardado en tu perfil: «${c.titulo}» en ${tono}${capo ? " capo " + capo : ""}.`);
+      };
+      const q = $("#qmio"); if (q) q.onclick = () => { D.borrar("cif_tonos", { cancion_id: c.id, persona_id: yo().id }); toast("Se quitó tu tono."); };
+      const gp = $("#gpara"); if (gp) gp.onchange = async () => { if (!gp.value) return; const id = gp.value; gp.blur(); await D.guardar("cif_tonos", { cancion_id: c.id, persona_id: id, tono, capo }); toast(`Guardado ${tono} para ${nombreDe(id)}.`); };
+      const gs = $("#gset"); if (gs) gs.onclick = () => { const s = ctxSet.s; const items = s.items.map((x, k) => k === ctxSet.i ? { ...x, tono } : x); D.guardar("cif_sets", { ...s, items }); toast("Tono actualizado en el set para todos."); };
+      $$("[data-pista]").forEach(b => b.onclick = () => { const t = D.uno("cif_tracks", b.dataset.pista); if (rep.track && rep.track.id === t.id) { alternarPlay(); } else abrirPista(t, c, tono); });
+      $$("[data-bpista]").forEach(b => b.onclick = async () => { const t = D.uno("cif_tracks", b.dataset.bpista); if (!(await confirmar(`¿Quitar la pista «${t.nombre}»?`, "Se borra para todo el equipo."))) return; if (rep.track && rep.track.id === t.id) cerrarPista(); D.borrar("cif_tracks", t); D.borrarAudio(t.ruta).catch(() => {}); });
+      const sp = $("#subpista"); if (sp) sp.onchange = () => subirPista(sp.files[0], c, original);
+      if (rep.track && rep.track.cancion_id === c.id) pintarPlayer(); else if (rep.track) cerrarPista();
+      rep.tonoVista = tono; rep.cancion = c;
+      // set en vivo
+      if (ctxSet) {
+        $("#prev").onclick = () => irItem(ctxSet.i - 1);
+        $("#next").onclick = () => irItem(ctxSet.i + 1);
+        const dg = $("#dirigir"); if (dg) dg.onclick = () => { st.dirigir = !st.dirigir; if (st.dirigir) { st.seguir = false; vivo && vivo.enviar({ i: ctxSet.i }); } render(); };
+        const sg = $("#seguir"); if (sg) sg.onclick = () => { st.seguir = !st.seguir; ls.set("cifrados-seguir", st.seguir); if (st.seguir) st.dirigir = false; render(); };
+        conectarVivo(ctxSet.s.id);
+        deslizar($("#cuerpo"), d => irItem(ctxSet.i + d));
+      } else salirVivo();
+    },
+  };
+}
+function irSeccion(nombre) {
+  const el = $$(".csec").find(s => s.dataset.sec === nombre);
+  if (!el) return;
+  $$(".csec.vivo").forEach(x => x.classList.remove("vivo")); el.classList.add("vivo");
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function irItem(i) {
+  if (!ctxSet) return;
+  const s = D.uno("cif_sets", ctxSet.s.id) || ctxSet.s;
+  if (i < 0 || i >= s.items.length) return;
+  if (st.dirigir && vivo) vivo.enviar({ i });
+  location.hash = `#cancion/${s.items[i].cancion_id}/set/${s.id}/${i}`;
+}
+function conectarVivo(setId) {
+  if (vivo && vivo.id === setId) return;
+  salirVivo();
+  const ch = D.canalVivo(setId, pl => {
+    if (!st.seguir || !ctxSet) return;
+    if (pl.i !== ctxSet.i) { const s = D.uno("cif_sets", setId); if (s && s.items[pl.i]) location.hash = `#cancion/${s.items[pl.i].cancion_id}/set/${setId}/${pl.i}`; }
+    if (pl.sec) setTimeout(() => irSeccion(pl.sec), 300);
+  });
+  vivo = { id: setId, ...ch };
+}
+function salirVivo() { if (vivo) { vivo.salir(); vivo = null; } st.dirigir = false; }
+function deslizar(el, fn) {
+  if (!el) return; let x0 = null, y0 = 0;
+  el.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  el.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 1.6) fn(dx < 0 ? 1 : -1); x0 = null; }, { passive: true });
+}
+
+// Desplazamiento automático
+const autoscroll = { on: false, vel: ls.get("cifrados-vel", 28), raf: 0, t: 0, acc: 0 };
+function alternarAutoscroll() {
+  autoscroll.on = !autoscroll.on;
+  const b = $("#tauto"); if (b) { b.innerHTML = (autoscroll.on ? "❚❚" : "▼") + " Auto"; b.classList.toggle("on", autoscroll.on); }
+  if (autoscroll.on) { autoscroll.t = performance.now(); autoscroll.acc = 0; autoscroll.raf = requestAnimationFrame(pasoScroll); }
+  else cancelAnimationFrame(autoscroll.raf);
+}
+// velocidad en niveles 1–20 (8 px por segundo cada nivel), se ajusta ahí mismo con − y +
+const nivelVel = () => Math.max(1, Math.min(20, Math.round(autoscroll.vel / 8)));
+function cambiarVel(d) {
+  autoscroll.vel = (nivelVel() + d) * 8;
+  autoscroll.vel = Math.max(8, Math.min(160, autoscroll.vel)); ls.set("cifrados-vel", autoscroll.vel);
+  const o = $("#vval"); if (o) o.textContent = nivelVel();
+}
+function pasoScroll(t) {
+  const dt = (t - autoscroll.t) / 1000; autoscroll.t = t;
+  autoscroll.acc += autoscroll.vel * dt;
+  if (autoscroll.acc >= 1) { const n = Math.floor(autoscroll.acc); window.scrollBy(0, n); autoscroll.acc -= n; }
+  if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 2) { autoscroll.on = false; const b = $("#tauto"); if (b) { b.innerHTML = "▼ Auto"; b.classList.remove("on"); } return; }
+  autoscroll.raf = requestAnimationFrame(pasoScroll);
+}
+function detenerAutoscroll() { if (autoscroll.on) { autoscroll.on = false; cancelAnimationFrame(autoscroll.raf); } }
+document.addEventListener("keydown", e => {
+  if (!autoscroll.on || /INPUT|TEXTAREA/.test((document.activeElement || {}).tagName || "")) return;
+  if (e.key === "+" || e.key === "=") cambiarVel(1);
+  if (e.key === "-") cambiarVel(-1);
+});
+
+// ---------- Pistas: cambiar tono sin cambiar velocidad (Tone.js GrainPlayer) ----------
+const rep = { player: null, track: null, sonando: false, inicio: 0, offset: 0, dur: 0, rate: 1, ajuste: 0, auto: true, vol: 0, raf: 0, url: "" };
+let toneP = null;
+function cargarTone() {
+  if (window.Tone) return Promise.resolve();
+  if (!toneP) toneP = new Promise((res, rej) => { const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"; s.onload = res; s.onerror = () => { toneP = null; rej(new Error("No se pudo cargar el reproductor (sin internet la primera vez).")); }; document.head.appendChild(s); });
+  return toneP;
+}
+const semisPista = () => rep.auto && rep.track && rep.track.tono ? C.distancia(rep.track.tono, rep.tonoVista) + rep.ajuste : rep.ajuste;
+async function abrirPista(t, c, tono) {
+  try {
+    toast("Cargando pista…");
+    await cargarTone(); await Tone.start();
+    const blob = await D.audio(t.ruta);
+    if (!blob) return toast("La pista no está en este dispositivo y no hay nube.");
+    cerrarPista();
+    rep.url = URL.createObjectURL(blob);
+    const buf = await Tone.ToneAudioBuffer.fromUrl(rep.url);
+    rep.player = new Tone.GrainPlayer({ url: buf, grainSize: 0.12, overlap: 0.06 }).toDestination();
+    rep.track = t; rep.dur = buf.duration; rep.offset = 0; rep.ajuste = 0; rep.rate = 1; rep.tonoVista = tono;
+    ajustarPitch(); render(); alternarPlay();
+  } catch (e) { console.error(e); toast("No se pudo abrir la pista: " + (e.message || e)); }
+}
+function posPista() { return rep.sonando ? Math.min(rep.dur, rep.offset + (Tone.now() - rep.inicio) * rep.rate) : rep.offset; }
+function alternarPlay() {
+  if (!rep.player) return;
+  if (rep.sonando) { rep.offset = posPista(); rep.player.stop(); rep.sonando = false; }
+  else { if (rep.offset >= rep.dur - .05) rep.offset = 0; rep.player.start(undefined, rep.offset); rep.inicio = Tone.now(); rep.sonando = true; }
+  pintarPlayer(); $$("[data-pista]").forEach(b => b.textContent = rep.track && b.dataset.pista === rep.track.id && rep.sonando ? "❚❚" : "▶");
+}
+function buscarPista(seg) { const s = rep.sonando; if (s) { rep.player.stop(); rep.sonando = false; } rep.offset = Math.max(0, Math.min(rep.dur, seg)); if (s) alternarPlay(); else pintarPlayer(); }
+function ajustarPitch() { if (!rep.player) return; rep.player.detune = semisPista() * 100; const o = $("#plsemis"); if (o) pintarPlayer(); }
+function cerrarPista() { if (rep.player) { try { rep.player.stop(); rep.player.dispose(); } catch (e) {} } if (rep.url) URL.revokeObjectURL(rep.url); rep.player = null; rep.track = null; rep.sonando = false; clearInterval(rep.raf); }
+const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+function pintarPlayer() {
+  const box = $("#playerbox"); if (!box || !rep.track) return;
+  const sm = semisPista(), suena = rep.track.tono ? C.transportaTono(rep.track.tono, sm) : null;
+  box.innerHTML = `<div class="player" style="margin-top:12px">
+    <div class="pl-top"><button class="playbtn" id="plplay" aria-label="Reproducir">${rep.sonando ? IC.pausa : IC.play}</button><div><b>${esc(rep.track.nombre)}</b><small id="pltime">${mmss(posPista())} / ${mmss(rep.dur)}</small></div></div>
+    <input type="range" id="plpos" min="0" max="${rep.dur}" step="0.1" value="${posPista()}" aria-label="Posición">
+    <div class="pl-ctl">
+      <span>Tono</span><input type="range" id="plaj" min="-6" max="6" step="1" value="${rep.ajuste}"><output id="plsemis">${sm > 0 ? "+" : ""}${sm} st${suena ? " · " + esc(suena) : ""}</output>
+      <span>Velocidad</span><input type="range" id="plrate" min="0.7" max="1.3" step="0.01" value="${rep.rate}"><output>${Math.round(rep.rate * 100)}%</output>
+      <span>Volumen</span><input type="range" id="plvol" min="-30" max="6" step="1" value="${rep.vol}"><output>${rep.vol} dB</output>
+    </div>
+    <label class="row" style="font-size:13px;font-weight:600"><input type="checkbox" id="plauto" ${rep.auto ? "checked" : ""}> Seguir el tono de la canción${rep.track.tono ? "" : " (indica en qué tono está grabada la pista)"}</label>
+  </div>`;
+  $("#plplay").onclick = alternarPlay;
+  $("#plpos").oninput = e => buscarPista(+e.target.value);
+  $("#plaj").oninput = e => { rep.ajuste = +e.target.value; ajustarPitch(); };
+  $("#plrate").oninput = e => { const p = posPista(); rep.rate = +e.target.value; rep.player.playbackRate = rep.rate; rep.offset = p; rep.inicio = Tone.now(); e.target.nextElementSibling.textContent = Math.round(rep.rate * 100) + "%"; };
+  $("#plvol").oninput = e => { rep.vol = +e.target.value; rep.player.volume.value = rep.vol; e.target.nextElementSibling.textContent = rep.vol + " dB"; };
+  $("#plauto").onchange = e => { rep.auto = e.target.checked; ajustarPitch(); };
+  // intervalo (no requestAnimationFrame) para que el final se detecte aunque la pantalla esté apagada o la pestaña en segundo plano
+  clearInterval(rep.raf);
+  const tick = () => {
+    if (!rep.track) return clearInterval(rep.raf);
+    if (rep.sonando && posPista() >= rep.dur - .05) { rep.sonando = false; rep.offset = 0; clearInterval(rep.raf); pintarPlayer(); $$("[data-pista]").forEach(b => (b.textContent = "▶")); return; }
+    const t = $("#pltime"), r = $("#plpos"); if (!t) return;
+    t.textContent = `${mmss(posPista())} / ${mmss(rep.dur)}`; if (document.activeElement !== r) r.value = posPista();
+  };
+  tick(); rep.raf = setInterval(tick, 250);
+}
+async function subirPista(f, c, original) {
+  if (!f) return;
+  if (f.size > 50 * 1024 * 1024) return toast("La pista pesa más de 50 MB.");
+  const d = await dialogo(`<h2>Subir pista</h2><p>${esc(f.name)}</p>
+    <label class="lb">Nombre<input class="field" name="nombre" value="${esc(f.name.replace(/\.[^.]+$/, ""))}"></label>
+    <div class="grid2"><label class="lb">Tipo<select class="field" name="tipo"><option value="pista">Pista completa</option><option value="guia">Guía (voz)</option><option value="click">Click</option><option value="stem">Stem</option></select></label>
+    <label class="lb">Grabada en<select class="field" name="tono">${C.TONOS.map(t => `<option ${t === original ? "selected" : ""}>${t}</option>`).join("")}</select></label></div>`, "Subir");
+  if (!d) return;
+  try {
+    toast("Subiendo pista…");
+    const ruta = `${c.id}/${Date.now()}-${f.name.replace(/[^\w.\-]+/g, "_")}`;
+    await D.subirAudio(ruta, f);
+    await D.guardar("cif_tracks", { cancion_id: c.id, nombre: d.nombre || f.name, tipo: d.tipo, tono: d.tono, ruta, tam: f.size });
+    toast("Pista lista.");
+  } catch (e) { toast("No se pudo subir: " + (e.message || e)); }
+}
+
+// ================= SETS =================
+// Dos tipos: normal (lista libre) y litúrgico (por momentos de la misa).
+// Cada canción del set puede tener su propia estructura en bloques (arrastrar, duplicar, quitar) que ven todos en tiempo real.
+function vSets() {
+  const m = minActual();
+  if (!m) return { band: bandHTML({ titulo: "Sets" }), main: `<div class="empty"><strong>Aún no estás en un ministerio</strong><p>Los sets son de cada ministerio. Pide entrar al tuyo en Ministerios y espera a que un admin te acepte.</p><a class="btn" href="#ministerios">Ir a Ministerios</a></div>` };
+  const sets = D.lista("cif_sets").filter(s => !s.borrada && s.ministerio_id === m.id).sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
+  const hoy = hoyISO();
+  const prox = sets.filter(s => (s.fecha || "") >= hoy).reverse(), pas = sets.filter(s => (s.fecha || "") < hoy);
+  const card = s => { const f = s.fecha ? new Date(s.fecha + "T12:00") : null; return `<li><a class="setcard" href="#set/${s.id}"><time>${f ? `<b>${f.getDate()}</b>${f.toLocaleDateString("es-MX", { month: "short", weekday: "short" })}` : "—"}</time><div><h3>${esc(s.nombre)}${s.tipo === "liturgico" ? ' <span class="chip mio">⛪ Misa</span>' : ""}</h3><p>${s.items.length} canciones · ${esc(s.items.map(i => (D.uno("cif_canciones", i.cancion_id) || {}).titulo).filter(Boolean).join(" · ") || "vacío")}</p></div><span class="chip">${s.items.length}</span></a></li>`; };
+  const puede = ["admin", "musico"].includes(rolEn(m.id));
+  return {
+    band: bandHTML({ tag: m.nombre, titulo: "Sets de <em>" + esc(m.nombre) + "</em>", sub: `<span>Se actualizan en tiempo real para todo el ministerio</span>` }),
+    main: `${puede ? `<div class="row"><button class="btn" id="nset">${IC.mas} Nuevo set</button><button class="btn ghost" id="nmisa">⛪ Nueva misa</button></div>` : ""}
+      ${sets.length ? `${prox.length ? `<h2 class="status">PRÓXIMOS</h2><ul class="sets">${prox.map(card).join("")}</ul>` : ""}${pas.length ? `<h2 class="status">ANTERIORES</h2><ul class="sets">${pas.map(card).join("")}</ul>` : ""}`
+        : `<div class="empty"><strong>Sin sets todavía</strong><p>Arma el set del domingo o la misa por momentos: canciones, tono de cada una y quién dirige. Todo el equipo lo ve al momento.</p></div>`}`,
+    after() {
+      const nuevo = async tipo => {
+        const dom = new Date(); dom.setDate(dom.getDate() + ((7 - dom.getDay()) % 7));
+        const d = await dialogo(`<h2>${tipo === "liturgico" ? "Nueva misa" : "Nuevo set"}</h2><label class="lb">Nombre<input class="field" name="nombre" value="${tipo === "liturgico" ? "Misa dominical" : ""}" placeholder="Cenáculo, Retiro…" required></label><label class="lb">Fecha<input class="field" type="date" name="fecha" value="${dom.toISOString().slice(0, 10)}"></label>`, "Crear");
+        if (!d || !d.nombre) return;
+        const s = await D.guardar("cif_sets", { ministerio_id: m.id, nombre: d.nombre, fecha: d.fecha || null, tipo, items: [], notas: "" });
+        location.hash = "#set/" + s.id;
+      };
+      const b = $("#nset"); if (b) b.onclick = () => nuevo("normal");
+      const bm = $("#nmisa"); if (bm) bm.onclick = () => nuevo("liturgico");
+    },
+  };
+}
+
+/** Bloques de estructura de una canción en un set. */
+const bloquesDe = (it, c) => (it.estructura && it.estructura.length ? it.estructura : c.orden && c.orden.length ? c.orden : C.secciones(c.contenido));
+function estructuraHTML(it, i, c, puede) {
+  const bl = bloquesDe(it, c), secs = [...new Set(C.secciones(c.contenido))];
+  return `<div class="estr" data-estr="${i}">
+    ${bl.map((b, k) => `<span class="blq" data-k="${k}" style="--sc:var(${C.colorSeccion(b)})">${puede ? `<span class="blqa" title="Arrastra para mover">⋮⋮</span>` : ""}<span class="blqn">${esc(b)}</span>${puede ? `<button data-dup="${k}" title="Duplicar">⧉</button><button data-del="${k}" title="Quitar">✕</button>` : ""}</span>`).join("") || `<span class="status">La canción no tiene secciones marcadas.</span>`}
+    ${puede && secs.length ? `<select class="fsel" data-addblq="${i}" aria-label="Agregar sección"><option value="">＋ Sección</option>${secs.map(s => `<option>${esc(s)}</option>`).join("")}</select>` : ""}
+    ${puede && it.estructura ? `<button class="btn xs ghost" data-reset="${i}">Como la canción</button>` : ""}
+  </div>`;
+}
+function itemHTML(s, it, i, puede, gente) {
+  const c = D.uno("cif_canciones", it.cancion_id) || { titulo: "(canción borrada)", tono: "", contenido: "" };
+  const orig = c.tono || "C";
+  const opT = C.TONOS.filter(t => t.endsWith("m") === orig.endsWith("m")).map(t => `<option ${t === (it.tono || orig) ? "selected" : ""}>${t}</option>`).join("");
+  const abierto = st.abiertos.has(it.id);
+  return `<li class="item" data-i="${i}">
+    ${puede ? `<div class="mov"><button data-sube="${i}" aria-label="Subir">▲</button><button data-baja="${i}" aria-label="Bajar">▼</button></div>` : "<span></span>"}
+    <span class="num">${i + 1}</span>
+    <div class="tit"><a href="#cancion/${it.cancion_id}/set/${s.id}/${i}">${esc(c.titulo)}</a><small>${esc(c.autor || "")}${it.nota ? " · " + esc(it.nota) : ""}${it.estructura ? " · estructura propia" : ""}</small></div>
+    <div class="opts">${puede ? `<select data-itono="${i}" title="Tono">${opT}</select>
+      <select data-iper="${i}" title="Dirige"><option value="">¿Quién dirige?</option>${gente.map(p => { const t = D.uno("cif_tonos", it.cancion_id + "|" + p.id); return `<option value="${p.id}" ${p.id === it.persona_id ? "selected" : ""}>${esc(p.nombre)}${t ? " · " + t.tono : ""}</option>`; }).join("")}</select>
+      <input data-inota="${i}" value="${esc(it.nota || "")}" placeholder="Nota" style="width:110px">`
+      : `<span class="chip tono">${esc(it.tono || orig)}</span>${it.persona_id ? `<span class="chip">${esc(nombreDe(it.persona_id))}</span>` : ""}`}
+      <button class="btn xs ${abierto ? "on" : "ghost"}" data-abre="${it.id}" title="Estructura en bloques">▦ Estructura</button>
+      ${puede ? `<button class="btn xs ghost" data-quita="${i}" aria-label="Quitar">✕</button>` : ""}</div>
+    ${abierto ? estructuraHTML(it, i, c, puede) : ""}</li>`;
+}
+function vSet(id) {
+  const s = D.uno("cif_sets", id);
+  if (!s || s.borrada) return { band: bandHTML({ titulo: "No encontré ese set" }), main: `<a class="btn ghost" href="#sets">← Sets</a>` };
+  const m = D.uno("cif_ministerios", s.ministerio_id), puede = editaSet(s), lit = s.tipo === "liturgico";
+  const gente = personasMin(s.ministerio_id);
+  let cuerpo;
+  if (lit) {
+    // un bloque por momento; las canciones sin momento van en "Otros"
+    const por = new Map(MOMENTOS.map(([k]) => [k, []])); por.set("", []);
+    s.items.forEach((it, i) => (por.get(it.momento || "") || por.get("")).push([it, i]));
+    cuerpo = [...MOMENTOS, ["", "Otros"]].map(([k, l]) => {
+      const lista = por.get(k);
+      if (k === "" && !lista.length) return "";
+      return `<section class="momento"><div class="row"><h3>${esc(l)}</h3><span class="sp"></span>${puede && k ? `<button class="btn xs ghost" data-addm="${k}">＋ Agregar</button>` : ""}</div>
+        ${lista.length ? `<ul class="items">${lista.map(([it, i]) => itemHTML(s, it, i, puede, gente)).join("")}</ul>` : `<p class="status" style="margin:4px 0 0">Sin canción</p>`}</section>`;
+    }).join("");
+  } else {
+    cuerpo = s.items.length ? `<ul class="items">${s.items.map((it, i) => itemHTML(s, it, i, puede, gente)).join("")}</ul>` : `<div class="empty"><strong>Set vacío</strong><p>Busca canciones abajo para agregarlas.</p></div>`;
+  }
+  const quien = s.actualizado_por ? nombreDe(s.actualizado_por) : "";
+  return {
+    band: bandHTML({ tag: lit ? "Misa · " + (m ? m.nombre : "") : m ? m.nombre : "Set", titulo: esc(s.nombre), sub: `<span>${s.fecha ? new Date(s.fecha + "T12:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" }) : "Sin fecha"}</span><span>${s.items.length} canciones</span>${quien ? `<span>Último cambio: ${esc(quien)}</span>` : ""}`,
+      extra: `<div class="row">${s.items.length ? `<a class="navbtn on" href="#cancion/${s.items[0].cancion_id}/set/${s.id}/0">▶ Tocar ${lit ? "la misa" : "el set"}</a>` : ""}<a class="navbtn" href="#sets">← Sets</a></div>` }),
+    main: `
+      ${puede ? `<div class="grid2"><label class="lb">Nombre<input class="field" id="snombre" value="${esc(s.nombre)}"></label><label class="lb">Fecha<input class="field" type="date" id="sfecha" value="${esc(s.fecha || "")}"></label></div>` : ""}
+      ${cuerpo}
+      ${puede && !lit ? `<div class="caja"><h3>Agregar canción</h3><input class="field" id="sbus" placeholder="Buscar en la librería…" autocomplete="off"><ul class="resultados" id="sres" hidden></ul></div>` : ""}
+      ${puede ? `<label class="lb">Notas del set<textarea class="field" id="snotas" rows="3" placeholder="Ensayo, vestimenta, dinámica…">${esc(s.notas || "")}</textarea></label>` : s.notas ? `<div class="caja"><h3>Notas</h3><p class="notas">${esc(s.notas)}</p></div>` : ""}
+      ${puede ? `<div class="row"><span class="sp"></span><button class="btn sm ghost" id="sborrar">Borrar set</button></div>` : ""}`,
+    after() {
+      $$("[data-abre]").forEach(b => b.onclick = () => { const k = b.dataset.abre; st.abiertos.has(k) ? st.abiertos.delete(k) : st.abiertos.add(k); render(); });
+      if (!puede) return;
+      const guarda = cambios => D.guardar("cif_sets", { ...(D.uno("cif_sets", id) || s), ...cambios });
+      const itemsAct = () => (D.uno("cif_sets", id) || s).items.map(x => ({ ...x }));
+      const ponItem = (i, cambios) => { const it = itemsAct(); it[i] = { ...it[i], ...cambios }; guarda({ items: it }); };
+      $("#snombre").onchange = e => guarda({ nombre: e.target.value.trim() || s.nombre });
+      $("#sfecha").onchange = e => guarda({ fecha: e.target.value || null });
+      $("#snotas").onchange = e => guarda({ notas: e.target.value });
+      // en una misa solo se mueve dentro del mismo momento
+      const mover = (i, d) => {
+        const it = itemsAct(); let j = i + d;
+        if (lit) { while (j >= 0 && j < it.length && (it[j].momento || "") !== (it[i].momento || "")) j += d; }
+        if (j < 0 || j >= it.length) return;
+        [it[i], it[j]] = [it[j], it[i]]; guarda({ items: it });
+      };
+      $$("[data-sube]").forEach(b => b.onclick = () => mover(+b.dataset.sube, -1));
+      $$("[data-baja]").forEach(b => b.onclick = () => mover(+b.dataset.baja, 1));
+      $$("[data-quita]").forEach(b => b.onclick = () => { const it = itemsAct(); it.splice(+b.dataset.quita, 1); guarda({ items: it }); });
+      $$("[data-itono]").forEach(x => x.onchange = () => ponItem(+x.dataset.itono, { tono: x.value }));
+      $$("[data-inota]").forEach(x => x.onchange = () => ponItem(+x.dataset.inota, { nota: x.value.trim() }));
+      $$("[data-iper]").forEach(x => x.onchange = () => {
+        const i = +x.dataset.iper, it = itemsAct(), t = x.value && D.uno("cif_tonos", it[i].cancion_id + "|" + x.value);
+        ponItem(i, { persona_id: x.value || null, ...(t ? { tono: t.tono } : {}) });
+        if (t) toast(`Se puso el tono de ${nombreDe(x.value)}: ${t.tono}`);
+      });
+      const nuevoItem = (c, momento) => ({ id: D.uuid(), cancion_id: c.id, tono: c.tono || C.adivinaTono(c.contenido), persona_id: null, nota: "", ...(momento ? { momento } : {}) });
+      // misa: agregar a un momento (queda en el orden de la misa)
+      $$("[data-addm]").forEach(b => b.onclick = async () => {
+        const k = b.dataset.addm, c = await elegirCancion(k);
+        if (!c) return;
+        const it = itemsAct(), pos = MOMENTOS.findIndex(x => x[0] === k);
+        let ins = it.length;
+        for (let j = 0; j < it.length; j++) { const pj = MOMENTOS.findIndex(x => x[0] === it[j].momento); if (pj > pos || pj < 0) { ins = j; break; } }
+        it.splice(ins, 0, nuevoItem(c, k)); guarda({ items: it }); toast(`«${c.titulo}» en ${nombreMomento(k)}.`);
+      });
+      const bus = $("#sbus"), res = $("#sres");
+      if (bus) bus.oninput = () => {
+        const q = norm(bus.value);
+        if (!q) { res.hidden = true; return; }
+        const r = canciones().filter(c => norm(c.titulo + " " + c.autor).includes(q)).slice(0, 12);
+        res.hidden = false;
+        res.innerHTML = r.length ? r.map(c => `<li><button data-add="${c.id}"><span><b>${esc(c.titulo)}</b> <small class="status">${esc(c.autor || "")}</small></span><span class="chip tono">${esc(c.tono || "")}</span></button></li>`).join("") : `<li class="status" style="padding:10px 12px">Sin resultados</li>`;
+        $$("[data-add]", res).forEach(b => b.onclick = () => {
+          const c = D.uno("cif_canciones", b.dataset.add);
+          guarda({ items: itemsAct().concat([nuevoItem(c)]) });
+          bus.value = ""; res.hidden = true; toast(`«${c.titulo}» agregada.`);
+        });
+      };
+      // ----- estructura en bloques -----
+      const ponBloques = (i, bl) => { const it = itemsAct(); const c = D.uno("cif_canciones", it[i].cancion_id); it[i] = { ...it[i], estructura: bl }; if (c && JSON.stringify(bl) === JSON.stringify(bloquesDe({}, c))) delete it[i].estructura; guarda({ items: it }); };
+      $$(".estr").forEach(box => {
+        const i = +box.dataset.estr, it = itemsAct()[i], c = D.uno("cif_canciones", it.cancion_id);
+        if (!c) return;
+        const bl = bloquesDe(it, c).slice();
+        $$("[data-dup]", box).forEach(b => b.onclick = () => { const k = +b.dataset.dup; bl.splice(k + 1, 0, bl[k]); ponBloques(i, bl); });
+        $$("[data-del]", box).forEach(b => b.onclick = () => { bl.splice(+b.dataset.del, 1); ponBloques(i, bl); });
+        const add = $("[data-addblq]", box); if (add) add.onchange = () => { if (add.value) { const v = add.value; add.blur(); bl.push(v); ponBloques(i, bl); } };
+        const rs = $("[data-reset]", box); if (rs) rs.onclick = () => { const x = itemsAct(); delete x[i].estructura; guarda({ items: x }); };
+        // arrastrar con mouse o dedo (pointer events)
+        $$(".blq", box).forEach(el => {
+          const asa = $(".blqa", el) || el;
+          asa.addEventListener("pointerdown", ev => {
+            ev.preventDefault(); st.arrastrando = true;
+            const k = +el.dataset.k; el.classList.add("arrastra");
+            let destino = k;
+            const mueve = e => {
+              const bajo = document.elementFromPoint(e.clientX, e.clientY), b2 = bajo && bajo.closest(".blq");
+              $$(".blq.sobre", box).forEach(x => x.classList.remove("sobre"));
+              if (b2 && b2.parentNode === box) { destino = +b2.dataset.k; if (destino !== k) b2.classList.add("sobre"); }
+            };
+            const suelta = () => {
+              document.removeEventListener("pointermove", mueve); document.removeEventListener("pointerup", suelta); document.removeEventListener("pointercancel", suelta);
+              st.arrastrando = false; el.classList.remove("arrastra");
+              if (destino !== k) { const [x] = bl.splice(k, 1); bl.splice(destino, 0, x); ponBloques(i, bl); } else render();
+            };
+            document.addEventListener("pointermove", mueve); document.addEventListener("pointerup", suelta); document.addEventListener("pointercancel", suelta);
+          });
+        });
+      });
+      $("#sborrar").onclick = async () => { if (await confirmar(`¿Borrar el set «${s.nombre}»?`, "Desaparece para todo el ministerio.")) { await D.borrar("cif_sets", s); location.hash = "#sets"; } };
+    },
+  };
+}
+/** Ventana para escoger una canción; en misa propone primero las del momento. */
+function elegirCancion(momento) {
+  return new Promise(res => {
+    const dl = document.createElement("dialog");
+    dl.innerHTML = `<div class="dlg"><h2>${momento ? "Canción para " + esc(nombreMomento(momento)) : "Agregar canción"}</h2><input class="field" id="ecq" placeholder="Buscar…" autocomplete="off"><ul class="resultados" id="ecr" style="max-height:50vh"></ul><div class="row"><span class="sp"></span><button class="btn ghost" id="ecx">Cancelar</button></div></div>`;
+    document.body.appendChild(dl);
+    const fin = v => { dl.close(); dl.remove(); res(v); };
+    const pinta = () => {
+      const q = norm($("#ecq", dl).value);
+      const pts = c => (momento && momentoDe(c) === momento ? 0 : 2) + (esLiturgica(c) ? 0 : 1);
+      const r = canciones().filter(c => !q || norm(c.titulo + " " + c.autor).includes(q)).sort((a, b) => pts(a) - pts(b) || a.titulo.localeCompare(b.titulo, "es")).slice(0, 40);
+      $("#ecr", dl).innerHTML = r.map(c => `<li><button data-c="${c.id}"><span><b>${esc(c.titulo)}</b> <small class="status">${esc(c.autor || "")}</small></span>${momento && momentoDe(c) === momento ? '<span class="chip mio">sugerida</span>' : ""}<span class="chip tono">${esc(c.tono || "")}</span></button></li>`).join("") || `<li class="status" style="padding:10px 12px">Sin resultados</li>`;
+      $$("[data-c]", dl).forEach(b => b.onclick = () => fin(D.uno("cif_canciones", b.dataset.c)));
+    };
+    $("#ecq", dl).oninput = pinta; $("#ecx", dl).onclick = () => fin(null); dl.addEventListener("cancel", () => fin(null));
+    pinta(); dl.showModal(); $("#ecq", dl).focus();
+  });
+}
+
+// ================= CONSTRUCTOR =================
+let ed = null; // {c, paso, sel}
+function vEditor(id) {
+  const base = id ? D.uno("cif_canciones", id) : null;
+  if (id && !base) return { band: bandHTML({ titulo: "No encontré esa canción" }), main: "" };
+  if (!esMusico()) return { band: bandHTML({ titulo: "Sin permiso" }), main: `<p>Solo músicos y admins editan la librería.</p>` };
+  if (!ed || ed.id !== (id || "nueva")) ed = { id: id || "nueva", c: base ? { ...base } : { titulo: "", autor: "", tono: "G", bpm: null, compas: "4/4", contenido: "", orden: [], etiquetas: [], liga: "", notas: "" }, paso: base ? "acordes" : "letra", sel: null };
+  st.editando = true;
+  const c = ed.c;
+  const main = `
+    <div class="grid2">
+      <label class="lb">Título<input class="field" id="etit" value="${esc(c.titulo)}" placeholder="Nombre de la canción"></label>
+      <label class="lb">Autor / artista<input class="field" id="eaut" value="${esc(c.autor)}"></label>
+      <label class="lb">Tono en que la escribes<select class="field" id="eton">${C.TONOS.map(t => `<option ${t === c.tono ? "selected" : ""}>${t}</option>`).join("")}</select></label>
+      <label class="lb">BPM<input class="field" id="ebpm" type="number" min="30" max="260" value="${c.bpm || ""}"></label>
+      <label class="lb">Compás<input class="field" id="ecom" value="${esc(c.compas || "")}" placeholder="4/4"></label>
+      <label class="lb">Liga de referencia<input class="field" id="elig" value="${esc(c.liga || "")}" placeholder="Spotify o YouTube"></label>
+    </div>
+    <div class="lb">Etiquetas <small>una canción puede estar en varias; «Litúrgica» la manda a esa pestaña. Para Tiempo de Dios escribe «Tiempo de Dios» en Autor.</small><div id="etags">${etiquetasHTML()}</div></div>
+    <div class="ed-pasos">${[["letra", "1 · Letra"], ["acordes", "2 · Acordes"], ["orden", "3 · Orden"], ["texto", "Texto ChordPro"]].map(([k, l]) => `<button class="tchip ${ed.paso === k ? "on" : ""}" data-paso="${k}">${l}</button>`).join("")}</div>
+    <div class="ed-cols">
+      <div id="edpanel">${panelEditor()}</div>
+      <aside class="preview"><div class="row" style="margin-bottom:8px"><b>Vista previa</b><span class="sp"></span><span class="chip tono">${esc(c.tono)}</span></div><div class="cuerpo" id="eprev">${C.aHTML(c.contenido, { tonoFinal: c.tono, orden: c.orden })}</div></aside>
+    </div>
+    <label class="lb">Notas<textarea class="field" id="enot" rows="2" placeholder="Tonos de referencia, dinámica, quién la canta…">${esc(c.notas || "")}</textarea></label>
+    <div class="row"><button class="btn" id="eguardar">Guardar canción</button><button class="btn ghost" id="ecancel">Cancelar</button><span class="sp"></span>${base ? `<button class="btn sm ghost" id="eborrar">Borrar de la librería</button>` : ""}</div>`;
+  return {
+    band: bandHTML({ tag: "Constructor", titulo: base ? "Editar <em>" + esc(base.titulo) + "</em>" : "Nueva <em>canción</em>", sub: `<span>Escribe la letra, toca la sílaba y pon el acorde. Así queda exacto.</span>` }),
+    main,
+    after() { enlazarEditor(base); },
+  };
+}
+function etiquetasHTML() {
+  const sel = ed.c.etiquetas || [], todas = [...new Set(ETIQUETAS_SUG.concat(canciones().flatMap(x => x.etiquetas || [])))];
+  return `<div class="row" style="gap:6px">${sel.map(t => `<button class="tchip on" data-qtag="${esc(t)}" style="--c:var(--sea)" title="Quitar">#${esc(t)} ✕</button>`).join("")}
+    <input class="fsel" id="etagin" placeholder="＋ Etiqueta y Enter" style="width:170px"></div>
+    <div class="row" style="gap:6px;margin-top:6px">${todas.filter(t => !sel.some(s => norm(s) === norm(t))).slice(0, 18).map(t => `<button class="tchip" data-ptag="${esc(t)}" style="--c:var(--sea)">＋ ${esc(t)}</button>`).join("")}</div>`;
+}
+function panelEditor() {
+  const c = ed.c;
+  if (ed.paso === "letra") return `
+    <p class="edhelp">Escribe o pega la letra. Marca cada parte con los botones. Si pegas una canción con <b>acordes arriba</b> (como en LaCuerda), se convierte sola y cada acorde queda en su sílaba.</p>
+    <div class="secbtns">${["Intro", "Verso 1", "Verso 2", "Pre-coro", "Coro", "Puente", "Instrumental", "Final"].map(s => `<button data-sec="${s}" style="--sc:var(${C.colorSeccion(s)})">＋ ${s}</button>`).join("")}</div>
+    <textarea class="field letra" id="eletra" spellcheck="false" placeholder="{c: Verso 1}\nA veces das y a veces quitas…">${esc(c.contenido)}</textarea>
+    <div class="row"><button class="btn sm ghost" id="econv">Convertir «acordes arriba»</button><button class="btn sm ghost" id="eajus">Pegar acordes a la sílaba</button><button class="btn sm" id="eira">Siguiente: acordes →</button></div>`;
+  if (ed.paso === "texto") return `
+    <p class="edhelp">Formato ChordPro (el mismo de SongbookPro): <code>{c: Coro}</code> para secciones, <code>[G]</code> antes de la sílaba, <code>[*x2]</code> para anotaciones.</p>
+    <textarea class="field letra" id="eletra" spellcheck="false">${esc(c.contenido)}</textarea>
+    <div class="row"><button class="btn sm ghost" id="eajus">Pegar acordes a la sílaba</button></div>`;
+  if (ed.paso === "orden") {
+    const secs = [...new Set(C.secciones(c.contenido))];
+    return `<p class="edhelp">Opcional. Arma el orden en que se canta sin copiar el coro tres veces: toca las secciones en orden. Si lo dejas vacío, se muestra como está escrita.</p>
+      <div class="secbtns">${secs.map(s => `<button data-oadd="${esc(s)}" style="--sc:var(${C.colorSeccion(s)})">＋ ${esc(s)}</button>`).join("") || `<span class="status">Primero marca secciones en la letra.</span>`}</div>
+      <div class="caja" style="margin-top:12px"><div class="secchips" style="flex-wrap:wrap">${(c.orden || []).map((s, i) => `<button data-oquita="${i}" style="--sc:var(${C.colorSeccion(s)})" title="Quitar">${i + 1}. ${esc(s)} ✕</button>`).join("") || `<span class="status">Sin orden: se muestra tal cual.</span>`}</div></div>
+      ${(c.orden || []).length ? `<button class="btn sm ghost" id="olimpiar">Quitar el orden</button>` : ""}`;
+  }
+  // acordes: paleta + sílabas
+  const pal = C.acordesDelTono(c.tono);
+  const usados = [...new Set((c.contenido.match(/\[([^\]*][^\]]*)\]/g) || []).map(x => x.slice(1, -1)).filter(C.esAcorde))];
+  const todos = [...new Set(pal.concat(usados))];
+  if (!ed.sel) ed.sel = todos[0];
+  return `
+    <div class="paleta">${todos.map(a => `<button class="acb ${ed.sel === a ? "on" : ""}" data-ac="${esc(a)}">${esc(a)}</button>`).join("")}
+      <input id="eotro" placeholder="Otro: F#m7" aria-label="Otro acorde">
+      <button class="acb goma ${ed.sel === "" ? "on" : ""}" data-ac="" title="Borrar acordes">⌫ Borrar</button>
+      <button class="acb goma ${ed.sel === "|" ? "on" : ""}" data-ac="|" title="Barra de compás">|</button>
+      <button class="acb goma ${ed.sel === "-" ? "on" : ""}" data-ac="-" title="Sostener">—</button></div>
+    <p class="edhelp" style="margin:8px 0">Elige un acorde y toca la sílaba donde cambia. Tocar un acorde ya puesto con «Borrar» lo quita. «＋» agrega acordes al final de la línea.</p>
+    <div id="edlineas">${lineasEditor()}</div>`;
+}
+function lineasEditor() {
+  const lineas = ed.c.contenido.split("\n");
+  return lineas.map((lin, li) => {
+    const dir = /^\s*\{\s*(c|comment)\s*:\s*(.*?)\s*\}\s*$/i.exec(lin);
+    if (dir) return `<div class="edsec" style="--sc:var(${C.colorSeccion(dir[2])})">${esc(dir[2])}</div>`;
+    if (/^\s*\{/.test(lin)) return "";
+    if (!lin.trim()) return `<div style="height:10px"></div>`;
+    // separa letra y acordes
+    let letra = "", marcas = {}; const re = /\[([^\]]*)\]/g; let m, ult = 0;
+    while ((m = re.exec(lin))) { letra += lin.slice(ult, m.index); (marcas[letra.length] = marcas[letra.length] || []).push(m[1]); ult = re.lastIndex; }
+    letra += lin.slice(ult);
+    let h = "";
+    const tok = /[\p{L}]+|[^\p{L}]+/gu; let t;
+    while ((t = tok.exec(letra))) {
+      const w = t[0], p0 = t.index;
+      if (/^\p{L}/u.test(w)) {
+        let p = p0;
+        for (const s of C.silabas(w)) {
+          const ac = marcas[p]; h += `<button class="sil ${ac ? "con" : ""}" data-l="${li}" data-p="${p}"><span class="a">${ac ? esc(ac.join(" ")) : ""}</span><span class="s">${esc(s)}</span></button>`; p += s.length;
+        }
+      } else {
+        // acordes que caen en espacios o signos
+        let k = 0;
+        for (let j = 0; j < w.length; j++) { const ac = marcas[p0 + j]; if (ac && j > k) { h += `<span class="gap"><span class="a"></span><span>${esc(w.slice(k, j))}</span></span>`; k = j; } if (ac) { h += `<span class="gap" data-l="${li}" data-p="${p0 + j}"><span class="a"><button class="chipac" data-l="${li}" data-p="${p0 + j}">${esc(ac.join(" "))}</button></span><span>${esc(w.slice(j, j + 1))}</span></span>`; k = j + 1; } }
+        if (k < w.length) h += `<span class="gap"><span class="a"></span><span>${esc(w.slice(k))}</span></span>`;
+      }
+    }
+    const fin = marcas[letra.length];
+    if (fin) h += `<span class="gap"><span class="a">${fin.map(a => `<button class="chipac" data-l="${li}" data-p="${letra.length}">${esc(a)}</button>`).join("")}</span><span> </span></span>`;
+    return `<div class="edlin">${h}<button class="addend" data-l="${li}" data-fin="1" title="Agregar acorde al final">＋</button></div>`;
+  }).join("");
+}
+/** Pone o quita un acorde en la posición p (en la letra sin acordes) de la línea li. */
+function ponerAcorde(li, p, ac, alFinal) {
+  const lineas = ed.c.contenido.split("\n"), lin = lineas[li];
+  let letra = "", marcas = []; const re = /\[([^\]]*)\]/g; let m, ult = 0;
+  while ((m = re.exec(lin))) { letra += lin.slice(ult, m.index); marcas.push({ pos: letra.length, s: m[1] }); ult = re.lastIndex; }
+  letra += lin.slice(ult);
+  if (alFinal) { if (ac) { if (!/\s$/.test(letra) && letra.length) letra += "  "; marcas.push({ pos: letra.length, s: ac }); } }
+  else {
+    const hay = marcas.filter(x => x.pos === p);
+    marcas = marcas.filter(x => x.pos !== p);
+    if (ac && !(hay.length === 1 && hay[0].s === ac)) marcas.push({ pos: p, s: ac });
+  }
+  marcas.sort((a, b) => a.pos - b.pos);
+  let out = "", q = 0; marcas.forEach(x => { out += letra.slice(q, x.pos) + "[" + x.s + "]"; q = x.pos; });
+  lineas[li] = (out + letra.slice(q)).replace(/\s+$/, "");
+  ed.c.contenido = lineas.join("\n");
+}
+function enlazarEditor(base) {
+  const c = ed.c;
+  const prev = () => { const p = $("#eprev"); if (p) p.innerHTML = C.aHTML(c.contenido, { tonoFinal: c.tono, orden: c.orden }); };
+  const repintar = () => { $("#edpanel").innerHTML = panelEditor(); enlazarPanel(); prev(); };
+  const campo = (sel, k, f = v => v) => { const el = $(sel); el.oninput = () => { c[k] = f(el.value); if (k === "tono") repintar(); }; };
+  const enlazarTags = () => {
+    $$("[data-qtag]").forEach(b => b.onclick = () => { c.etiquetas = c.etiquetas.filter(t => t !== b.dataset.qtag); $("#etags").innerHTML = etiquetasHTML(); enlazarTags(); });
+    $$("[data-ptag]").forEach(b => b.onclick = () => { c.etiquetas = c.etiquetas.concat(b.dataset.ptag); $("#etags").innerHTML = etiquetasHTML(); enlazarTags(); });
+    const it = $("#etagin"); it.onkeydown = ev => { if (ev.key === "Enter" || ev.key === ",") { ev.preventDefault(); const v = it.value.trim().replace(/^#/, ""); if (v && !c.etiquetas.some(t => norm(t) === norm(v))) c.etiquetas = c.etiquetas.concat(v); $("#etags").innerHTML = etiquetasHTML(); enlazarTags(); $("#etagin").focus(); } };
+  };
+  c.etiquetas = c.etiquetas || []; enlazarTags();
+  campo("#etit", "titulo"); campo("#eaut", "autor"); campo("#ebpm", "bpm", v => +v || null); campo("#ecom", "compas"); campo("#elig", "liga"); campo("#enot", "notas");
+  $("#eton").onchange = e => { c.tono = e.target.value; ed.sel = null; repintar(); $$(".preview .chip").forEach(x => x.textContent = c.tono); };
+  $$("[data-paso]").forEach(b => b.onclick = () => { ed.paso = b.dataset.paso; $$("[data-paso]").forEach(x => x.classList.toggle("on", x === b)); repintar(); });
+  function enlazarPanel() {
+    const ta = $("#eletra");
+    if (ta) {
+      ta.oninput = () => { c.contenido = ta.value; prev(); };
+      ta.onpaste = e => {
+        const tx = (e.clipboardData || window.clipboardData).getData("text");
+        if (tx.split("\n").some(C.esLineaAcordes) && !/\[[^\]]+\]/.test(tx)) {
+          e.preventDefault();
+          const conv = C.deAcordesArriba(tx);
+          const a = ta.selectionStart, b = ta.selectionEnd;
+          ta.value = ta.value.slice(0, a) + conv + ta.value.slice(b);
+          c.contenido = ta.value; prev();
+          if (!c.tono || c.tono === "G") { const g = C.adivinaTono(conv); if (g) { c.tono = g; $("#eton").value = g; } }
+          toast("Convertí los acordes de arriba: cada uno quedó en su sílaba.");
+        }
+      };
+    }
+    $$("[data-sec]").forEach(b => b.onclick = () => {
+      const ta = $("#eletra"), a = ta.selectionStart, txt = (a > 0 && ta.value[a - 1] !== "\n" ? "\n\n" : "") + `{c: ${b.dataset.sec}}\n`;
+      ta.setRangeText(txt, a, ta.selectionEnd, "end"); ta.focus(); c.contenido = ta.value; prev();
+    });
+    const cv = $("#econv"); if (cv) cv.onclick = () => { c.contenido = C.deAcordesArriba(c.contenido); repintar(); toast("Listo: convertido a acordes en línea."); };
+    const aj = $("#eajus"); if (aj) aj.onclick = () => { const a = c.contenido; c.contenido = C.ajustarASilabas(a); repintar(); toast(a === c.contenido ? "Todos los acordes ya estaban en su sílaba." : "Acordes acomodados al inicio de su sílaba."); };
+    const ir = $("#eira"); if (ir) ir.onclick = () => { ed.paso = "acordes"; $$("[data-paso]").forEach(x => x.classList.toggle("on", x.dataset.paso === "acordes")); repintar(); };
+    $$("[data-ac]").forEach(b => b.onclick = () => { ed.sel = b.dataset.ac; $$("[data-ac]").forEach(x => x.classList.toggle("on", x === b)); });
+    const ot = $("#eotro"); if (ot) ot.onkeydown = e => { if (e.key === "Enter") { const v = ot.value.trim(); if (!C.esAcorde(v)) return toast("Eso no parece acorde (ej. F#m7, Bb/D)."); ed.sel = v; repintar(); } };
+    const lineas = $("#edlineas");
+    if (lineas) lineas.onclick = e => {
+      const b = e.target.closest("[data-l]"); if (!b || b.classList.contains("gap") && !e.target.closest(".chipac")) return;
+      const li = +b.dataset.l;
+      if (b.dataset.fin) { if (!ed.sel) return; ponerAcorde(li, 0, ed.sel, true); }
+      else if (b.classList.contains("chipac")) ponerAcorde(li, +b.dataset.p, ed.sel === "" ? "" : ed.sel); // quita o reemplaza
+      else ponerAcorde(li, +b.dataset.p, ed.sel);
+      const y = window.scrollY; lineas.innerHTML = lineasEditor(); window.scrollTo(0, y); prev();
+    };
+    $$("[data-oadd]").forEach(b => b.onclick = () => { c.orden = (c.orden || []).concat(b.dataset.oadd); repintar(); });
+    $$("[data-oquita]").forEach(b => b.onclick = () => { c.orden.splice(+b.dataset.oquita, 1); repintar(); });
+    const ol = $("#olimpiar"); if (ol) ol.onclick = () => { c.orden = []; repintar(); };
+  }
+  enlazarPanel();
+  $("#eguardar").onclick = async () => {
+    if (!c.titulo.trim()) { $("#etit").focus(); return toast("Ponle título a la canción."); }
+    const fila = { ...c, titulo: c.titulo.trim(), autor: (c.autor || "").trim(), origen: c.origen || "manual" };
+    if (!base) { fila.ministerio_id = minActual() ? minActual().id : null; }
+    const r = await D.guardar("cif_canciones", fila);
+    st.editando = false; const id = r.id; ed = null; toast("Canción guardada para todos."); location.hash = "#cancion/" + id;
+  };
+  $("#ecancel").onclick = () => { st.editando = false; const id = base && base.id; ed = null; location.hash = id ? "#cancion/" + id : "#libreria"; };
+  const bb = $("#eborrar"); if (bb) bb.onclick = async () => { if (await confirmar(`¿Borrar «${base.titulo}» de la librería?`, "Se quita para todos los ministerios (también de sus sets).")) { await D.borrar("cif_canciones", base); st.editando = false; ed = null; location.hash = "#libreria"; } };
+}
+
+// ================= SEÑAS =================
+function vSenas() {
+  const F = window.SENAS_FOTO;
+  const escena = s => {
+    const r = F && F.regiones && F.regiones[s.id];
+    const foto = r ? `<div class="foto" style="background-image:url('${esc(F.src)}');background-size:${10000 / r.w}% ${10000 / r.h}%;background-position:${r.w >= 100 ? 0 : (r.x / (100 - r.w)) * 100}% ${r.h >= 100 ? 0 : (r.y / (100 - r.h)) * 100}%"></div>` : `<span class="mano">${s.mano}</span>`;
+    return `<div class="escena m-${s.mov}" style="--sc:var(${s.sec})">${foto}<span class="let">${esc(s.letra)}</span></div>`;
+  };
+  return {
+    band: bandHTML({ tag: "Manual", titulo: "Señas para <em>dirigir</em>", sub: `<span>Las mismas señas en todos los ministerios</span>`, tabs: "" }),
+    main: `<div class="row"><p class="status" style="margin:0;flex:1">Quien dirige las hace al frente, a la altura del pecho, un compás antes del cambio.</p><button class="btn" id="practicar">🎲 Practicar</button></div>
+      <div class="senas">${SENAS.map(s => `<article class="sena" style="--sc:var(${s.sec})">${escena(s)}<div class="tx"><h3>${esc(s.nombre)}</h3><p><b>Cuándo:</b> ${esc(s.cuando)}</p><p><b>Cómo:</b> ${esc(s.como)}</p></div></article>`).join("")}</div>
+      ${F ? "" : `<p class="status">Las manos son provisionales: cuando llegue la fotografía oficial de señas, cada tarjeta mostrará su recorte animado con el mismo movimiento.</p>`}`,
+    after() {
+      clearInterval(window._contar); let k = 0;
+      window._contar = setInterval(() => { const els = $$(".m-contar .mano"); if (!els.length) return clearInterval(window._contar); k = (k + 1) % 3; els.forEach(x => (x.textContent = ["☝️", "✌️", "🤟"][k])); }, 900);
+      $("#practicar").onclick = () => {
+        let i = Math.floor(Math.random() * SENAS.length), ver = false;
+        const dl = document.createElement("dialog"); document.body.appendChild(dl);
+        const pinta = () => { const s = SENAS[i]; dl.innerHTML = `<div class="dlg practica">${ver ? escena(s) : `<div class="escena" style="--sc:var(${s.sec})"><span class="mano" style="font-size:40px">❓</span></div>`}<div class="grande">${ver ? esc(s.nombre) : "¿Qué seña harías para…"}</div><p>${ver ? esc(s.como) : esc(s.cuando)}</p><div class="row"><button class="btn ghost" data-x>Cerrar</button><button class="btn" data-v>${ver ? "Otra →" : "Ver la seña"}</button></div></div>`;
+          dl.querySelector("[data-x]").onclick = () => { dl.close(); dl.remove(); };
+          dl.querySelector("[data-v]").onclick = () => { if (ver) { i = (i + 1 + Math.floor(Math.random() * (SENAS.length - 1))) % SENAS.length; ver = false; } else ver = true; pinta(); }; };
+        pinta(); dl.showModal();
+      };
+    },
+  };
+}
+
+// ================= MINISTERIOS =================
+// Cualquiera pide entrar a un ministerio; un admin de ese ministerio acepta o rechaza.
+// Solo el desarrollador (superadmin) crea ministerios y activa su suscripción.
+function vMinisterios() {
+  const todos = D.lista("cif_ministerios").sort((a, b) => a.nombre.localeCompare(b.nombre));
+  const mios = new Set(membresias().map(m => m.ministerio_id));
+  const misSol = yo() ? D.lista("cif_solicitudes").filter(s => s.persona_id === yo().id && s.estado === "pendiente") : [];
+  const card = m => {
+    const rol = rolEn(m.id), admin = rol === "admin", soy = mios.has(m.id);
+    const miem = D.lista("cif_miembros").filter(x => x.ministerio_id === m.id).sort((a, b) => nombreDe(a.persona_id).localeCompare(nombreDe(b.persona_id)));
+    const sols = D.lista("cif_solicitudes").filter(x => x.ministerio_id === m.id && x.estado === "pendiente");
+    const vigente = m.suscripcion_hasta && m.suscripcion_hasta >= hoyISO();
+    return `<section class="caja"><div class="row"><h3 style="margin:0">${esc(m.nombre)}</h3>${soy ? `<span class="chip">${esc({ admin: "Admin", musico: "Músico", lector: "Solo ver" }[rol] || rol || "")}</span>` : ""}
+        <span class="chip ${vigente ? "pista" : ""}">${vigente ? "Suscripción hasta " + esc(m.suscripcion_hasta) : "Sin suscripción"}</span><span class="sp"></span>
+        ${esSuper() ? `<label class="row" style="font-size:13px;font-weight:700">Suscripción hasta <input type="date" class="fsel" data-susc="${m.id}" value="${esc(m.suscripcion_hasta || "")}"></label>` : ""}</div>
+      ${admin && sols.length ? `<div class="solic"><b>Quieren entrar (${sols.length})</b><ul class="miembros">${sols.map(x => `<li><span class="av">${esc(iniciales(nombreDe(x.persona_id)))}</span><span><b>${esc(nombreDe(x.persona_id))}</b>${x.mensaje ? `<br><small class="status">${esc(x.mensaje)}</small>` : ""}</span><button class="btn xs" data-acepta="${x.id}">Aceptar</button><button class="btn xs ghost" data-rechaza="${x.id}">Rechazar</button></li>`).join("")}</ul></div>` : ""}
+      ${soy || esSuper() ? `<ul class="miembros" style="margin-top:12px">${miem.map(x => `<li><span class="av">${esc(iniciales(nombreDe(x.persona_id)))}</span><span><a href="#persona/${x.persona_id}"><b>${esc(nombreDe(x.persona_id))}</b></a>${(D.uno("cif_perfiles", x.persona_id) || {}).artista ? ' <span class="chip mio">artista</span>' : ""}</span>
+        ${admin ? `<select data-rol="${m.id}|${x.persona_id}">${["admin", "musico", "lector"].map(r => `<option value="${r}" ${r === x.rol ? "selected" : ""}>${{ admin: "Admin", musico: "Músico", lector: "Solo ver" }[r]}</option>`).join("")}</select><button class="btn xs ghost" data-saca="${m.id}|${x.persona_id}" aria-label="Quitar">✕</button>` : `<span class="chip">${esc(x.rol)}</span>`}</li>`).join("") || `<li class="status">Sin integrantes</li>`}</ul>` : ""}
+      ${admin && !D.nube ? `<div class="row" style="margin-top:10px"><input class="field" data-nuevo="${m.id}" placeholder="Nombre de la persona (modo local)" style="flex:1"><button class="btn sm" data-agrega="${m.id}">Agregar</button></div>` : ""}
+      ${!soy && !esSuper() ? `<div class="row" style="margin-top:10px">${misSol.some(s => s.ministerio_id === m.id) ? `<span class="status">Solicitud enviada · esperando a un admin</span><button class="btn xs ghost" data-cancela="${m.id}">Cancelar</button>` : `<button class="btn sm" data-pide="${m.id}">Solicitar unirme</button>`}</div>` : ""}
+    </section>`;
+  };
+  const propios = todos.filter(m => mios.has(m.id)), otros = todos.filter(m => !mios.has(m.id));
+  return {
+    band: bandHTML({ tag: "Equipo", titulo: "Ministerios", sub: `<span>Cada ministerio tiene sus sets e integrantes; la librería es de todos</span>${esSuper() ? "<span>Tú: desarrollador</span>" : ""}` }),
+    main: `${esSuper() ? `<section class="caja"><h3>Nuevo ministerio</h3><p>Solo el desarrollador da de alta ministerios.</p><div class="row"><input class="field" id="mnom" placeholder="Kairós, Un Corazón…" style="flex:1"><button class="btn" id="mcrear">Crear</button></div></section>` : ""}
+      ${propios.length ? `<h2 class="status">MIS MINISTERIOS</h2>${propios.map(card).join("")}` : ""}
+      ${otros.length ? `<h2 class="status">${propios.length ? "OTROS MINISTERIOS" : "MINISTERIOS"}</h2>${otros.map(card).join("")}` : ""}
+      ${!todos.length ? `<div class="empty"><strong>Aún no hay ministerios</strong><p>${esSuper() ? "Crea el primero arriba." : "Cuando el desarrollador dé de alta tu ministerio aparecerá aquí."}</p></div>` : ""}`,
+    after() {
+      const mc = $("#mcrear"); if (mc) mc.onclick = async () => {
+        const n = $("#mnom").value.trim(); if (!n) return;
+        const m = await D.guardar("cif_ministerios", { nombre: n, codigo: Math.random().toString(36).slice(2, 8).toUpperCase(), color: "flame", creado_por: yo().id });
+        await D.guardar("cif_miembros", { ministerio_id: m.id, persona_id: yo().id, rol: "admin" });
+        st.min = m.id; ls.set("cifrados-min", m.id); toast(`Ministerio «${n}» creado.`);
+      };
+      $$("[data-susc]").forEach(x => x.onchange = () => { const m = D.uno("cif_ministerios", x.dataset.susc); x.blur(); D.guardar("cif_ministerios", { ...m, suscripcion_hasta: x.value || null }); });
+      $$("[data-pide]").forEach(b => b.onclick = async () => {
+        const m = D.uno("cif_ministerios", b.dataset.pide);
+        const d = await dialogo(`<h2>Unirme a ${esc(m.nombre)}</h2><p>Un admin del ministerio revisará tu solicitud.</p><label class="lb">Mensaje (opcional)<input class="field" name="mensaje" placeholder="Canto en el coro de los domingos…"></label>`, "Enviar solicitud");
+        if (!d) return;
+        await D.guardar("cif_solicitudes", { ministerio_id: m.id, persona_id: yo().id, mensaje: d.mensaje || null, estado: "pendiente" });
+        toast("Solicitud enviada.");
+      });
+      $$("[data-cancela]").forEach(b => b.onclick = () => { D.lista("cif_solicitudes").filter(s => s.ministerio_id === b.dataset.cancela && s.persona_id === yo().id && s.estado === "pendiente").forEach(s => D.borrar("cif_solicitudes", s)); });
+      $$("[data-acepta]").forEach(b => b.onclick = async () => {
+        const s = D.uno("cif_solicitudes", b.dataset.acepta);
+        await D.guardar("cif_miembros", { ministerio_id: s.ministerio_id, persona_id: s.persona_id, rol: "musico" });
+        await D.guardar("cif_solicitudes", { ...s, estado: "aceptada" });
+        toast(`${nombreDe(s.persona_id)} ya es parte del ministerio (como músico).`);
+      });
+      $$("[data-rechaza]").forEach(b => b.onclick = async () => { const s = D.uno("cif_solicitudes", b.dataset.rechaza); await D.guardar("cif_solicitudes", { ...s, estado: "rechazada" }); toast("Solicitud rechazada."); });
+      $$("[data-rol]").forEach(s => s.onchange = () => { const [m, p] = s.dataset.rol.split("|"); s.blur(); D.guardar("cif_miembros", { ...D.uno("cif_miembros", m + "|" + p), rol: s.value }); });
+      $$("[data-saca]").forEach(b => b.onclick = async () => { const [m, p] = b.dataset.saca.split("|"); if (await confirmar(`¿Quitar a ${nombreDe(p)} del ministerio?`)) D.borrar("cif_miembros", { ministerio_id: m, persona_id: p }); });
+      $$("[data-agrega]").forEach(b => b.onclick = async () => {
+        const inp = $(`[data-nuevo="${b.dataset.agrega}"]`), n = inp.value.trim(); if (!n) return;
+        const p = await D.guardar("cif_perfiles", { id: D.uuid(), nombre: n, usuario: norm(n).replace(/[^a-z0-9]+/g, "."), artista: true, estilo: {} });
+        await D.guardar("cif_miembros", { ministerio_id: b.dataset.agrega, persona_id: p.id, rol: "musico" });
+      });
+    },
+  };
+}
+
+// ================= AMIGOS =================
+// Solicitudes de amistad (como en redes sociales) para tener a la mano los tonos de otras personas.
+let busquedaAmigos = { q: "", res: null };
+function vAmigos() {
+  const ams = amigos().map(id => D.uno("cif_perfiles", id) || { id, nombre: "Alguien" }).sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+  const recibidas = pendAmigos(), enviadas = yo() ? D.lista("cif_amistades").filter(a => a.estado === "pendiente" && a.de === yo().id) : [];
+  const nTonos = id => D.lista("cif_tonos").filter(t => t.persona_id === id).length;
+  const persona = (p, extra) => `<li><span class="av">${esc(iniciales(p.nombre))}</span><span><a href="#persona/${p.id}"><b>${esc(p.nombre || "Sin nombre")}</b></a>${p.usuario ? ` <small class="status">@${esc(p.usuario)}</small>` : ""}<br><small class="status">${nTonos(p.id)} tonos guardados</small></span>${extra || ""}</li>`;
+  const res = busquedaAmigos.res;
+  return {
+    band: bandHTML({ tag: "Equipo", titulo: "Amigos y <em>sus tonos</em>", sub: `<span>Agrega a quien quieras para ver en qué tono canta cada canción</span>` }),
+    main: `
+      <section class="caja"><h3>Buscar personas</h3><p>Por @usuario, nombre o correo exacto.</p>
+        <form class="row" id="fbus"><input class="field" id="abq" value="${esc(busquedaAmigos.q)}" placeholder="@alvaro, Ceci, correo@…" style="flex:1" autocomplete="off"><button class="btn">Buscar</button></form>
+        ${res ? (res.length ? `<ul class="miembros" style="margin-top:12px">${res.map(p => { const a = amistadCon(p.id); return persona(p, a ? `<span class="chip">${a.estado === "aceptada" ? "Amigos" : "Pendiente"}</span>` : `<button class="btn xs" data-pedir="${p.id}">＋ Agregar</button>`); }).join("")}</ul>` : `<p class="status" style="margin-top:10px">No encontré a nadie con «${esc(busquedaAmigos.q)}».</p>`) : ""}
+      </section>
+      ${recibidas.length ? `<section class="caja"><h3>Te quieren agregar (${recibidas.length})</h3><ul class="miembros">${recibidas.map(a => persona(D.uno("cif_perfiles", a.de) || { id: a.de, nombre: "Alguien" }, `<button class="btn xs" data-aceptar="${a.id}">Aceptar</button><button class="btn xs ghost" data-borrar="${a.id}">Rechazar</button>`)).join("")}</ul></section>` : ""}
+      <section class="caja"><h3>Mis amigos (${ams.length})</h3>${ams.length ? `<ul class="miembros">${ams.map(p => persona(p, `<button class="btn xs ghost" data-borrar="${amistadCon(p.id).id}" title="Quitar amigo">✕</button>`)).join("")}</ul>` : `<p>Aún no tienes amigos agregados. Sus tonos aparecerán arriba de cada canción, junto a los de tu ministerio.</p>`}</section>
+      ${enviadas.length ? `<section class="caja"><h3>Enviadas</h3><ul class="miembros">${enviadas.map(a => persona(D.uno("cif_perfiles", a.para) || { id: a.para, nombre: "Alguien" }, `<span class="chip">Pendiente</span><button class="btn xs ghost" data-borrar="${a.id}">Cancelar</button>`)).join("")}</ul></section>` : ""}`,
+    after() {
+      $("#fbus").onsubmit = async e => {
+        e.preventDefault(); const q = $("#abq").value.trim(); busquedaAmigos.q = q; if (q.length < 2) return;
+        try {
+          if (D.nube) busquedaAmigos.res = await D.rpc("cif_buscar_persona", { q });
+          else { const n = norm(q.replace(/^@/, "")); busquedaAmigos.res = D.lista("cif_perfiles").filter(p => p.id !== yo().id && (norm(p.nombre).includes(n) || norm(p.usuario) === n)); }
+        } catch (er) { toast(er.message); busquedaAmigos.res = []; }
+        $("#abq").blur(); render();
+      };
+      $$("[data-pedir]").forEach(b => b.onclick = async () => {
+        // en modo local no hay otra persona que acepte: queda aceptada
+        await D.guardar("cif_amistades", { de: yo().id, para: b.dataset.pedir, estado: D.nube ? "pendiente" : "aceptada" });
+        toast(D.nube ? "Solicitud enviada." : "Agregado.");
+      });
+      $$("[data-aceptar]").forEach(b => b.onclick = () => { const a = D.uno("cif_amistades", b.dataset.aceptar); D.guardar("cif_amistades", { ...a, estado: "aceptada" }); toast("¡Ahora son amigos!"); });
+      $$("[data-borrar]").forEach(b => b.onclick = () => { const a = D.uno("cif_amistades", b.dataset.borrar); if (a) D.borrar("cif_amistades", a); });
+    },
+  };
+}
+
+// ================= PERSONA (sus tonos) =================
+function vPersona(id) {
+  if (id === "yo" && yo()) id = yo().id;
+  const p = D.uno("cif_perfiles", id);
+  if (!p) return { band: bandHTML({ titulo: "No encontré a esa persona" }), main: `<a class="btn ghost" href="#amigos">← Amigos</a>` };
+  const soyYo = yo() && id === yo().id, a = amistadCon(id);
+  const tonos = D.lista("cif_tonos").filter(t => t.persona_id === id).map(t => ({ t, c: D.uno("cif_canciones", t.cancion_id) })).filter(x => x.c && !x.c.borrada).sort((x, y) => x.c.titulo.localeCompare(y.c.titulo, "es"));
+  const mins = D.lista("cif_miembros").filter(m => m.persona_id === id).map(m => (D.uno("cif_ministerios", m.ministerio_id) || {}).nombre).filter(Boolean);
+  return {
+    band: bandHTML({ tag: soyYo ? "Mis tonos" : "Perfil", titulo: esc(p.nombre || "Sin nombre"), sub: [p.usuario && `<span>@${esc(p.usuario)}</span>`, p.voz && `<span>${esc(p.voz)}</span>`, mins.length && `<span>${esc(mins.join(" · "))}</span>`, `<span><b>${tonos.length}</b> tonos</span>`].filter(Boolean).join("") }),
+    main: `${!soyYo && !a && yo() ? `<div class="row"><button class="btn" id="pamigo">＋ Agregar como amigo</button></div>` : ""}
+      ${tonos.length ? `<ul class="songs">${tonos.map(({ t, c }) => `<li><a class="srow" href="#cancion/${c.id}" data-vertono="${esc(t.tono)}" data-capo="${t.capo || 0}" data-cid="${c.id}"><div><b>${esc(c.titulo)}</b><small>${esc(c.autor || "—")} · original ${esc(c.tono || "")}</small></div><span class="chips"><span class="chip mio">★ ${esc(t.tono)}${t.capo ? " · capo " + t.capo : ""}</span></span></a></li>`).join("")}</ul>`
+        : `<div class="empty"><strong>${soyYo ? "Aún no guardas tonos" : "Sin tonos guardados"}</strong><p>${soyYo ? "Abre una canción, ponla en tu tono y toca «★ Este es mi tono». Queda en tu perfil y lo ve tu equipo." : "Cuando guarde tonos aparecerán aquí."}</p></div>`}`,
+    after() {
+      const b = $("#pamigo"); if (b) b.onclick = async () => { await D.guardar("cif_amistades", { de: yo().id, para: id, estado: D.nube ? "pendiente" : "aceptada" }); toast(D.nube ? "Solicitud enviada." : "Agregado."); };
+      // al abrir desde aquí, la canción se ve en el tono de esta persona
+      $$("[data-vertono]").forEach(x => x.onclick = () => { st.tonoVista[x.dataset.cid] = x.dataset.vertono; st.capo[x.dataset.cid] = +x.dataset.capo; });
+    },
+  };
+}
+
+// ================= AJUSTES =================
+function vAjustes() {
+  const p = miPerfil() || {}, e = st.estilo, tema = ls.get("cifrados-tema-v", "auto");
+  const muestra = "{c: Coro}\n[D]Tu bondad [A/C#]nunca me aban[Bm]dona, nunca decep[G]ciona\n[D]Tu verdad [A/C#]siempre me ha cui[Bm]dado";
+  const nMis = yo() ? D.lista("cif_tonos").filter(t => t.persona_id === yo().id).length : 0;
+  const sus = suscrito();
+  return {
+    band: bandHTML({ tag: "Perfil", titulo: "Mi perfil y <em>estilo</em>", sub: `<span>${esc((yo() && yo().email) || "")}</span>` }),
+    main: `
+      <section class="caja"><h3>Perfil</h3><div class="grid2">
+        <label class="lb">Nombre<input class="field" id="pnom" value="${esc(p.nombre || "")}"></label>
+        <label class="lb">@usuario <small>para que tus amigos te encuentren</small><input class="field" id="pusr" value="${esc(p.usuario || "")}" placeholder="ceci.tdd" autocapitalize="off"></label>
+        <label class="lb">Voz o instrumento<input class="field" id="pvoz" value="${esc(p.voz || "")}" placeholder="Tenor, guitarra…"></label></div>
+        <label class="row" style="margin-top:12px;font-weight:700"><input type="checkbox" id="part" ${p.artista ? "checked" : ""}> Dirijo o canto: quiero guardar mis tonos</label>
+        <div class="row" style="margin-top:12px"><a class="btn sm" href="#persona/yo">★ Mis tonos (${nMis})</a><a class="btn sm ghost" href="#amigos">Amigos</a></div></section>
+      <section class="caja"><h3>Cómo se ven los cifrados</h3>
+        <div class="grid2">
+          <label class="lb">Tamaño de letra <small>${e.tam}px</small><input type="range" id="etam" min="12" max="44" step="1" value="${e.tam}"></label>
+          <label class="lb">Interlineado <small>${e.inter}</small><input type="range" id="einter" min="1.1" max="2" step="0.05" value="${e.inter}"></label>
+        </div>
+        <div class="lb" style="margin-top:12px">Color de los acordes<div class="colores">${Object.keys(COLORES).map(k => `<button data-col="${k}" class="${e.color === k ? "on" : ""}" style="background:var(${COLORES[k]})" aria-label="${k}"></button>`).join("")}</div></div>
+        <div class="lb" style="margin-top:12px">Notación<div class="seg" role="radiogroup">${NOTACIONES.map(([k, l]) => `<button role="radio" aria-checked="${e.notacion === k}" class="${e.notacion === k ? "on" : ""}" data-not="${k}">${l}</button>`).join("")}</div></div>
+        <div class="row" style="margin-top:12px">
+          <button class="tchip ${e.sinAcordes ? "on" : ""}" data-tog="sinAcordes">Solo letra</button>
+          <button class="tchip ${e.cols === 2 ? "on" : ""}" data-tog="cols">Dos columnas</button></div>
+        <div class="muestra cuerpo" style="margin-top:14px">${C.aHTML(muestra, { tonoFinal: "D", ...opNotacion() })}</div></section>
+      <section class="caja"><h3>Apariencia</h3><div class="row">${[["auto", "Auto"], ["dia", "Día"], ["noche", "Noche"], ["retro", "👾 Retro"]].map(([k, l]) => `<button class="tchip ${tema === k ? "on" : ""}" data-tema="${k}">${l}</button>`).join("")}</div></section>
+      <section class="caja"><h3>Respaldo</h3><p>${sus ? "Exporta todo (canciones, tonos y sets de tus ministerios) a un archivo, o importa un respaldo, una exportación de SongbookPro o archivos ChordPro." : "Exportar e importar está disponible para ministerios con suscripción activa. Pide al desarrollador que la active."}</p>
+        <div class="row">${sus && esMusico() ? `<button class="btn sm" id="dimp">Importar</button>` : ""}${sus ? `<button class="btn sm ghost" id="dexp">Exportar respaldo</button>` : ""}<span class="sp"></span><button class="btn sm ghost" id="dsal">${D.nube ? "Cerrar sesión" : "Borrar datos de este dispositivo"}</button></div>
+        <p class="status" style="margin-top:10px">${D.nube ? "Todo se guarda en este dispositivo y en la nube; sin internet sigues trabajando y se sube al volver." : "Modo local: todo vive en este navegador."}</p></section>`,
+    after() {
+      const gp = cambios => { const act = miPerfil() || { id: yo().id, estilo: {} }; D.guardar("cif_perfiles", { ...act, ...cambios }); };
+      $("#pnom").onchange = ev => gp({ nombre: ev.target.value.trim() });
+      $("#pusr").onchange = ev => {
+        const v = ev.target.value.trim().replace(/^@/, "").toLowerCase();
+        if (v && !/^[a-z0-9._]{2,30}$/.test(v)) return toast("Usa de 2 a 30 letras sin acento, números, punto o guion bajo.");
+        if (v && D.lista("cif_perfiles").some(x => x.id !== yo().id && (x.usuario || "").toLowerCase() === v)) return toast("Ese @usuario ya está ocupado.");
+        gp({ usuario: v || null }); toast(v ? "Ahora eres @" + v : "Sin @usuario");
+      };
+      $("#pvoz").onchange = ev => gp({ voz: ev.target.value.trim() });
+      $("#part").onchange = ev => gp({ artista: ev.target.checked });
+      $("#etam").oninput = ev => { st.estilo.tam = +ev.target.value; ev.target.previousElementSibling.textContent = st.estilo.tam + "px"; aplicarEstilo(); };
+      $("#etam").onchange = guardarEstilo;
+      $("#einter").oninput = ev => { st.estilo.inter = +ev.target.value; ev.target.previousElementSibling.textContent = st.estilo.inter; aplicarEstilo(); };
+      $("#einter").onchange = guardarEstilo;
+      $$("[data-col]").forEach(b => b.onclick = () => { st.estilo.color = b.dataset.col; guardarEstilo(); render(); });
+      $$("[data-not]").forEach(b => b.onclick = () => { st.estilo.notacion = b.dataset.not; guardarEstilo(); render(); });
+      $$("[data-tog]").forEach(b => b.onclick = () => { const k = b.dataset.tog; if (k === "cols") st.estilo.cols = st.estilo.cols === 2 ? 1 : 2; else st.estilo[k] = !st.estilo[k]; guardarEstilo(); render(); });
+      $$("[data-tema]").forEach(b => b.onclick = () => aplicarTema(b.dataset.tema));
+      const di = $("#dimp"); if (di) di.onclick = abrirImportar;
+      const de = $("#dexp"); if (de) de.onclick = exportar;
+      $("#dsal").onclick = async () => { if (await confirmar(D.nube ? "¿Cerrar sesión?" : "¿Borrar todo lo de este dispositivo?", D.nube ? "Se borra la copia local; tus datos siguen en la nube." : "No se puede deshacer.")) D.salir(); };
+    },
+  };
+}
+
+// ================= IMPORTAR / EXPORTAR =================
+let zipP = null;
+function cargarZip() {
+  if (window.JSZip) return Promise.resolve();
+  if (!zipP) zipP = new Promise((res, rej) => { const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"; s.onload = res; s.onerror = () => { zipP = null; rej(new Error("No se pudo cargar el lector de .sbp")); }; document.head.appendChild(s); });
+  return zipP;
+}
+async function abrirImportar() {
+  if (!suscrito()) return toast("Importar requiere un ministerio con suscripción activa.");
+  const d = await dialogo(`<h2>Importar</h2><p>Respaldo de Cifrados (.json), exportación de SongbookPro (.sbp), archivos ChordPro (.cho, .chopro, .txt) o texto con acordes arriba.</p>
+    <input type="file" name="archivos" accept=".json,.sbp,.cho,.chopro,.chordpro,.txt,.pro" multiple class="field" style="padding-top:10px">
+    <label class="row" style="font-weight:600"><input type="checkbox" name="silabas" checked> Pegar cada acorde al inicio de su sílaba (recomendado)</label>
+    <label class="row" style="font-weight:600"><input type="checkbox" name="dups" checked> Saltar las que ya están (mismo título y letra)</label>`, "Importar", true);
+  if (!d || !d.archivos || !d.archivos.length) return;
+  try {
+    let nuevas = [];
+    for (const f of d.archivos) {
+      if (/\.json$/i.test(f.name)) { await restaurarRespaldo(JSON.parse(await f.text())); continue; }
+      if (/\.sbp$/i.test(f.name)) nuevas = nuevas.concat(await leerSbp(f));
+      else { const tx = await f.text(); nuevas.push(deTexto(tx, f.name)); }
+    }
+    const exist = new Set(canciones().map(c => norm(c.titulo) + "|" + norm(c.contenido.replace(/\[[^\]]*\]|\s+/g, "")).slice(0, 200)));
+    let n = 0, saltadas = 0, movidas = 0;
+    if (!nuevas.length) { render(); return; }
+    for (const c of nuevas) {
+      if (/^misa\b/i.test(c.titulo) && !(c.etiquetas || []).some(t => norm(t).startsWith("liturg"))) c.etiquetas = (c.etiquetas || []).concat("Litúrgica");
+      if (d.silabas) { const a = C.ajustarASilabas(c.contenido); if (a !== c.contenido) movidas++; c.contenido = a; }
+      const k = norm(c.titulo) + "|" + norm(c.contenido.replace(/\[[^\]]*\]|\s+/g, "")).slice(0, 200);
+      if (d.dups && exist.has(k)) { saltadas++; continue; }
+      exist.add(k);
+      c.ministerio_id = minActual() ? minActual().id : null;
+      await D.guardar("cif_canciones", c); n++;
+    }
+    toast(`${n} canciones importadas${saltadas ? `, ${saltadas} repetidas se saltaron` : ""}${movidas ? `; en ${movidas} se acomodaron acordes a la sílaba` : ""}.`);
+    location.hash = "#libreria"; render();
+  } catch (e) { console.error(e); toast("No se pudo importar: " + (e.message || e)); }
+}
+/** Saca BPM, tonos por persona y capo que en SongbookPro se escribían dentro de la letra. */
+function limpiarEncabezado(contenido) {
+  const lineas = contenido.split("\n"), notas = []; let bpm = null, i = 0;
+  for (; i < lineas.length; i++) {
+    const l = lineas[i].trim();
+    if (!l) continue;
+    if (/^\{/.test(l) || /\[/.test(l)) break;
+    const b = /BPM\s*:?\s*(\d{2,3})/i.exec(l);
+    if (b && !bpm) bpm = +b[1];
+    if (/^(tono|bpm|capo|\(?guitarristas|key|tempo)/i.test(l) || /\|/.test(l) && /tono/i.test(l)) { notas.push(l); continue; }
+    break;
+  }
+  return { contenido: lineas.slice(i).join("\n").replace(/^\n+/, ""), notas: notas.join("\n"), bpm };
+}
+async function leerSbp(f) {
+  await cargarZip();
+  const zip = await JSZip.loadAsync(f);
+  const ent = zip.file("dataFile.txt"); if (!ent) throw new Error("El .sbp no trae dataFile.txt");
+  const raw = await ent.async("string");
+  const json = JSON.parse(raw.slice(raw.indexOf("{")));
+  return (json.songs || []).filter(s => !s.Deleted).map(s => {
+    const h = limpiarEncabezado(s.content || "");
+    const notas = [h.notas, s.NotesText, s.Capo ? `Capo ${s.Capo} (SongbookPro)` : "", s.Copyright].filter(Boolean).join("\n");
+    return { titulo: (s.name || "Sin título").trim(), autor: (s.author || "").trim(), tono: C.tonoDeSbp(s.key) || C.adivinaTono(s.content), bpm: s.TempoInt || h.bpm || null, compas: s.timeSig || "",
+      contenido: h.contenido, orden: [], etiquetas: JSON.parse(s._tags || "[]"), liga: s.Url || "", notas, origen: "songbookpro" };
+  });
+}
+function deTexto(tx, nombre) {
+  let titulo = nombre.replace(/\.[^.]+$/, ""), autor = "", tono = "";
+  const t = /\{\s*(?:t|title)\s*:\s*(.*?)\s*\}/i.exec(tx); if (t) titulo = t[1];
+  const a = /\{\s*(?:st|subtitle|artist)\s*:\s*(.*?)\s*\}/i.exec(tx); if (a) autor = a[1];
+  const k = /\{\s*key\s*:\s*(.*?)\s*\}/i.exec(tx); if (k) tono = k[1];
+  let contenido = tx.replace(/^\s*\{\s*(t|title|st|subtitle|artist|key)\s*:.*\}\s*$/gim, "").trim();
+  if (!/\[[^\]]+\]/.test(contenido)) contenido = C.deAcordesArriba(contenido);
+  return { titulo, autor, tono: tono || C.adivinaTono(contenido), contenido, orden: [], etiquetas: [], notas: "", origen: "archivo" };
+}
+/** Restaura un respaldo: canciones (por id), mis tonos y los sets de mis ministerios. Gana lo más reciente. */
+async function restaurarRespaldo(data) {
+  if (!data || data.app !== "cifrados-tdd") throw new Error("Ese .json no es un respaldo de Cifrados.");
+  const mins = new Set(misMins().map(m => m.id));
+  let nc = 0, nt = 0, ns = 0;
+  for (const c of data.canciones || []) { const act = D.uno("cif_canciones", c.id); if (!act || (c.actualizado || "") > (act.actualizado || "")) { await D.guardar("cif_canciones", c); nc++; } }
+  for (const t of data.tonos || []) { if (yo() && (t.persona_id === yo().id || esSuper()) && D.uno("cif_canciones", t.cancion_id)) { await D.guardar("cif_tonos", t); nt++; } }
+  for (const s of data.sets || []) { if (mins.has(s.ministerio_id)) { const act = D.uno("cif_sets", s.id); if (!act || (s.actualizado || "") > (act.actualizado || "")) { await D.guardar("cif_sets", s); ns++; } } }
+  toast(`Respaldo restaurado: ${nc} canciones, ${nt} tonos, ${ns} sets.`);
+}
+function exportar() {
+  if (!suscrito()) return toast("Exportar requiere un ministerio con suscripción activa.");
+  const mins = new Set(misMins().map(m => m.id));
+  const data = { app: "cifrados-tdd", version: 2, fecha: new Date().toISOString(), canciones: canciones(), tonos: D.lista("cif_tonos"), tracks: D.lista("cif_tracks"),
+    sets: D.lista("cif_sets").filter(s => !s.borrada && mins.has(s.ministerio_id)), ministerios: misMins() };
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: "application/json" }));
+  a.download = `cifrados-respaldo-${data.fecha.slice(0, 10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+// ================= Diálogos =================
+function dialogo(html, ok = "Aceptar", conArchivos = false) {
+  return new Promise(res => {
+    const dl = document.createElement("dialog");
+    dl.innerHTML = `<form class="dlg" method="dialog">${html}<div class="row"><span class="sp"></span><button class="btn ghost" value="no" type="button" data-no>Cancelar</button><button class="btn" value="ok">${ok}</button></div></form>`;
+    document.body.appendChild(dl);
+    const f = dl.querySelector("form");
+    const fin = v => { dl.close(); dl.remove(); res(v); };
+    dl.querySelector("[data-no]").onclick = () => fin(null);
+    dl.addEventListener("cancel", () => fin(null));
+    f.onsubmit = e => {
+      e.preventDefault(); const out = {};
+      $$("input,select,textarea", f).forEach(x => { if (!x.name) return; out[x.name] = x.type === "checkbox" ? x.checked : x.type === "file" ? [...x.files] : x.value.trim(); });
+      fin(out);
+    };
+    dl.showModal(); const pri = f.querySelector("input:not([type=checkbox]),select"); if (pri) pri.focus();
+  });
+}
+function confirmar(titulo, texto = "") { return dialogo(`<h2>${esc(titulo)}</h2>${texto ? `<p>${esc(texto)}</p>` : ""}`, "Sí").then(Boolean); }
+
+// ================= Login =================
+function vLogin() {
+  return `<div class="login"><form class="card" id="flog"><img src="icono-512.png" width="56" height="56" alt="" style="border-radius:12px;background:#1B1C1A"><h1>Cifrados</h1><p>Tiempo de Dios · la librería de canciones de todos los ministerios.</p>
+    <label class="lb" id="lnom" hidden>Nombre<input class="field" name="nombre" autocomplete="name"></label>
+    <label class="lb">Correo<input class="field" name="email" type="email" autocomplete="email" required></label>
+    <label class="lb">Contraseña<input class="field" name="pass" type="password" autocomplete="current-password" minlength="6" required></label>
+    <button class="btn" id="lbtn">Entrar</button>
+    <div class="row"><button type="button" class="btn sm ghost" id="lreg">Crear cuenta</button><span class="sp"></span><button type="button" class="btn sm ghost" id="lrec">Olvidé mi contraseña</button></div>
+    <p class="status" id="lmsg"></p></form></div>`;
+}
+function enlazarLogin() {
+  let modo = "entrar"; const f = $("#flog"), msg = $("#lmsg");
+  $("#lreg").onclick = () => { modo = modo === "entrar" ? "registro" : "entrar"; $("#lnom").hidden = modo !== "registro"; $("#lbtn").textContent = modo === "registro" ? "Crear cuenta" : "Entrar"; $("#lreg").textContent = modo === "registro" ? "Ya tengo cuenta" : "Crear cuenta"; };
+  $("#lrec").onclick = async () => { const em = f.email.value.trim(); if (!em) return (msg.textContent = "Escribe tu correo primero."); try { await D.recuperar(em); msg.textContent = "Te mandamos un correo para cambiar tu contraseña."; } catch (e) { msg.textContent = e.message; } };
+  f.onsubmit = async e => {
+    e.preventDefault(); msg.textContent = "…";
+    try {
+      if (modo === "registro") { await D.registrarse(f.email.value.trim(), f.pass.value, f.nombre.value.trim()); msg.textContent = "Cuenta creada. Revisa tu correo para confirmarla y luego entra."; }
+      else await D.entrar(f.email.value.trim(), f.pass.value);
+    } catch (er) { msg.textContent = /invalid/i.test(er.message) ? "Correo o contraseña incorrectos." : er.message; }
+  };
+}
+
+// ================= Arranque =================
+(async function () {
+  aplicarEstilo();
+  $("#app").innerHTML = `<div class="login"><p style="color:#fff;font-family:var(--mono)">Cargando…</p></div>`;
+  await D.iniciar();
+  // modo local: crea mi perfil la primera vez
+  if (!D.nube && !miPerfil()) await D.guardar("cif_perfiles", { id: yo().id, nombre: "Yo", artista: true, estilo: st.estilo });
+  const p = miPerfil(); if (p && p.estilo && Object.keys(p.estilo).length) {
+    st.estilo = Object.assign(st.estilo, p.estilo);
+    if (!p.estilo.notacion) st.estilo.notacion = p.estilo.nashville ? "nashville" : p.estilo.latina ? "latino" : st.estilo.notacion;
+    delete st.estilo.nashville; delete st.estilo.latina;
+  }
+  render();
+  D.alEstado(() => { if (D.nube && yo() && $(".login")) render(); });
+  if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
+})();
+</script>
+</body>
+</html>

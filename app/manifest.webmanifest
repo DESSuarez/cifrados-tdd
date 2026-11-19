@@ -1,0 +1,13 @@
+{
+  "name": "Cifrados Tiempo de Dios",
+  "short_name": "Cifrados",
+  "lang": "es",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#1B1C1A",
+  "theme_color": "#1B1C1A",
+  "icons": [
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
