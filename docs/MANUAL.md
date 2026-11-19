@@ -7,8 +7,10 @@ Cómo está hecho el sistema. Actualízalo con cada cambio y agrega la entrada e
 - `app/cifrado.js` (`window.CIF`): motor sin dependencias. Lee ChordPro (`leer`), pinta HTML (`aHTML`), transporta (`transportaAcorde`, `distancia`), Nashville (sobre el acorde ya transportado), notación latina, silabeo del español (`silabas`), ajuste de acordes a sílaba (`ajustarASilabas`), conversión de «acordes arriba» (`deAcordesArriba`), tono de SongbookPro (`tonoDeSbp`), detección de tono (`adivinaTono`) y orden de secciones (`ordenar`: si hay dos secciones con el mismo nombre, cada mención usa la suya en ciclo). Pruebas: `node test/cifrado.test.js`.
 - `app/datos.js` (`window.DATOS`): datos locales primero. IndexedDB `cifrados-tdd` (versión 3) con una tienda por tabla, `_salida` (cambios por subir), `_meta` y `_audio` (pistas descargadas). Con Supabase: sube la bandeja, baja lo nuevo desde `ultima` (las tablas chicas `CHICAS` se bajan completas) y escucha `postgres_changes`. Gana el `actualizado` más reciente. `actualizado_por` solo en `CON_AUTOR` (canciones, sets, pistas). `canalVivo(set)` usa Realtime Broadcast para «Dirigir / Seguir».
 - `app/senas.js`: `SENAS` (manual de señas) y `SENAS_FOTO` (foto oficial con recortes por seña).
-- `app/sw.js`: service worker; guarda la app y las librerías de CDN para abrir sin internet. **Sube `VERSION` cuando cambie cualquier archivo** (va en `cifrados-v2`).
+- `app/sw.js`: service worker; guarda la app y las librerías de CDN para abrir sin internet. **Sube `VERSION` cuando cambie cualquier archivo** (va en `cifrados-v3`).
 - `app/config.publico.js`: `CIFRADOS_CONFIG {supabaseUrl, supabaseAnonKey}`. Vacío = modo local.
+- `supabase/functions/usuarios/index.ts`: Edge Function (Verify JWT apagado) con la service_role del entorno. Acciones `listar`, `invitar`, `crear`, `reenviar`, `quitar` (desarrollador; los admins de un ministerio solo invitan/reenvían a su ministerio) y `aviso_solicitud` / `aviso_respuesta` (correos por SMTP de Hostinger con `SMTP_USER`/`SMTP_PASS`). La app la llama con `DATOS.fn("usuarios", {...})`.
+- `supabase/correos/`: plantillas de Supabase Auth en español (invitación, recuperar, confirmar).
 - `supabase/schema.sql`: tablas `cif_*`, RLS, realtime y bucket `cif-tracks`. Idempotente; la sección «Versión 2» agrega `usuario`, `suscripcion_hasta`, `cif_sets.tipo`, `cif_solicitudes`, `cif_amistades`, `cif_suscrito()` y `cif_buscar_persona(q)`.
 
 ## Librería
@@ -30,6 +32,12 @@ Tres pestañas (`grupoDe`): **Tiempo de Dios** (autor contiene «Tiempo de Dios�
 - Amigos (`cif_amistades`, pendiente → aceptada): se buscan por @usuario, nombre o correo exacto con la RPC `cif_buscar_persona` (no expone correos). Sus tonos salen en la barra de tonos y en `#persona/<id>`.
 - Suscripción (`suscrito()` en la app, `cif_suscrito()` en SQL): exportar e importar (respaldo .json, .sbp, ChordPro) solo con un ministerio vigente. En SQL, dar de alta canciones también lo exige. El cobro todavía no existe: el desarrollador pone la fecha a mano.
 
+## Cuentas e inicio de sesión
+- Login (`vLogin`) con entrar, crear cuenta y «Olvidé mi contraseña»; errores en español (`errorAuth`).
+- Las ligas de los correos llegan como `#access_token=…&type=invite|recovery|signup`. El `<head>` guarda el hash en `window.HASH0` antes de que Supabase lo limpie; con `invite` o `recovery` se abre `vNuevaClave` (nombre + contraseña), con `signup` sale «Correo confirmado», con `#error_description=…` el login avisa que la liga venció.
+- **Usuarios** (`#usuarios`, solo desarrollador, `vUsuarios`): cuentas de Auth + perfiles, estado (activo, invitado sin entrar, sin confirmar), ministerios con rol, alta por invitación o con contraseña, reenviar (invitación o liga de contraseña si ya entró), borrar, hacer desarrollador.
+- En **Ministerios**, cada admin invita por correo directo a su ministerio (si ya tiene cuenta, solo lo agrega). Al pedir entrar y al aceptar/rechazar se manda aviso por correo (`avisarCorreo`, espera a que el cambio suba).
+
 ## Cómo se pinta un acorde exactamente sobre su sílaba
 Cada línea se parte en palabras (`.cw`, no se separan al hacer salto de línea) y cada palabra en pedazos (`.cp`) que empiezan donde hay acorde. Cada pedazo es una columna: arriba el acorde (`.ca-row`), abajo la letra (`.cly`). Así el borde izquierdo del acorde coincide con la primera letra de la sílaba (verificado: Δx = 0 px). Si el acorde es más ancho que la sílaba, empuja la letra en vez de encimarse.
 
@@ -45,3 +53,4 @@ Cada línea se parte en palabras (`.cw`, no se separan al hacer salto de línea)
 - 2026-11-19 · Primera versión: librería, importador .sbp/.cho/.txt, vista con transporte/capo/Nashville/Do-Re-Mi, tonos por artista, sets por ministerio en tiempo real con Dirigir/Seguir, constructor por sílabas, pistas con cambio de tono, señas animadas, modo sin internet · todo el repo.
 - 2026-11-19 · Versión 2: selector de tono sin flecha; notación única; velocidad del auto-desplazamiento en la barra; tonos arriba con ministerio y amigos; librería con pestañas TDD / otras / litúrgicas y filtros; etiquetas en el constructor; misa por momentos; estructura en bloques por set; solicitudes a ministerios; amigos y `#persona`; respaldo e importación con suscripción; arreglos: Nashville transportado y secciones repetidas · `index.html`, `cifrado.js`, `datos.js`, `schema.sql`, `sw.js`.
 - 2026-11-19 · Despliegue: proyecto Supabase propio en `config.publico.js` y flujo de GitHub Actions que sube por FTP a `cifrados.tiempodedios.mx` (corre las pruebas antes) · `.github/workflows/desplegar.yml`, `CLAUDE.md`.
+- 2026-11-19 · Cuentas: panel de Usuarios del desarrollador, invitaciones de admins por ministerio, pantalla para crear contraseña desde invitación/recuperación, errores de login en español, avisos por correo de solicitudes, plantillas de correo y guía SMTP · `index.html`, `datos.js`, `supabase/functions/usuarios/`, `supabase/correos/`, `README.md`.

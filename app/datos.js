@@ -194,7 +194,7 @@
     if (nube) {
       const { data } = await sb.auth.getSession();
       estado.usuario = data.session ? data.session.user : null;
-      sb.auth.onAuthStateChange((_e, s) => { const antes = estado.usuario; estado.usuario = s ? s.user : null; avisaEstado(); if (!antes && estado.usuario) { sincronizar(); escuchar(); } });
+      sb.auth.onAuthStateChange((ev, s) => { if (ev === "PASSWORD_RECOVERY") estado.ponerClave = "recovery"; const antes = estado.usuario; estado.usuario = s ? s.user : null; avisaEstado(); if (!antes && estado.usuario) { sincronizar(); escuchar(); } });
       if (estado.usuario) { escuchar(); sincronizar(); }
     } else {
       // modo local: una persona fija en este dispositivo
@@ -206,7 +206,7 @@
   }
   async function entrar(email, pass) { const { error } = await sb.auth.signInWithPassword({ email, password: pass }); if (error) throw error; }
   async function registrarse(email, pass, nombre) {
-    const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { nombre } } });
+    const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { nombre }, emailRedirectTo: location.origin + location.pathname } });
     if (error) throw error; return data;
   }
   async function recuperar(email) { const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname }); if (error) throw error; }
@@ -215,6 +215,23 @@
     // borra lo local para que otra persona no vea datos ajenos en este dispositivo
     for (const t of TABLAS.concat(["_salida", "_meta"])) await tx(t, "readwrite", s => s.clear());
     location.reload();
+  }
+  /** Llama una Edge Function con mi sesión y devuelve su JSON (lanza el error en español que manda la función). */
+  async function fn(nombre, body) {
+    if (!nube) throw new Error("Esto necesita la nube: configura Supabase en config.publico.js.");
+    if (!navigator.onLine) throw new Error("Sin conexión: inténtalo cuando haya internet.");
+    const { data } = await sb.auth.getSession();
+    const r = await fetch(`${cfg.supabaseUrl}/functions/v1/${nombre}`, { method: "POST",
+      headers: { "Content-Type": "application/json", apikey: cfg.supabaseAnonKey, Authorization: "Bearer " + (data.session ? data.session.access_token : cfg.supabaseAnonKey) },
+      body: JSON.stringify(body || {}) });
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 404 && !j.error) throw new Error(`Falta desplegar la función «${nombre}» en Supabase.`);
+    if (!r.ok || j.error) throw new Error(j.error || "Error " + r.status);
+    return j;
+  }
+  async function nuevaClave(password, nombre) {
+    const { error } = await sb.auth.updateUser({ password, ...(nombre ? { data: { nombre } } : {}) });
+    if (error) throw error;
   }
   async function rpc(nombre, args) { if (!nube) throw new Error("Sin nube"); const { data, error } = await sb.rpc(nombre, args); if (error) throw error; await bajar(); return data; }
 
@@ -245,7 +262,7 @@
     uno: (t, id) => mem[t].get(id),
     alCambiar: f => oyentes.add(f),
     alEstado: f => (oyEstado.add(f), f({ ...estado })),
-    entrar, registrarse, recuperar, salir, rpc, canalVivo,
+    entrar, registrarse, recuperar, salir, rpc, fn, nuevaClave, canalVivo,
     subirAudio, audio, borrarAudio, audioLocal,
     nube, sb,
     aplicarLocal: aplicar,

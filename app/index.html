@@ -11,7 +11,9 @@
 <meta name="theme-color" content="#1B1C1A">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>/* Tema y menú guardados por navegador (mismo esquema que la Bitácora) */
+<script>/* La liga de invitación / recuperación llega en el hash; se guarda antes de que Supabase lo limpie */
+window.HASH0 = location.hash;
+/* Tema y menú guardados por navegador (mismo esquema que la Bitácora) */
 try{var t=localStorage.getItem("cifrados-tema");if(t==="dia")document.documentElement.dataset.theme="light";else if(t==="noche")document.documentElement.dataset.theme="dark";else if(t==="retro")document.documentElement.dataset.theme="retro";
 if(localStorage.getItem("cifrados-lateral")==="oculta")document.documentElement.dataset.lateral="oculta"}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -409,6 +411,15 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 .blq.sobre{outline:2px dashed var(--area);outline-offset:2px}
 .solic{margin-top:12px;padding:10px;border-radius:12px;background:var(--flame-soft)}
 .solic b{display:block;margin-bottom:6px}
+.ulista{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.ucard{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.uinfo{min-width:0;display:flex;flex-direction:column}
+.uinfo a{color:var(--fg);text-decoration:none}.uinfo a:hover{text-decoration:underline}
+.uacc{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+@media (max-width:700px){.ucard{grid-template-columns:auto 1fr}.uacc{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}}
+.xmini{border:0;background:none;color:var(--muted);padding:0 0 0 4px;font-size:11px;cursor:pointer}
+.xmini:hover{color:var(--flame)}
+.ualta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
 </style>
 </head>
 <body data-area="musica">
@@ -553,6 +564,7 @@ function shell(band, main) {
       ${nav("senas", "senas", "Señas para dirigir", IC.mano, "--lav")}
       ${nav("ministerios", "ministerios", "Ministerios", IC.gente, "--rosa", pendMin().length || "")}
       ${nav("amigos", "amigos", "Amigos y sus tonos", IC.amigos, "--sea", pendAmigos().length || "")}
+      ${esSuper() ? nav("usuarios", "usuarios", "Usuarios", IC.gente, "--sol", D.nube ? "" : D.lista("cif_perfiles").length) : ""}
       ${nav("ajustes", "ajustes", "Mi perfil y estilo", IC.ajus, "--baby-ink")}
     </nav>
     <button class="sync" id="syncb" title="Sincronizar ahora"><i></i><span id="synct">…</span></button>
@@ -579,12 +591,13 @@ function render() {
   aplicarEstilo();
   const app = $("#app");
   if (D.nube && !yo()) { app.innerHTML = vLogin(); enlazarLogin(); return; }
+  if (D.nube && (st.ponerClave || D.estado.ponerClave)) { app.innerHTML = vNuevaClave(); enlazarNuevaClave(); return; }
   const r = ruta();
   if (r.v !== "cancion") detenerAutoscroll();
   let out;
   try {
     out = r.v === "cancion" ? vCancion(r.p) : r.v === "sets" ? vSets() : r.v === "set" ? vSet(r.p[0]) : r.v === "nueva" ? vEditor(null) : r.v === "editar" ? vEditor(r.p[0]) :
-      r.v === "senas" ? vSenas() : r.v === "ministerios" ? vMinisterios() : r.v === "ajustes" ? vAjustes() : r.v === "amigos" ? vAmigos() : r.v === "persona" ? vPersona(r.p[0]) : vLibreria();
+      r.v === "senas" ? vSenas() : r.v === "ministerios" ? vMinisterios() : r.v === "ajustes" ? vAjustes() : r.v === "amigos" ? vAmigos() : r.v === "usuarios" ? vUsuarios() : r.v === "persona" ? vPersona(r.p[0]) : vLibreria();
   } catch (e) { console.error(e); out = { band: bandHTML({ titulo: "Algo falló" }), main: `<p class="status">${esc(e.message)}</p>`, }; }
   const y = window.scrollY;
   app.innerHTML = shell(out.band, out.main);
@@ -1410,6 +1423,7 @@ function vMinisterios() {
       ${soy || esSuper() ? `<ul class="miembros" style="margin-top:12px">${miem.map(x => `<li><span class="av">${esc(iniciales(nombreDe(x.persona_id)))}</span><span><a href="#persona/${x.persona_id}"><b>${esc(nombreDe(x.persona_id))}</b></a>${(D.uno("cif_perfiles", x.persona_id) || {}).artista ? ' <span class="chip mio">artista</span>' : ""}</span>
         ${admin ? `<select data-rol="${m.id}|${x.persona_id}">${["admin", "musico", "lector"].map(r => `<option value="${r}" ${r === x.rol ? "selected" : ""}>${{ admin: "Admin", musico: "Músico", lector: "Solo ver" }[r]}</option>`).join("")}</select><button class="btn xs ghost" data-saca="${m.id}|${x.persona_id}" aria-label="Quitar">✕</button>` : `<span class="chip">${esc(x.rol)}</span>`}</li>`).join("") || `<li class="status">Sin integrantes</li>`}</ul>` : ""}
       ${admin && !D.nube ? `<div class="row" style="margin-top:10px"><input class="field" data-nuevo="${m.id}" placeholder="Nombre de la persona (modo local)" style="flex:1"><button class="btn sm" data-agrega="${m.id}">Agregar</button></div>` : ""}
+      ${admin && D.nube ? `<form class="row" data-invita="${m.id}" style="margin-top:10px"><input class="field" name="email" type="email" placeholder="correo@… para invitar" required style="flex:2;min-width:180px"><input class="field" name="nombre" placeholder="Nombre" style="flex:1;min-width:120px"><button class="btn sm">Invitar al ministerio</button></form>` : ""}
       ${!soy && !esSuper() ? `<div class="row" style="margin-top:10px">${misSol.some(s => s.ministerio_id === m.id) ? `<span class="status">Solicitud enviada · esperando a un admin</span><button class="btn xs ghost" data-cancela="${m.id}">Cancelar</button>` : `<button class="btn sm" data-pide="${m.id}">Solicitar unirme</button>`}</div>` : ""}
     </section>`;
   };
@@ -1432,8 +1446,9 @@ function vMinisterios() {
         const m = D.uno("cif_ministerios", b.dataset.pide);
         const d = await dialogo(`<h2>Unirme a ${esc(m.nombre)}</h2><p>Un admin del ministerio revisará tu solicitud.</p><label class="lb">Mensaje (opcional)<input class="field" name="mensaje" placeholder="Canto en el coro de los domingos…"></label>`, "Enviar solicitud");
         if (!d) return;
-        await D.guardar("cif_solicitudes", { ministerio_id: m.id, persona_id: yo().id, mensaje: d.mensaje || null, estado: "pendiente" });
-        toast("Solicitud enviada.");
+        const s = await D.guardar("cif_solicitudes", { ministerio_id: m.id, persona_id: yo().id, mensaje: d.mensaje || null, estado: "pendiente" });
+        toast("Solicitud enviada. Le avisamos por correo a los admins.");
+        avisarCorreo("aviso_solicitud", s.id);
       });
       $$("[data-cancela]").forEach(b => b.onclick = () => { D.lista("cif_solicitudes").filter(s => s.ministerio_id === b.dataset.cancela && s.persona_id === yo().id && s.estado === "pendiente").forEach(s => D.borrar("cif_solicitudes", s)); });
       $$("[data-acepta]").forEach(b => b.onclick = async () => {
@@ -1441,14 +1456,115 @@ function vMinisterios() {
         await D.guardar("cif_miembros", { ministerio_id: s.ministerio_id, persona_id: s.persona_id, rol: "musico" });
         await D.guardar("cif_solicitudes", { ...s, estado: "aceptada" });
         toast(`${nombreDe(s.persona_id)} ya es parte del ministerio (como músico).`);
+        avisarCorreo("aviso_respuesta", s.id);
       });
-      $$("[data-rechaza]").forEach(b => b.onclick = async () => { const s = D.uno("cif_solicitudes", b.dataset.rechaza); await D.guardar("cif_solicitudes", { ...s, estado: "rechazada" }); toast("Solicitud rechazada."); });
+      $$("[data-rechaza]").forEach(b => b.onclick = async () => { const s = D.uno("cif_solicitudes", b.dataset.rechaza); await D.guardar("cif_solicitudes", { ...s, estado: "rechazada" }); toast("Solicitud rechazada."); avisarCorreo("aviso_respuesta", s.id); });
+      $$("[data-invita]").forEach(f => f.onsubmit = async e => {
+        e.preventDefault();
+        const m = f.dataset.invita, email = f.email.value.trim(), nombre = f.nombre.value.trim();
+        try {
+          const r = await D.fn("usuarios", { accion: "invitar", email, nombre, ministerio_id: m, rol: "musico", redirectTo: location.origin + location.pathname });
+          toast(r.existia ? `${email} ya tenía cuenta: quedó agregado al ministerio.` : `Invitación enviada a ${email}.`);
+          f.reset(); D.sincronizar();
+        } catch (er) { toast(er.message); }
+      });
       $$("[data-rol]").forEach(s => s.onchange = () => { const [m, p] = s.dataset.rol.split("|"); s.blur(); D.guardar("cif_miembros", { ...D.uno("cif_miembros", m + "|" + p), rol: s.value }); });
       $$("[data-saca]").forEach(b => b.onclick = async () => { const [m, p] = b.dataset.saca.split("|"); if (await confirmar(`¿Quitar a ${nombreDe(p)} del ministerio?`)) D.borrar("cif_miembros", { ministerio_id: m, persona_id: p }); });
       $$("[data-agrega]").forEach(b => b.onclick = async () => {
         const inp = $(`[data-nuevo="${b.dataset.agrega}"]`), n = inp.value.trim(); if (!n) return;
         const p = await D.guardar("cif_perfiles", { id: D.uuid(), nombre: n, usuario: norm(n).replace(/[^a-z0-9]+/g, "."), artista: true, estilo: {} });
         await D.guardar("cif_miembros", { ministerio_id: b.dataset.agrega, persona_id: p.id, rol: "musico" });
+      });
+    },
+  };
+}
+
+/** Manda un aviso por correo cuando el cambio ya subió a la nube (si falla, no estorba). */
+async function avisarCorreo(accion, solicitud_id) {
+  if (!D.nube) return;
+  for (let i = 0; i < 40 && D.estado.pendientes > 0; i++) await new Promise(r => setTimeout(r, 250));
+  try { await D.fn("usuarios", { accion, solicitud_id }); } catch (e) { console.warn("aviso por correo:", e.message); }
+}
+
+// ================= USUARIOS (desarrollador) =================
+// Todas las cuentas: invitar, crear con contraseña, reenviar, quitar, nombrar desarrollador y asignar ministerios.
+const cuentas = { lista: null, cargando: false, error: "", q: "" };
+async function cargarCuentas() {
+  if (!D.nube || cuentas.cargando) return;
+  cuentas.cargando = true; cuentas.error = "";
+  try { cuentas.lista = (await D.fn("usuarios", { accion: "listar" })).usuarios; } catch (e) { cuentas.error = e.message; }
+  cuentas.cargando = false; render();
+}
+const fechaCorta = iso => iso ? new Date(iso).toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "2-digit" }) : "";
+function vUsuarios() {
+  if (!esSuper()) return { band: bandHTML({ titulo: "Usuarios" }), main: `<p>Solo el desarrollador administra las cuentas.</p>` };
+  if (D.nube && !cuentas.lista && !cuentas.cargando && !cuentas.error) setTimeout(cargarCuentas, 0);
+  const porId = new Map((cuentas.lista || []).map(u => [u.id, u]));
+  const perfiles = D.lista("cif_perfiles");
+  // une cuentas de Auth con perfiles (en modo local solo hay perfiles)
+  const ids = [...new Set(perfiles.map(p => p.id).concat([...porId.keys()]))];
+  const q = norm(cuentas.q);
+  const filas = ids.map(id => ({ id, p: D.uno("cif_perfiles", id) || {}, u: porId.get(id) || {} }))
+    .filter(x => !q || norm((x.p.nombre || "") + " " + (x.p.usuario || "") + " " + (x.u.email || "")).includes(q))
+    .sort((a, b) => (a.p.nombre || a.u.email || "").localeCompare(b.p.nombre || b.u.email || "", "es"));
+  const mins = D.lista("cif_ministerios").sort((a, b) => a.nombre.localeCompare(b.nombre));
+  const estado = u => !D.nube ? "" : u.ultimo ? `<span class="chip pista">Activo · ${fechaCorta(u.ultimo)}</span>` : u.invitado ? `<span class="chip mio">Invitado · sin entrar</span>` : u.confirmado ? `<span class="chip">Nunca ha entrado</span>` : `<span class="chip mio">Sin confirmar correo</span>`;
+  const fila = ({ id, p, u }) => {
+    const ms = D.lista("cif_miembros").filter(m => m.persona_id === id);
+    return `<li class="ucard"><span class="av">${esc(iniciales(p.nombre || u.email))}</span>
+      <div class="uinfo"><b><a href="#persona/${id}">${esc(p.nombre || "(sin nombre)")}</a></b>${p.usuario ? ` <small class="status">@${esc(p.usuario)}</small>` : ""}${p.superadmin ? ' <span class="chip mio">Desarrollador</span>' : ""}
+        <small class="status">${esc(u.email || "")}${u.creado ? " · alta " + fechaCorta(u.creado) : ""}</small>
+        <div class="row" style="gap:6px;margin-top:4px">${estado(u)}${ms.map(m => `<span class="chip">${esc((D.uno("cif_ministerios", m.ministerio_id) || {}).nombre || "?")} · ${esc({ admin: "Admin", musico: "Músico", lector: "Solo ver" }[m.rol])} <button class="xmini" data-umsaca="${m.ministerio_id}|${id}" title="Quitar del ministerio">✕</button></span>`).join("")}</div></div>
+      <div class="uacc">
+        <select class="fsel" data-umin="${id}" aria-label="Agregar a ministerio"><option value="">＋ Ministerio…</option>${mins.filter(m => !ms.some(x => x.ministerio_id === m.id)).map(m => `<option value="${m.id}">${esc(m.nombre)}</option>`).join("")}</select>
+        ${yo() && id !== yo().id ? `<button class="btn xs ghost" data-usuper="${id}">${p.superadmin ? "Quitar desarrollador" : "Hacer desarrollador"}</button>` : ""}
+        ${D.nube && u.email ? `<button class="btn xs ghost" data-ureenv="${id}" title="${u.ultimo ? "Manda liga para cambiar contraseña" : "Manda otra vez la invitación"}">${u.ultimo ? "Liga de contraseña" : "Reenviar invitación"}</button>` : ""}
+        ${D.nube && yo() && id !== yo().id ? `<button class="btn xs ghost" data-uquita="${id}">Borrar cuenta</button>` : ""}
+      </div></li>`;
+  };
+  return {
+    band: bandHTML({ tag: "Desarrollador", titulo: "Usuarios", sub: `<span><b>${ids.length}</b> cuentas</span><span>${D.nube ? "Las altas hechas en Supabase → Authentication también aparecen aquí" : "Modo local: sin cuentas reales"}</span>` }),
+    main: `
+      ${D.nube ? `<section class="caja"><h3>Dar de alta</h3><p>Con <b>invitación</b> le llega un correo para crear su contraseña. Con <b>contraseña</b> la cuenta queda lista sin correo (útil mientras no esté el SMTP propio): pásale la contraseña en persona.</p>
+        <form class="ualta" id="ualta">
+          <input class="field" name="email" type="email" placeholder="correo@…" required>
+          <input class="field" name="nombre" placeholder="Nombre">
+          <select class="field" name="ministerio"><option value="">Sin ministerio</option>${mins.map(m => `<option value="${m.id}" ${minActual() && m.id === minActual().id ? "selected" : ""}>${esc(m.nombre)}</option>`).join("")}</select>
+          <select class="field" name="rol"><option value="musico">Músico</option><option value="admin">Admin</option><option value="lector">Solo ver</option></select>
+          <input class="field" name="password" type="text" placeholder="Contraseña (opcional, mín. 8)" autocomplete="off">
+          <button class="btn" name="modo" value="invitar">Enviar invitación</button>
+          <button class="btn ghost" name="modo" value="crear" type="submit">Crear con contraseña</button>
+        </form></section>` : ""}
+      <div class="row"><input class="field" id="uq" type="search" placeholder="Buscar por nombre, @usuario o correo…" value="${esc(cuentas.q)}" style="flex:1"><button class="btn ghost" id="urec" ${D.nube ? "" : "hidden"}>${cuentas.cargando ? "Cargando…" : "↻ Actualizar"}</button></div>
+      ${cuentas.error ? `<div class="empty"><strong>No se pudieron leer las cuentas</strong><p>${esc(cuentas.error)}</p><p>Revisa que la función <b>usuarios</b> esté desplegada en Supabase (README → «Panel de usuarios»).</p></div>` : ""}
+      <ul class="ulista">${filas.map(fila).join("") || `<li class="status">Sin resultados</li>`}</ul>`,
+    after() {
+      const uq = $("#uq"); uq.oninput = () => { cuentas.q = uq.value; const pos = uq.selectionStart; render(); const n = $("#uq"); n.focus(); n.setSelectionRange(pos, pos); };
+      const rec = $("#urec"); if (rec) rec.onclick = () => { cuentas.lista = null; cargarCuentas(); render(); };
+      const f = $("#ualta");
+      if (f) f.onsubmit = async e => {
+        e.preventDefault();
+        const modo = (e.submitter && e.submitter.value) || "invitar";
+        const body = { accion: modo, email: f.email.value.trim(), nombre: f.nombre.value.trim(), ministerio_id: f.ministerio.value || null, rol: f.rol.value, password: f.password.value, redirectTo: location.origin + location.pathname };
+        if (modo === "crear" && body.password.length < 8) return toast("Para crear con contraseña escribe una de al menos 8 caracteres.");
+        try {
+          const r = await D.fn("usuarios", body);
+          toast(r.existia ? "Ya tenía cuenta: quedó agregado al ministerio." : modo === "crear" ? `Cuenta creada para ${body.email}. Pásale su contraseña.` : `Invitación enviada a ${body.email}.`);
+          f.reset(); cuentas.lista = null; await D.sincronizar(); cargarCuentas();
+        } catch (er) { toast(er.message); }
+      };
+      $$("[data-umin]").forEach(s => s.onchange = async () => { const id = s.dataset.umin, m = s.value; s.blur(); if (!m) return; await D.guardar("cif_miembros", { ministerio_id: m, persona_id: id, rol: "musico" }); toast(`${nombreDe(id)} agregado como músico.`); });
+      $$("[data-umsaca]").forEach(b => b.onclick = async () => { const [m, id] = b.dataset.umsaca.split("|"); if (await confirmar(`¿Quitar a ${nombreDe(id)} de ${(D.uno("cif_ministerios", m) || {}).nombre}?`)) D.borrar("cif_miembros", { ministerio_id: m, persona_id: id }); });
+      $$("[data-usuper]").forEach(b => b.onclick = async () => {
+        const p = D.uno("cif_perfiles", b.dataset.usuper); const v = !p.superadmin;
+        if (!(await confirmar(v ? `¿Hacer desarrollador a ${p.nombre}?` : `¿Quitarle el rol de desarrollador a ${p.nombre}?`, v ? "Podrá crear ministerios, activar suscripciones y administrar todas las cuentas." : ""))) return;
+        D.guardar("cif_perfiles", { ...p, superadmin: v });
+      });
+      $$("[data-ureenv]").forEach(b => b.onclick = async () => { try { const r = await D.fn("usuarios", { accion: "reenviar", id: b.dataset.ureenv, redirectTo: location.origin + location.pathname }); toast(r.tipo === "recuperar" ? "Le mandamos una liga para cambiar su contraseña." : "Invitación reenviada."); } catch (er) { toast(er.message); } });
+      $$("[data-uquita]").forEach(b => b.onclick = async () => {
+        const id = b.dataset.uquita;
+        if (!(await confirmar(`¿Borrar la cuenta de ${nombreDe(id)}?`, "Pierde el acceso y se borran sus tonos guardados. No se puede deshacer."))) return;
+        try { await D.fn("usuarios", { accion: "quitar", id }); toast("Cuenta borrada."); cuentas.lista = null; await D.sincronizar(); cargarCuentas(); } catch (er) { toast(er.message); }
       });
     },
   };
@@ -1690,7 +1806,44 @@ function vLogin() {
     <label class="lb">Contraseña<input class="field" name="pass" type="password" autocomplete="current-password" minlength="6" required></label>
     <button class="btn" id="lbtn">Entrar</button>
     <div class="row"><button type="button" class="btn sm ghost" id="lreg">Crear cuenta</button><span class="sp"></span><button type="button" class="btn sm ghost" id="lrec">Olvidé mi contraseña</button></div>
-    <p class="status" id="lmsg"></p></form></div>`;
+    <p class="status" id="lmsg">${esc(st.avisoLogin || "")}</p>
+    <p class="status" style="font-size:11.5px">¿Tu ministerio aún no usa Cifrados? Escríbenos para darlo de alta.</p></form></div>`;
+}
+/** Mensajes de Supabase en español. */
+function errorAuth(m) {
+  m = String(m || "");
+  if (/invalid login|invalid credentials/i.test(m)) return "Correo o contraseña incorrectos.";
+  if (/not confirmed/i.test(m)) return "Falta confirmar tu correo: abre la liga que te mandamos.";
+  if (/already registered|already exists/i.test(m)) return "Ese correo ya tiene cuenta. Entra o recupera tu contraseña.";
+  if (/rate limit/i.test(m)) return "Se mandaron demasiados correos. Espera un rato e inténtalo de nuevo.";
+  if (/at least|password should/i.test(m)) return "La contraseña debe tener al menos 8 caracteres.";
+  if (/same password|different from the old/i.test(m)) return "Usa una contraseña distinta a la anterior.";
+  return m;
+}
+// Crear contraseña al abrir una invitación o una liga de recuperación
+function vNuevaClave() {
+  const inv = (st.ponerClave || D.estado.ponerClave) === "invite", p = miPerfil() || {};
+  return `<div class="login"><form class="card" id="fclave"><img src="icono-512.png" width="56" height="56" alt="" style="border-radius:12px;background:#1B1C1A">
+    <h1>${inv ? "Bienvenido" : "Nueva contraseña"}</h1><p>${inv ? "Te invitaron a Cifrados de Tiempo de Dios. Crea tu contraseña para entrar." : "Escribe tu nueva contraseña."}</p>
+    ${inv ? `<label class="lb">Tu nombre<input class="field" name="nombre" value="${esc(p.nombre || "")}" autocomplete="name" required></label>` : ""}
+    <label class="lb">Contraseña<input class="field" name="pass" type="password" autocomplete="new-password" minlength="8" required></label>
+    <label class="lb">Repítela<input class="field" name="pass2" type="password" autocomplete="new-password" minlength="8" required></label>
+    <button class="btn">Guardar y entrar</button><p class="status" id="cmsg"></p></form></div>`;
+}
+function enlazarNuevaClave() {
+  const f = $("#fclave"), msg = $("#cmsg");
+  f.onsubmit = async e => {
+    e.preventDefault();
+    if (f.pass.value !== f.pass2.value) return (msg.textContent = "Las contraseñas no coinciden.");
+    msg.textContent = "…";
+    try {
+      const nombre = f.nombre ? f.nombre.value.trim() : "";
+      await D.nuevaClave(f.pass.value, nombre);
+      if (nombre) { const p = miPerfil() || { id: yo().id, estilo: {} }; await D.guardar("cif_perfiles", { ...p, nombre }); }
+      st.ponerClave = null; D.estado.ponerClave = null;
+      history.replaceState(null, "", location.pathname + "#libreria"); render(); toast("Contraseña guardada.");
+    } catch (er) { msg.textContent = errorAuth(er.message); }
+  };
 }
 function enlazarLogin() {
   let modo = "entrar"; const f = $("#flog"), msg = $("#lmsg");
@@ -1701,7 +1854,7 @@ function enlazarLogin() {
     try {
       if (modo === "registro") { await D.registrarse(f.email.value.trim(), f.pass.value, f.nombre.value.trim()); msg.textContent = "Cuenta creada. Revisa tu correo para confirmarla y luego entra."; }
       else await D.entrar(f.email.value.trim(), f.pass.value);
-    } catch (er) { msg.textContent = /invalid/i.test(er.message) ? "Correo o contraseña incorrectos." : er.message; }
+    } catch (er) { msg.textContent = errorAuth(er.message); }
   };
 }
 
@@ -1709,7 +1862,13 @@ function enlazarLogin() {
 (async function () {
   aplicarEstilo();
   $("#app").innerHTML = `<div class="login"><p style="color:#fff;font-family:var(--mono)">Cargando…</p></div>`;
+  // ¿Llegó por una liga de correo? (#access_token=…&type=invite|recovery|signup, o #error=…)
+  const h0 = window.HASH0 || "", tipo = (/type=(invite|recovery|signup|magiclink)/.exec(h0) || [])[1];
+  if (tipo === "invite" || tipo === "recovery") st.ponerClave = tipo;
+  if (/error_description=/.test(h0)) st.avisoLogin = /expired|invalid/i.test(decodeURIComponent(h0)) ? "La liga ya venció o ya se usó. Pide que te la reenvíen o usa «Olvidé mi contraseña»." : "No se pudo abrir la liga del correo.";
   await D.iniciar();
+  if (tipo === "signup" && yo()) setTimeout(() => toast("¡Correo confirmado! Ya puedes usar Cifrados."), 400);
+  if (tipo || st.avisoLogin) history.replaceState(null, "", location.pathname + "#libreria");
   // modo local: crea mi perfil la primera vez
   if (!D.nube && !miPerfil()) await D.guardar("cif_perfiles", { id: yo().id, nombre: "Yo", artista: true, estilo: st.estilo });
   const p = miPerfil(); if (p && p.estilo && Object.keys(p.estilo).length) {
