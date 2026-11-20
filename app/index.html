@@ -436,6 +436,9 @@ input[type=range]{width:100%;accent-color:var(--area)}
 .csvozadd{margin-left:8px;padding:2px 10px;border-radius:99px;border:1.5px dashed var(--line);background:none;color:var(--muted);font:800 12px var(--body);cursor:pointer;vertical-align:middle;letter-spacing:0;text-transform:none}
 .csvozadd:hover{border-color:var(--sc);color:var(--fg)}
 button.csvoz{cursor:pointer}
+.rolesed{grid-column:1/-1}
+.rolchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
+.compchk label.canta{font-weight:700}
 .dlgsub{margin:6px 0 0;font:800 15px var(--display)}.dlgsub small{font:500 12.5px var(--body);color:var(--muted);margin-left:6px}
 .vocespanel{border:1.5px solid var(--line);border-radius:14px;background:var(--surface);padding:14px 16px;margin:10px 0}
 .vphead{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}.vphead b{font:900 17px var(--display)}.vphead small{color:var(--muted)}
@@ -725,11 +728,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=35"></script>
-<script src="cifrado.js?v=35"></script>
-<script src="senas.js?v=35"></script>
-<script src="datos.js?v=35"></script>
-<script src="pdf.js?v=35"></script>
+<script src="config.publico.js?v=36"></script>
+<script src="cifrado.js?v=36"></script>
+<script src="senas.js?v=36"></script>
+<script src="datos.js?v=36"></script>
+<script src="pdf.js?v=36"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1667,7 +1670,7 @@ async function elegirVoces(setId, i, sec) {
   const s = D.uno("cif_sets", setId); if (!s) return;
   const it = s.items[i], r = rolesSec(it, sec), P = new Set(r.p), Cc = new Set(r.c), gente = cantantesDe(personasSet(s));
   const lista = (pre, ya, todos) => `<div class="compchk">${todos ? `<label><input type="checkbox" name="${pre}___todos" ${ya.has("__todos") ? "checked" : ""}> <b>Todos</b></label>` : ""}
-    ${gente.map(p => `<label><input type="checkbox" name="${pre}_${p.id}" ${ya.has(p.id) ? "checked" : ""}> ${esc(p.nombre)}${p.voz ? ` <small class="status">${esc(p.voz)}</small>` : ""}</label>`).join("")}</div>`;
+    ${gente.map(p => `<label class="${esCantante(p) ? "canta" : ""}"><input type="checkbox" name="${pre}_${p.id}" ${ya.has(p.id) ? "checked" : ""}> ${esc(p.nombre)}${p.voz ? ` <small class="status">${esc(rolesDe(p).join(" · "))}</small>` : ""}</label>`).join("")}</div>`;
   const d = await dialogo(`<h2>Voces de «${esc(sec)}»</h2><p>Lo ven todos los ministerios del set.</p>
     <h3 class="dlgsub">🎤 Voz principal <small>una, o dos o tres si la cantan juntos</small></h3>${lista("p", P, true)}
     <h3 class="dlgsub">🎶 Coros <small>quienes hacen segundas y armonías</small></h3>${lista("c", Cc, false)}`, "Guardar");
@@ -1680,7 +1683,14 @@ async function elegirVoces(setId, i, sec) {
   await D.guardar("cif_sets", { ...act, items });
   toast(pIds.length || cIds.length ? `${sec}: ${resumenVoces(items[i], sec)}` : `${sec}: sin asignar`);
 }
-function cantantesDe(gente) { const c = gente.filter(p => p.artista || p.voz); return c.length ? c : gente; }
+const ROLES_MUSICA = ["Voz principal", "Coros", "Piano", "Teclados", "Guitarra acústica", "Guitarra eléctrica", "Bajo", "Batería", "Violín", "Dirección musical"];
+const rolesDe = p => String((p && p.voz) || "").split(/\s*[,;·]\s*/).map(x => x.trim()).filter(Boolean);
+const esCantante = p => /voz|coro|cant|soprano|tenor|bar[ií]tono|contralto|alto/i.test((p && p.voz) || "");
+/** Para el modo Voces: todos los del set, primero quienes cantan (según su perfil), luego quienes dirigen o cantan y al final los demás. */
+function cantantesDe(gente) {
+  const peso = x => (esCantante(x) ? 0 : x.artista ? 1 : 2);
+  return gente.slice().sort((a, b) => peso(a) - peso(b) || (a.nombre || "").localeCompare(b.nombre || ""));
+}
 function estructuraHTML(it, i, c, puede, gente = []) {
   const bl = bloquesDe(it, c), secs = [...new Set(C.secciones(c.contenido))], voces = it.voces || {};
   const usadas = [...new Set(bl)], cant = cantantesDe(gente);
@@ -2965,7 +2975,9 @@ function vPerfil() {
         <div class="grid2 perfilcampos">
           <label class="lb">Nombre <small>Así te ve el equipo</small><input class="field" name="nombre" value="${esc(p.nombre || "")}" maxlength="60" required autocomplete="name"></label>
           <label class="lb">@usuario <small>Para que tus amigos te encuentren</small><span class="arroba"><b>@</b><input class="field" name="usuario" value="${esc(p.usuario || "")}" placeholder="diego.tdd" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" data-1p-ignore data-lpignore="true"></span></label>
-          <label class="lb">Voz o instrumento <small>Opcional</small><input class="field" name="voz" value="${esc(p.voz || "")}" placeholder="Tenor, guitarra…" autocomplete="off" data-1p-ignore data-lpignore="true"></label>
+          <div class="lb rolesed">¿Qué haces en el ministerio? <small>Elige todo lo que aplique: así te asignan en el modo Voces de los sets</small>
+            <div class="rolchips" id="prol">${ROLES_MUSICA.map(r => `<button type="button" class="tchip ${rolesDe(p).includes(r) ? "on" : ""}" data-rol="${esc(r)}" style="--c:var(--flame)">${esc(r)}</button>`).join("")}</div>
+            <input class="field" name="voz" value="${esc(rolesDe(p).filter(r => !ROLES_MUSICA.includes(r)).join(", "))}" placeholder="Otro (soprano, saxofón, sonido…)" autocomplete="off" data-1p-ignore data-lpignore="true"></div>
         </div>
         <label class="lb" style="margin-top:14px">Sobre mí <small>Una descripción corta (máx. 280)</small><textarea class="field" name="bio" rows="3" maxlength="280" placeholder="Canto en Kairós desde 2019, me encanta la adoración en vivo…">${esc(p.bio || "")}</textarea></label>
         <div class="lb" style="margin-top:14px">❤️ Mis canciones favoritas <small>Hasta 5, de la librería</small>
@@ -2991,9 +3003,10 @@ function vPerfil() {
       <div class="row"><a class="btn sm" href="#persona/yo">★ Mis tonos (${nMis})</a><a class="btn sm ghost" href="#amigos">Amigos</a><a class="btn sm ghost" href="#ajustes">Estilo y respaldo</a><span class="sp"></span>${D.nube ? `<button class="btn sm ghost" id="psalir">Cerrar sesión</button>` : ""}</div>`,
     after() {
       const f = $("#fperfil"), msg = $("#pmsg");
+      $$("#prol [data-rol]").forEach(b => b.onclick = () => b.classList.toggle("on"));
       f.onsubmit = async e => {
         e.preventDefault();
-        const nombre = f.nombre.value.trim(), usuario = f.usuario.value.trim().replace(/^@/, "").toLowerCase(), voz = f.voz.value.trim();
+        const nombre = f.nombre.value.trim(), usuario = f.usuario.value.trim().replace(/^@/, "").toLowerCase(), voz = [...new Set($$("#prol [data-rol].on").map(b => b.dataset.rol).concat(rolesDe({ voz: f.voz.value })))].join(", ");
         if (!nombre) return (msg.textContent = "Escribe tu nombre.");
         if (usuario && !/^[a-z0-9._]{2,30}$/.test(usuario)) return (msg.textContent = "El @usuario lleva de 2 a 30 letras sin acento, números, punto o guion bajo.");
         if (usuario && D.lista("cif_perfiles").some(x => x.id !== yo().id && (x.usuario || "").toLowerCase() === usuario)) return (msg.textContent = "Ese @usuario ya lo tiene alguien más.");
