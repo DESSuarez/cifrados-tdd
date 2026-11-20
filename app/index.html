@@ -736,11 +736,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=37"></script>
-<script src="cifrado.js?v=37"></script>
-<script src="senas.js?v=37"></script>
-<script src="datos.js?v=37"></script>
-<script src="pdf.js?v=37"></script>
+<script src="config.publico.js?v=38"></script>
+<script src="cifrado.js?v=38"></script>
+<script src="senas.js?v=38"></script>
+<script src="datos.js?v=38"></script>
+<script src="pdf.js?v=38"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1398,7 +1398,7 @@ function vCancion(p) {
       $("#vmas").onclick = () => cambiarVel(1);
       $("#tesc").onclick = () => { document.body.classList.add("escenario"); document.documentElement.requestFullscreen?.().catch(() => {}); };
       $("#tescx").onclick = () => { document.body.classList.remove("escenario"); if (document.fullscreenElement) document.exitFullscreen(); };
-      $("#tprint").onclick = () => abrirExportar({ items: [{ c, tono, capo, orden }], titulo: c.titulo, minId: ctxSet ? ctxSet.s.ministerio_id : (minActual() || {}).id });
+      $("#tprint").onclick = () => abrirExportar({ items: [{ c, tono, capo, orden, voces: ctxSet && st.modoVoces ? vocesPDF(ctxSet.item) : null }], titulo: c.titulo, minId: ctxSet ? ctxSet.s.ministerio_id : (minActual() || {}).id });
       const tc = $("#tcomp"); if (tc) tc.onclick = () => compartirCancion(c);
       $$("[data-ir]").forEach(b => b.onclick = () => { irSeccion(b.dataset.ir); if (st.dirigir && vivo) vivo.enviar({ i: ctxSet.i, sec: b.dataset.ir }); });
       $$("[data-tono]").forEach(b => b.onclick = () => { st.tonoVista[c.id] = b.dataset.tono; st.capo[c.id] = +b.dataset.capo; render(); if (rep.track && rep.auto) ajustarPitch(); });
@@ -1661,6 +1661,12 @@ const tieneVoces = (it, sec) => { const r = rolesSec(it, sec); return r.p.length
 const vocesTxt = ids => ids.map(nombreCorto).join(" + ");
 const resumenVoces = (it, sec) => { const r = rolesSec(it, sec); return [r.p.length ? vocesTxt(r.p) : "", r.c.length ? "coros: " + vocesTxt(r.c) : ""].filter(Boolean).join(" · "); };
 /** Modo «Voces» en la canción dentro de un set: cada parte, en el orden del set, con su voz principal y sus coros. */
+/** Con el modo Voces prendido, el PDF lleva quién canta cada parte: {«Coro»: "Ana + Luis · coros: Willy"} */
+function vocesPDF(it) {
+  if (!it || !it.voces) return null;
+  const out = {}; Object.keys(it.voces).forEach(sec => { if (tieneVoces(it, sec)) out[sec] = resumenVoces(it, sec); });
+  return Object.keys(out).length ? out : null;
+}
 function vocesPanelHTML(ctx, c, orden) {
   const it = ctx.item || {}, puede = editaSet(ctx.s);
   const partes = (orden && orden.length ? orden : C.secciones(c.contenido));
@@ -1764,7 +1770,7 @@ function vSet(id) {
       // PDF del set: cada canción en su tono, con su estructura en bloques, momento y quién dirige
       $("#spdf").onclick = () => abrirExportar({ multiple: true, minId: s.ministerio_id, titulo: s.nombre,
         subtitulo: [s.fecha ? new Date(s.fecha + "T12:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "", m ? m.nombre : ""].filter(Boolean).join(" · "),
-        items: s.items.map(it => ({ it, c: D.uno("cif_canciones", it.cancion_id) })).filter(x => x.c).map(({ it, c }) => ({ c, tono: it.tono, capo: it.capo || 0, orden: it.estructura && it.estructura.length ? it.estructura : c.orden, nota: it.nota, momento: it.momento ? nombreMomento(it.momento) : "", persona: it.persona_id ? "Voz principal: " + nombreDe(it.persona_id) : "" })) });
+        items: s.items.map(it => ({ it, c: D.uno("cif_canciones", it.cancion_id) })).filter(x => x.c).map(({ it, c }) => ({ c, tono: it.tono, capo: it.capo || 0, orden: it.estructura && it.estructura.length ? it.estructura : c.orden, nota: it.nota, momento: it.momento ? nombreMomento(it.momento) : "", persona: it.persona_id ? "Voz principal: " + nombreDe(it.persona_id) : "", voces: st.modoVoces ? vocesPDF(it) : null })) });
       if (!puede) return;
       const guarda = cambios => D.guardar("cif_sets", { ...(D.uno("cif_sets", id) || s), ...cambios });
       const itemsAct = () => (D.uno("cif_sets", id) || s).items.map(x => ({ ...x }));

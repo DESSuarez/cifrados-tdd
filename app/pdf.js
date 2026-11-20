@@ -115,10 +115,18 @@
       return grupos;
     }
     const altoGrupo = gr => (gr.nombre ? 22 : 0) + gr.filas.reduce((a, f) => a + f.alto, 0) + 8;
-    function dibujarEncabezadoSec(nombre, x, y, w) {
+    function dibujarEncabezadoSec(nombre, x, y, w, voz) {
       const col = hex(COLOR_SEC[CIF.colorSeccion(nombre)] || "#5E6766");
       doc.setFillColor(...col); doc.roundedRect(x, y, w, 17, 4, 4, "F");
       fuente("bold", 9, [255, 255, 255]); doc.text(san(nombre).toUpperCase(), x + 8, y + 11.8);
+      // modo Voces: quién canta la parte, a la derecha de la barra
+      if (voz) {
+        const libre = w - 16 - ancho(san(nombre).toUpperCase(), "bold", 9) - 12;
+        let txt = san("Voz: " + voz);
+        fuente("bold", 8.5, [255, 255, 255]);
+        while (txt.length > 4 && doc.getTextWidth(txt) > libre) txt = txt.slice(0, -4).trimEnd() + "...";
+        if (libre > 30) doc.text(san(txt), x + w - 8, y + 11.8, { align: "right" });
+      }
       return 22;
     }
 
@@ -169,7 +177,7 @@
       for (const gr of grupos) {
         const h = altoGrupo(gr), cabe = bottom - topCol;
         if (y + h > bottom && h <= cabe && y > topCol) sigColumna(); // la sección entera pasa a la siguiente columna
-        if (gr.nombre) { if (y + 40 > bottom) sigColumna(); y += dibujarEncabezadoSec(gr.nombre, xCol(), y, colW); }
+        if (gr.nombre) { if (y + 40 > bottom) sigColumna(); y += dibujarEncabezadoSec(gr.nombre, xCol(), y, colW, it.voces && it.voces[gr.nombre]); }
         for (const f of gr.filas) { if (y + f.alto > bottom) sigColumna(); f.dibujar(xCol(), y); y += f.alto; }
         y += 8;
       }
