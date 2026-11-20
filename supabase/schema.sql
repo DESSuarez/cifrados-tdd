@@ -305,5 +305,41 @@ drop policy if exists c_editar on cif_canciones;
 create policy c_editar on cif_canciones for update to authenticated
   using (cif_es_musico() and (cif_ve_cancion(ministerio_id, compartida_con, visibilidad) or creada_por = auth.uid()));
 
+-- =====================================================================
+-- Versión 4: avisos de red local (= migraciones/003)
+-- =====================================================================
+
+create table if not exists cif_anuncios (
+  id uuid primary key default gen_random_uuid(),
+  tipo text not null default 'red',
+  ministerio_id uuid references cif_ministerios on delete cascade,  -- null = para todos los ministerios (solo desarrollador)
+  datos jsonb not null default '{}'::jsonb,                         -- {urls:[], pin, wifi, equipo, nota}
+  activo boolean not null default true,
+  vence timestamptz,
+  creado_por uuid references auth.users default auth.uid(),
+  actualizado timestamptz not null default now()
+);
+
+alter table cif_anuncios enable row level security;
+drop policy if exists an_ver on cif_anuncios;
+create policy an_ver on cif_anuncios for select to authenticated
+  using (ministerio_id is null or cif_super() or cif_rol(ministerio_id) is not null);
+drop policy if exists an_alta on cif_anuncios;
+create policy an_alta on cif_anuncios for insert to authenticated
+  with check (cif_super() or (ministerio_id is not null and cif_rol(ministerio_id) = 'admin'));
+drop policy if exists an_editar on cif_anuncios;
+create policy an_editar on cif_anuncios for update to authenticated
+  using (cif_super() or (ministerio_id is not null and cif_rol(ministerio_id) = 'admin'));
+drop policy if exists an_borrar on cif_anuncios;
+create policy an_borrar on cif_anuncios for delete to authenticated
+  using (cif_super() or (ministerio_id is not null and cif_rol(ministerio_id) = 'admin'));
+
+grant select, insert, update, delete on cif_anuncios to authenticated;
+revoke all on cif_anuncios from anon;
+
+do $$ begin
+  alter publication supabase_realtime add table cif_anuncios;
+exception when duplicate_object then null; end $$;
+
 -- Primer superadmin (cambia el correo y corre esta línea):
 -- update cif_perfiles set superadmin = true where id = (select id from auth.users where email = 'tu-correo@tiempodedios.mx');

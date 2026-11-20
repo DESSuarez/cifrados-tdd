@@ -90,6 +90,15 @@ a{color:var(--area-ink)}
 .cxm>b{font-family:var(--display);font-weight:800;font-size:15px}
 .cxm p{margin:0;font-size:13.5px;color:var(--muted)}.cxm p b{color:var(--fg)}
 .cxm code{font-family:var(--mono);font-size:12px;background:var(--surface);padding:1px 5px;border-radius:5px}
+.cxavisos{display:grid;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:13.5px}
+.avisored h2{color:var(--fg)}
+.avpasos{margin:0;padding-left:22px;display:grid;gap:12px;font-size:15px}
+.avdato{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;padding:10px 12px;border:1.5px dashed var(--line);border-radius:12px;background:var(--surface)}
+.avdato code{flex:1;min-width:0;font:500 16px var(--mono);word-break:break-all}
+.avdato code.pin{font-size:26px;letter-spacing:.3em}
+.avnota{padding:10px 12px;border-radius:10px;background:var(--sol-soft);color:var(--fg)!important}
+.cmdred{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cmdred input{flex:1;min-width:240px;font-family:var(--mono)!important;font-size:13.5px!important}
 /* tarjeta de cuenta a todo lo ancho; abajo Apariencia y Salir */
 .userbar{position:relative;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:12px}
 .ubtns{display:flex;gap:6px}
@@ -484,10 +493,10 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=9"></script>
-<script src="cifrado.js?v=9"></script>
-<script src="senas.js?v=9"></script>
-<script src="datos.js?v=9"></script>
+<script src="config.publico.js?v=10"></script>
+<script src="cifrado.js?v=10"></script>
+<script src="senas.js?v=10"></script>
+<script src="datos.js?v=10"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -689,6 +698,7 @@ function render() {
   if (out.after) out.after();
   if (r.v === "cancion" || r.v === "set") window.scrollTo(0, y);
   pintarSync(D.estado);
+  revisarAnuncios();
 }
 
 // ---------- Menú, tema, sincronización ----------
@@ -1836,6 +1846,15 @@ function vPerfil() {
         <label class="row" style="margin-top:14px;font-weight:700"><input type="checkbox" name="artista" ${p.artista ? "checked" : ""}> Dirijo o canto: quiero guardar mis tonos</label>
         <div class="row" style="margin-top:14px"><button class="btn">Guardar cambios</button><span class="status" id="pmsg"></span></div>
       </form>
+      ${esSuper() || membresias().some(m => m.rol === "admin") ? `<section class="caja"><h3>📡 Red local</h3>
+        <p>Tu comando para prender la red sin internet. Pégalo en la Terminal de tu compu (o escribe solo <code>cifrados-red</code> si tienes el atajo). Queda guardado en tu perfil.</p>
+        <div class="cmdred"><input class="field" id="pcmd" value="${esc(st.estilo.redComando || "cd ~/Documents/cifrados-tdd && node red/servidor.js")}" spellcheck="false" autocomplete="off" data-1p-ignore data-lpignore="true"><button class="btn sm" id="pcmdcop">Copiar</button></div>
+        <ol class="avpasos" style="margin-top:12px;font-size:14px">
+          <li>Pega el comando en la Terminal y deja esa ventana abierta.</li>
+          <li>Aquí, toca el indicador de abajo a la izquierda → <b>Conexión</b> → <b>⬆ Enviar mi copia a la red</b>.</li>
+          <li>Toca <b>📣 Avisar a todos</b>: a tu ministerio le sale una ventana con el Wi-Fi, la dirección y el PIN.</li>
+        </ol>
+        <div class="row" style="margin-top:12px"><button class="btn sm ghost" id="pconex">Abrir Conexión</button></div></section>` : ""}
       ${D.nube ? `<form class="caja" id="fpass"><h3>Contraseña</h3>
         <div class="grid2"><label class="lb">Nueva contraseña<input class="field" name="pass" type="password" minlength="8" autocomplete="new-password" required></label>
         <label class="lb">Repítela<input class="field" name="pass2" type="password" minlength="8" autocomplete="new-password" required></label></div>
@@ -1860,6 +1879,12 @@ function vPerfil() {
         try { await D.nuevaClave(fp.pass.value); fp.reset(); m2.textContent = ""; toast("Contraseña cambiada."); } catch (er) { m2.textContent = errorAuth(er.message); }
       };
       const ps = $("#psalir"); if (ps) ps.onclick = async () => { if (await confirmar("¿Cerrar sesión?", "Se borra la copia de este dispositivo; tus datos siguen en la nube.")) D.salir(); };
+      // comando de la red local: se guarda en el perfil (va dentro de estilo, que viaja con la cuenta)
+      const pc = $("#pcmd"); if (pc) {
+        pc.onchange = () => { st.estilo.redComando = pc.value.trim() || undefined; guardarEstilo(); toast("Comando guardado en tu perfil."); };
+        $("#pcmdcop").onclick = async () => { try { await navigator.clipboard.writeText(pc.value.trim()); toast("Copiado: pégalo en la Terminal."); } catch (e) { pc.select(); toast("Selecciónalo y cópialo con ⌘C."); } };
+        $("#pconex").onclick = abrirConexion;
+      }
     },
   };
 }
@@ -2068,7 +2093,8 @@ function abrirConexion() {
             : `<p>Para tocar sin internet: en la compu de quien dirige corre el servidor de red (<code>node red/servidor.js</code>). Todos se conectan a la misma red (un router aunque no tenga internet) y abren la dirección que muestra, con su PIN.</p>
               ${modo === "nube" ? `<p class="status">En esa misma compu, desde aquí:</p>
               <div class="row"><input class="field" id="cxbase" value="${esc(ls.get("cifrados-red-base", "http://localhost:8787"))}" style="flex:1;min-width:200px;height:38px"></div>
-              <div class="row" style="margin-top:8px"><button class="btn sm" data-cx="enviar">⬆ Enviar mi copia a la red</button><button class="btn sm ghost" data-cx="traer">⬇ Traer cambios de la red a la nube</button></div>` : ""}`}
+              <div class="row" style="margin-top:8px"><button class="btn sm" data-cx="enviar">⬆ Enviar mi copia a la red</button>${puedeAvisar() ? `<button class="btn sm" data-cx="avisar">📣 Avisar a todos</button>` : ""}<button class="btn sm ghost" data-cx="traer">⬇ Traer cambios de la red a la nube</button></div>` : ""}`}
+          ${anunciosRed().length ? `<div class="cxavisos"><b>Redes activas</b>${anunciosRed().map(a => `<div class="row"><span>📡 ${esc(a.ministerio_id ? nombreMin(a.ministerio_id) : "Todos")}${a.datos.wifi ? " · Wi-Fi «" + esc(a.datos.wifi) + "»" : ""}</span><span class="sp"></span><button class="btn xs" data-verav="${a.id}">Ver datos</button>${puedeAvisar(a.ministerio_id) ? `<button class="btn xs ghost" data-finav="${a.id}">Terminar</button>` : ""}</div>`).join("")}</div>` : ""}
         </section>
       </div>
       <p class="status" id="cxmsg"></p>
@@ -2080,11 +2106,74 @@ function abrirConexion() {
         if (a === "sinc" || a === "recargar") { msg.textContent = "Sincronizando…"; await D.sincronizar(); msg.textContent = "Listo."; }
         if (a === "enviar") { ls.set("cifrados-red-base", base()); msg.textContent = "Enviando…"; const r = await D.enviarARed(base()); msg.textContent = `Listo: ${r.cargados} registros en la red. Ya pueden entrar los demás.`; }
         if (a === "traer") { ls.set("cifrados-red-base", base()); msg.textContent = "Trayendo…"; const n = await D.traerDeRed(base()); msg.textContent = n ? `${n} cambio(s) de la red; se están subiendo a la nube.` : "No hay cambios nuevos en la red."; }
+        if (a === "avisar") { ls.set("cifrados-red-base", base()); msg.textContent = "Leyendo los datos del servidor…"; const ok = await avisarATodos(base()); msg.textContent = ok ? "Aviso enviado: a todos les aparece una ventana con los datos para conectarse." : ""; pinta(); }
       } catch (er) { msg.textContent = /fetch|Failed|NetworkError|Load failed/i.test(er.message) ? "No encuentro el servidor de red en esa dirección. ¿Está corriendo «node red/servidor.js» en esta compu?" : er.message; }
     });
   };
-  document.body.appendChild(dl); pinta(); dl.showModal();
+  const pintaYEnlaza = pinta;
+  document.body.appendChild(dl); pintaYEnlaza(); dl.showModal();
   dl.addEventListener("close", () => dl.remove());
+  dl.addEventListener("click", ev => {
+    const v = ev.target.closest("[data-verav]"), f = ev.target.closest("[data-finav]");
+    if (v) mostrarAnuncioRed(D.uno("cif_anuncios", v.dataset.verav), true);
+    if (f) { const a = D.uno("cif_anuncios", f.dataset.finav); D.guardar("cif_anuncios", { ...a, activo: false }).then(() => { toast("Aviso de red terminado."); pinta(); }); }
+  });
+}
+
+// ================= AVISOS DE RED =================
+// Quien dirige prende la red y con «📣 Avisar a todos» manda dirección, PIN y Wi-Fi; a cada integrante le sale una ventana.
+const anunciosRed = () => D.lista("cif_anuncios").filter(a => a.tipo === "red" && a.activo && (!a.vence || a.vence > new Date().toISOString())
+  && (!a.ministerio_id || esSuper() || membresias().some(m => m.ministerio_id === a.ministerio_id)))
+  .sort((a, b) => (b.actualizado || "").localeCompare(a.actualizado || ""));
+const puedeAvisar = minId => D.modo === "nube" && (esSuper() || (minId ? rolEn(minId) === "admin" : membresias().some(m => m.rol === "admin")));
+const vistoAnuncio = a => ls.get("cifrados-aviso-visto", {})[a.id] === a.actualizado;
+function revisarAnuncios() {
+  if (D.modo !== "nube" || st.editando || document.querySelector("dialog[open]")) return;
+  const a = anunciosRed().find(x => !vistoAnuncio(x) && x.creado_por !== (yo() || {}).id);
+  if (a) mostrarAnuncioRed(a);
+}
+function mostrarAnuncioRed(a, forzar) {
+  if (!a) return;
+  const d = a.datos || {}, urls = d.urls || [], url = urls[0] || "", min = a.ministerio_id ? nombreMin(a.ministerio_id) : "todos los ministerios";
+  const todo = [`Red local de ${min} (Cifrados)`, d.wifi ? `Wi-Fi: ${d.wifi}` : "", `Dirección: ${url}`, ...urls.slice(1).map(u => `Otra dirección: ${u}`), `PIN: ${d.pin}`, d.nota ? `Nota: ${d.nota}` : ""].filter(Boolean).join("\n");
+  const dl = document.createElement("dialog");
+  dl.innerHTML = `<div class="dlg avisored"><h2>📡 Red local activa</h2>
+    <p>${esc(nombreDe(a.creado_por))} prendió la red de <b>${esc(min)}</b>. Para ver el set y seguir a quien dirige, aunque no haya internet:</p>
+    <ol class="avpasos">
+      <li>${d.wifi ? `Conéctate al Wi-Fi <b>«${esc(d.wifi)}»</b>.` : "Conéctate a la misma red Wi-Fi que quien dirige."}</li>
+      <li>Abre esta dirección en tu navegador:<div class="avdato"><code>${esc(url)}</code><button class="btn xs" data-copia="${esc(url)}">Copiar</button></div>
+        ${urls.length > 1 ? `<small class="status">Si no abre, prueba: ${urls.slice(1).map(esc).join(" · ")}</small>` : ""}</li>
+      <li>Escribe el PIN:<div class="avdato"><code class="pin">${esc(d.pin || "")}</code><button class="btn xs" data-copia="${esc(d.pin || "")}">Copiar</button></div></li>
+    </ol>
+    ${d.nota ? `<p class="avnota">${esc(d.nota)}</p>` : ""}
+    <div class="row"><button class="btn ghost" data-copia="${esc(todo)}">Copiar todo</button><span class="sp"></span><button class="btn ghost" data-cerrar>Cerrar</button><a class="btn" href="${esc(url)}" target="_blank" rel="noopener">Abrir la red</a></div>
+    <p class="status" style="font-size:12px">Lo vuelves a ver en Conexión (abajo a la izquierda). ${a.vence ? "Se quita solo el " + new Date(a.vence).toLocaleString("es-MX", { weekday: "long", hour: "2-digit", minute: "2-digit" }).replace(/\.$/, "") : ""}</p></div>`;
+  document.body.appendChild(dl);
+  const marcar = () => { const v = ls.get("cifrados-aviso-visto", {}); v[a.id] = a.actualizado; ls.set("cifrados-aviso-visto", v); };
+  $$("[data-copia]", dl).forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.copia); toast("Copiado."); } catch (e) { toast("No se pudo copiar; selecciónalo y cópialo a mano."); } });
+  $("[data-cerrar]", dl).onclick = () => dl.close();
+  dl.addEventListener("close", () => { marcar(); dl.remove(); });
+  dl.showModal();
+}
+/** Lee del servidor (en esta compu) dirección, PIN y Wi-Fi y manda el aviso al ministerio elegido. */
+async function avisarATodos(base) {
+  const info = await fetch(base + "/api/info").then(r => r.json());
+  if (!info || info.app !== "cifrados-red") throw new Error("Eso no parece el servidor de red de Cifrados.");
+  const mins = esSuper() ? D.lista("cif_ministerios") : misMins().filter(m => rolEn(m.id) === "admin");
+  const d = await dialogo(`<h2>📣 Avisar a todos</h2><p>Les aparece una ventana con estos datos para conectarse.</p>
+    <label class="lb">¿A quién?<select class="field" name="min">${esSuper() ? `<option value="">Todos los ministerios</option>` : ""}${mins.map(m => `<option value="${m.id}" ${minActual() && m.id === minActual().id ? "selected" : ""}>${esc(m.nombre)}</option>`).join("")}</select></label>
+    <label class="lb">Wi-Fi <small>al que se deben conectar</small><input class="field" name="wifi" value="${esc(info.wifi || "")}" placeholder="Nombre de la red Wi-Fi"></label>
+    <div class="avdato"><code>${esc((info.urls || [])[0] || "sin dirección: conecta esta compu a un Wi-Fi")}</code><span class="status">PIN <b>${esc(info.pin)}</b></span></div>
+    <label class="lb">Nota <small>opcional</small><input class="field" name="nota" placeholder="Ensayo 6 pm · trae tu tablet cargada"></label>
+    <label class="lb">Se quita solo en<select class="field" name="horas"><option value="3">3 horas</option><option value="6" selected>6 horas</option><option value="12">12 horas</option><option value="24">1 día</option></select></label>`, "Enviar aviso");
+  if (!d) return false;
+  if (!(info.urls || []).length) throw new Error("El servidor no tiene dirección de red: conecta esta compu a un Wi-Fi o router.");
+  // un solo aviso activo por ministerio: se terminan los anteriores
+  for (const a of anunciosRed().filter(x => (x.ministerio_id || "") === (d.min || ""))) await D.guardar("cif_anuncios", { ...a, activo: false });
+  await D.guardar("cif_anuncios", { tipo: "red", ministerio_id: d.min || null, activo: true, creado_por: yo().id,
+    vence: new Date(Date.now() + (+d.horas || 6) * 3600e3).toISOString(),
+    datos: { urls: info.urls, pin: info.pin, wifi: d.wifi || info.wifi || null, equipo: info.equipo, nota: d.nota || null } });
+  return true;
 }
 
 // ================= Login =================

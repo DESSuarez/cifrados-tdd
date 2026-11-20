@@ -20,7 +20,7 @@ const PUERTO = +(args.puerto || 8787);
 const APP = path.resolve(__dirname, args.app || "../app");
 const ARCHIVO = path.resolve(__dirname, args.datos || "datos-red.json");
 const PIN = String(args.pin || Math.floor(1000 + Math.random() * 9000));
-const TABLAS = ["cif_canciones", "cif_tonos", "cif_sets", "cif_tracks", "cif_ministerios", "cif_miembros", "cif_perfiles", "cif_solicitudes", "cif_amistades"];
+const TABLAS = ["cif_canciones", "cif_tonos", "cif_sets", "cif_tracks", "cif_ministerios", "cif_miembros", "cif_perfiles", "cif_solicitudes", "cif_amistades", "cif_anuncios"];
 const LLAVE = { cif_tonos: r => r.cancion_id + "|" + r.persona_id, cif_miembros: r => r.ministerio_id + "|" + r.persona_id };
 const llave = (t, r) => (LLAVE[t] ? LLAVE[t](r) : r.id);
 
@@ -73,6 +73,21 @@ function leerFrames(sock, alTexto) {
   });
 }
 
+// ---------- Red: direcciones y nombre del Wi-Fi ----------
+const ipsLocales = () => Object.values(os.networkInterfaces()).flat().filter(i => i && i.family === "IPv4" && !i.internal).map(i => i.address);
+function nombreWifi() {
+  // macOS: el nombre del Wi-Fi al que está conectada esta compu (si el sistema lo permite); si no, null
+  if (process.platform !== "darwin") return null;
+  try {
+    const { execSync } = require("child_process");
+    for (const dev of ["en0", "en1"]) {
+      const s = execSync(`networksetup -getairportnetwork ${dev}`, { encoding: "utf8", timeout: 2000, stdio: ["ignore", "pipe", "ignore"] });
+      const m = /Current Wi-Fi Network:\s*(.+)/.exec(s); if (m) return m[1].trim();
+    }
+  } catch (e) { /* sin Wi-Fi o sin permiso */ }
+  return null;
+}
+
 // ---------- HTTP ----------
 const TIPOS = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css", ".json": "application/json", ".png": "image/png", ".svg": "image/svg+xml", ".webmanifest": "application/manifest+json", ".jpg": "image/jpeg" };
 const esLocal = req => /^(::1|127\.|::ffff:127\.)/.test(req.socket.remoteAddress || "");
@@ -97,6 +112,11 @@ const servidor = http.createServer(async (req, res) => {
   try {
     if (url.pathname === "/config.publico.js") { cabeceras(res, { "Content-Type": TIPOS[".js"] }); res.writeHead(200); return res.end(`window.CIFRADOS_CONFIG = { red: true };`); }
     if (url.pathname === "/api/estado") return json(res, { app: "cifrados-red", equipo: os.hostname(), conectados: clientes.size, canciones: Object.keys(datos.cif_canciones).length, sets: Object.keys(datos.cif_sets).length });
+    // Solo desde esta misma compu: datos para «Avisar a todos» (direcciones, PIN y nombre del Wi-Fi)
+    if (url.pathname === "/api/info") {
+      if (!esLocal(req)) return json(res, { error: "Solo desde la compu del servidor." }, 403);
+      return json(res, { app: "cifrados-red", equipo: os.hostname(), puerto: PUERTO, pin: PIN, wifi: nombreWifi(), urls: ipsLocales().map(ip => `http://${ip}:${PUERTO}`) });
+    }
     if (url.pathname.startsWith("/api/")) {
       if (!autorizado(req, url)) return json(res, { error: "PIN incorrecto." }, 401);
       if (url.pathname === "/api/datos" && req.method === "GET") return json(res, { tablas: todo() });
@@ -145,11 +165,13 @@ servidor.on("upgrade", (req, sock) => {
 });
 
 servidor.listen(PUERTO, "0.0.0.0", () => {
-  const ips = Object.values(os.networkInterfaces()).flat().filter(i => i && i.family === "IPv4" && !i.internal).map(i => i.address);
+  const ips = ipsLocales(), wifi = nombreWifi();
   console.log("\n  Cifrados · Red local lista\n");
+  if (wifi) console.log(`  Wi-Fi: ${wifi}`);
   console.log("  Que todos se conecten a la MISMA red (Wi-Fi o cable; no necesita internet) y abran:");
   (ips.length ? ips : ["(sin red: conecta esta compu a un Wi-Fi o router)"]).forEach(ip => console.log(`     http://${ip}:${PUERTO}`));
   console.log(`\n  PIN para entrar: ${PIN}`);
   console.log(`  En esta compu: http://localhost:${PUERTO}  ·  datos en ${ARCHIVO}`);
-  console.log(`  ${Object.keys(datos.cif_canciones).length} canciones y ${Object.keys(datos.cif_sets).length} sets guardados.  Ctrl+C para cerrar.\n`);
+  console.log(`  ${Object.keys(datos.cif_canciones).length} canciones y ${Object.keys(datos.cif_sets).length} sets guardados.  Ctrl+C para cerrar.`);
+  console.log(`\n  Para avisarle a todos: abre cifrados.tiempodedios.mx en Chrome → Conexión → «⬆ Enviar mi copia» y «📣 Avisar a todos».\n`);
 });

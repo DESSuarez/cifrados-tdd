@@ -15,6 +15,10 @@ Para tocar donde no hay internet: el set, las secciones, los tonos y «Dirigir /
    Te muestra la dirección (p. ej. `http://192.168.1.20:8787`) y un **PIN** de 4 números.
 2. En esa misma compu abre **cifrados.tiempodedios.mx**, toca el indicador de conexión (abajo a la izquierda) → **Conexión** → **⬆ Enviar mi copia a la red**. Así el servidor tiene la librería, los sets y los tonos. *(Usa Chrome; Safari bloquea que una página https hable con la compu.)*
 
+3. Toca **📣 Avisar a todos**: eliges el ministerio, escribes el nombre del Wi-Fi (macOS no deja leerlo solo) y una nota. A cada integrante le aparece una ventana con el Wi-Fi, la dirección y el PIN para copiar y abrir. El aviso se quita solo (3 a 24 horas) o con «Terminar» en Conexión.
+
+**Atajo:** si en tu `~/.zshrc` está `alias cifrados-red='cd ~/Documents/cifrados-tdd && node red/servidor.js'`, basta con escribir `cifrados-red`. El comando también está en **Mi perfil → 📡 Red local** con botón de copiar.
+
 ## En el evento (sin internet)
 1. Todos se conectan a la misma red.
 2. Abren en el navegador la dirección que muestra el servidor (`http://192.168.x.x:8787`), escriben el **PIN** y eligen su nombre.
