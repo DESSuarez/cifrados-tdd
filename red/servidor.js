@@ -20,7 +20,7 @@ const PUERTO = +(args.puerto || 8787);
 const APP = path.resolve(__dirname, args.app || "../app");
 const ARCHIVO = path.resolve(__dirname, args.datos || "datos-red.json");
 const PIN = String(args.pin || Math.floor(1000 + Math.random() * 9000));
-const TABLAS = ["cif_canciones", "cif_tonos", "cif_sets", "cif_tracks", "cif_ministerios", "cif_miembros", "cif_perfiles", "cif_solicitudes", "cif_amistades", "cif_anuncios"];
+const TABLAS = ["cif_canciones", "cif_tonos", "cif_sets", "cif_tracks", "cif_ministerios", "cif_miembros", "cif_perfiles", "cif_solicitudes", "cif_amistades", "cif_anuncios", "cif_intercambios"];
 const LLAVE = { cif_tonos: r => r.cancion_id + "|" + r.persona_id, cif_miembros: r => r.ministerio_id + "|" + r.persona_id };
 const llave = (t, r) => (LLAVE[t] ? LLAVE[t](r) : r.id);
 

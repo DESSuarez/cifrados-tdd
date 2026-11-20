@@ -245,7 +245,10 @@ img.av{object-fit:cover;background:var(--surface)}
 .band .wrap{padding-block:44px 0;display:flex;flex-direction:column;gap:18px}
 .brandrow{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#C9D2D1}
 .bandnav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.bandnav .atras,.bandnav .areatag{height:30px;box-sizing:border-box;align-self:center}
+.bandnav .atras,.bandnav .areatag,.bandnav .bandsave{height:30px;box-sizing:border-box;align-self:center}
+.bandsave{display:inline-flex;align-items:center;gap:6px;padding:0 14px;border-radius:6px;border:0;background:#fff;color:#1B1C1A;font:800 13px var(--body);cursor:pointer}
+.bandsave:hover:not(:disabled){background:var(--sol)}
+.bandsave:disabled{background:rgba(255,255,255,.1);color:rgba(255,255,255,.45);cursor:default}
 .atras{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:6px;border:1.5px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06);color:#fff;font:800 13px var(--body);cursor:pointer}
 .atras:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.5)}
 .areatag{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:var(--area);color:var(--on-area);font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px 4px 8px;border-radius:6px;line-height:1.2}
@@ -508,6 +511,14 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 input[type=date].fsel{padding:0 12px;color:var(--fg);font-family:var(--mono);font-weight:500;color-scheme:light dark}
 input[type=date].fsel::-webkit-calendar-picker-indicator{opacity:.6;cursor:pointer}
 .mincard{display:flex;flex-direction:column}
+.interrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;margin-top:8px}
+.interrow>span{flex:1;min-width:220px}
+.interrow.entra{border-color:var(--flame);background:var(--flame-soft)}
+.interform{display:grid;grid-template-columns:minmax(180px,1fr) auto minmax(160px,1fr) auto;gap:8px;align-items:center;margin-top:12px}
+.interform .status{grid-column:1/-1}
+@media (max-width:760px){.interform{grid-template-columns:1fr}}
+.interhist{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:4px}
+.interhist li{display:flex;gap:10px;flex-wrap:wrap;font-size:13.5px}
 .qtit{margin:0;font:900 28px var(--display);font-stretch:108%}
 .qsub{margin:4px 0 0;color:var(--muted)}
 .mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
@@ -611,11 +622,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=17"></script>
-<script src="cifrado.js?v=17"></script>
-<script src="senas.js?v=17"></script>
-<script src="datos.js?v=17"></script>
-<script src="pdf.js?v=17"></script>
+<script src="config.publico.js?v=18"></script>
+<script src="cifrado.js?v=18"></script>
+<script src="senas.js?v=18"></script>
+<script src="datos.js?v=18"></script>
+<script src="pdf.js?v=18"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -788,8 +799,27 @@ function minActual() {
   return ms.find(m => m.id === st.min) || ms[0];
 }
 // Quién ve una canción (mismo criterio que cif_ve_cancion en SQL): toda la librería, o su ministerio y con quien se compartió
-const veCancion = c => D.modo === "local" || (c.visibilidad || "todos") === "todos" || esSuper() || (yo() && c.creada_por === yo().id)
-  || membresias().some(m => m.ministerio_id === c.ministerio_id || (c.compartida_con || []).includes(m.ministerio_id));
+// Quién ve una canción (igual que cif_min_ve en SQL, migración 009):
+//  · «Tiempo de Dios» entre sus artistas → todos los ministerios;
+//  · abierta y del colectivo (su ministerio es del colectivo, o no tiene) → los ministerios del colectivo;
+//  · de un ministerio de fuera → solo ese ministerio y con quienes la compartió.
+// La librería muestra lo que ve el ministerio elegido arriba del menú (así el desarrollador ve lo mismo que cada ministerio).
+const hayColectivo = () => D.lista("cif_ministerios").some(m => "colectivo" in m); // false si aún no se corre la 009
+const esColectivo = id => { const m = id && D.uno("cif_ministerios", id); return !!(m && m.colectivo); };
+function minVe(x, c) {
+  if (esTDD(c)) return true;
+  if (c.ministerio_id === x || (c.compartida_con || []).includes(x)) return true;
+  return (c.visibilidad || "todos") === "todos" && esColectivo(x) && (!c.ministerio_id || esColectivo(c.ministerio_id));
+}
+const veCancion = c => {
+  if (!hayColectivo()) return D.modo === "local" || (c.visibilidad || "todos") === "todos" || esSuper() || (yo() && c.creada_por === yo().id)
+    || membresias().some(m => m.ministerio_id === c.ministerio_id || (c.compartida_con || []).includes(m.ministerio_id));
+  const m = minActual();
+  if (m) return minVe(m.id, c);
+  return esSuper() || esTDD(c) || !!(yo() && c.creada_por === yo().id);
+};
+/** Cómo se llama «abierta» para esta canción: todo el colectivo o solo su ministerio (si es de fuera). */
+const abiertaTxt = c => (!hayColectivo() ? "Toda la librería" : !c.ministerio_id || esColectivo(c.ministerio_id) ? "Todo el colectivo TDD" : "Todo " + nombreMin(c.ministerio_id));
 const nombreMin = id => (D.uno("cif_ministerios", id) || {}).nombre || "otro ministerio";
 const esPrivada = c => (c.visibilidad || "todos") === "ministerio";
 /** ¿Puedo cambiar con quién se comparte? (músico/admin de su ministerio, quien la creó, o desarrollador) */
@@ -815,6 +845,7 @@ function personasMin(minId) {
 const amistadCon = id => yo() && D.lista("cif_amistades").find(a => (a.de === yo().id && a.para === id) || (a.para === yo().id && a.de === id));
 const amigos = () => yo() ? D.lista("cif_amistades").filter(a => a.estado === "aceptada" && (a.de === yo().id || a.para === yo().id)).map(a => (a.de === yo().id ? a.para : a.de)) : [];
 const pendAmigos = () => yo() ? D.lista("cif_amistades").filter(a => a.estado === "pendiente" && a.para === yo().id) : [];
+const pendInter = () => D.lista("cif_intercambios").filter(x => x.estado === "pendiente" && rolEn(x.para) === "admin");
 const pendMin = () => D.lista("cif_solicitudes").filter(s => s.estado === "pendiente" && rolEn(s.ministerio_id) === "admin" && (!yo() || s.persona_id !== yo().id));
 // Suscripción: el desarrollador la activa por ministerio (fecha de vigencia)
 const hoyISO = () => new Date().toISOString().slice(0, 10);
@@ -889,7 +920,7 @@ function shell(band, main) {
       <div class="sidesec">Equipo</div>
       ${nav("senas", "senas", "Señas para dirigir", IC.mano, "--lav")}
       ${m ? nav("ministerio/" + m.id, r.p[0] === m.id ? "ministerio" : "-", m.tipo === "solista" ? "Mi perfil de solista" : "Perfil del ministerio", IC.marca, "--flame") : ""}
-      ${nav("ministerios", "ministerios", "Ministerios", IC.gente, "--rosa", pendMin().length || "")}
+      ${nav("ministerios", "ministerios", "Ministerios", IC.gente, "--rosa", pendMin().length + pendInter().length || "")}
       ${nav("amigos", "amigos", "Amigos y sus tonos", IC.amigos, "--sea", pendAmigos().length || "")}
       ${esSuper() ? nav("usuarios", "usuarios", "Usuarios", IC.gente, "--sol", D.nube ? "" : D.lista("cif_perfiles").length) : ""}
       ${nav("perfil", "perfil", "Mi perfil", IC.perfil, "--rosa")}
@@ -922,9 +953,9 @@ function rutaPadre() {
   return { set: "#sets", ministerio: "#ministerios", persona: "#amigos" }[r.v] || "#libreria";
 }
 function irAtras() { if (vengoDeApp) history.back(); else location.hash = rutaPadre(); }
-function bandHTML({ tag = "Música", titulo, sub = "", tabs = "", extra = "" }) {
+function bandHTML({ tag = "Música", titulo, sub = "", tabs = "", extra = "", nav = "" }) {
   const atras = ruta().v !== "libreria" ? `<button class="atras" type="button" data-atras aria-label="Regresar a la pantalla anterior">← Atrás</button>` : "";
-  return `<div class="bandnav">${atras}<span class="areatag">${IC.nota} ${esc(tag)}</span></div><div class="titleblock"><h1>${titulo}</h1>${sub ? `<div class="sub">${sub}</div>` : ""}${extra}</div><nav class="tabs">${tabs}</nav>`;
+  return `<div class="bandnav">${atras}<span class="areatag">${IC.nota} ${esc(tag)}</span>${nav}</div><div class="titleblock"><h1>${titulo}</h1>${sub ? `<div class="sub">${sub}</div>` : ""}${extra}</div><nav class="tabs">${tabs}</nav>`;
 }
 function tabsHTML(lista, actual, attr = "data-tab") {
   return lista.map(([k, l, n]) => `<button class="tab" ${attr}="${k}" aria-selected="${k === actual}">${esc(l)}${n !== undefined ? `<span class="count">${n}</span>` : ""}</button>`).join("");
@@ -1071,7 +1102,7 @@ function vLibreria() {
       : enTab.length ? `<div class="empty"><strong>Nada con esos filtros</strong><p>Prueba con otra palabra o quita filtros.</p></div>`
       : `<div class="empty"><strong>${vacio[0]}</strong><p>${vacio[1]}</p>${st.tab !== "tdd" || !todas.length ? `<div class="row">${suscrito() && esMusico() ? `<button class="btn" id="imp2">Importar de SongbookPro</button>` : ""}${esMusico() ? `<a class="btn ghost" href="#nueva">Crear una</a>` : ""}</div>` : `<button class="btn ghost" data-ir-tab="otras">Ver las demás canciones (${n.otras})</button>`}</div>`}`;
   return {
-    band: bandHTML({ titulo: "La <em>librería</em>", sub: `<span><b>${todas.length}</b> canciones</span><span>compartidas con todos los ministerios</span>`,
+    band: bandHTML({ titulo: "La <em>librería</em>", sub: `<span><b>${todas.length}</b> canciones</span><span>${!hayColectivo() ? "compartidas con todos los ministerios" : minActual() ? (esColectivo(minActual().id) ? "del colectivo Tiempo de Dios y de " + esc(minActual().nombre) : "de " + esc(minActual().nombre) + " y de Tiempo de Dios") : "todas"}</span>`,
       tabs: tabsHTML([["tdd", "Tiempo de Dios", n.tdd], ["otras", "Otras canciones", n.otras], ["liturgicas", "Litúrgicas", n.liturgicas]], st.tab) }),
     main,
     after() {
@@ -1562,6 +1593,7 @@ function vEditor(id) {
   if (id && !base) return { band: bandHTML({ titulo: "No encontré esa canción" }), main: "" };
   if (!esMusico()) return { band: bandHTML({ titulo: "Sin permiso" }), main: `<p>Solo músicos y admins editan la librería.</p>` };
   if (!ed || ed.id !== (id || "nueva")) ed = { id: id || "nueva", c: base ? { compartida_con: [], visibilidad: "todos", ...base } : { titulo: "", autor: minActual() ? minActual().nombre : "", tono: "G", bpm: null, compas: "4/4", contenido: "", orden: [], etiquetas: [], liga: "", notas: "", ministerio_id: minActual() ? minActual().id : null, visibilidad: D.nube && minActual() ? "ministerio" : "todos", compartida_con: [] }, paso: base ? "acordes" : "letra", sel: null };
+  if (ed.ini === undefined) ed.ini = JSON.stringify(ed.c);
   st.editando = true;
   const c = ed.c;
   const main = `
@@ -1583,7 +1615,7 @@ function vEditor(id) {
     <label class="lb">Notas<textarea class="field" id="enot" rows="2" placeholder="Tonos de referencia, dinámica, quién la canta…">${esc(c.notas || "")}</textarea></label>
     <div class="row"><button class="btn" id="eguardar">Guardar canción</button><button class="btn ghost" id="ecancel">Cancelar</button><span class="sp"></span>${base ? `<button class="btn sm ghost" id="eborrar">Borrar de la librería</button>` : ""}</div>`;
   return {
-    band: bandHTML({ tag: "Constructor", titulo: base ? "Editar <em>" + esc(base.titulo) + "</em>" : "Nueva <em>canción</em>", sub: `<span>Escribe la letra, toca la sílaba y pon el acorde. Así queda exacto.</span>` }),
+    band: bandHTML({ tag: "Constructor", nav: `<button class="bandsave" id="eguardar2" type="button" ${ed.ini === JSON.stringify(ed.c) ? "disabled" : ""}>✓ Guardar</button>`, titulo: base ? "Editar <em>" + esc(base.titulo) + "</em>" : "Nueva <em>canción</em>", sub: `<span>Escribe la letra, toca la sílaba y pon el acorde. Así queda exacto.</span>` }),
     main,
     after() { enlazarEditor(base); },
   };
@@ -1611,21 +1643,21 @@ async function compartirCancion(c) {
   const comp = new Set(c.compartida_con || []);
   const d = await dialogo(`<h2>Compartir «${esc(c.titulo)}»</h2>
     <p>${c.ministerio_id ? `Es de <b>${esc(nombreMin(c.ministerio_id))}</b>.` : "No tiene ministerio de origen."} Elige quién la ve.</p>
-    <label class="row" style="font-weight:700"><input type="radio" name="vis" value="todos" ${!esPrivada(c) ? "checked" : ""}> 🌐 Toda la librería (todos los ministerios)</label>
+    <label class="row" style="font-weight:700"><input type="radio" name="vis" value="todos" ${!esPrivada(c) ? "checked" : ""}> 🌐 ${esc(abiertaTxt(c))}</label>
     <label class="row" style="font-weight:700"><input type="radio" name="vis" value="ministerio" ${esPrivada(c) ? "checked" : ""} ${c.ministerio_id ? "" : "disabled"}> 🔒 Solo ${esc(c.ministerio_id ? nombreMin(c.ministerio_id) : "su ministerio")} y estos:</label>
     <div class="compchk">${otros.map(m => `<label><input type="checkbox" name="m_${m.id}" ${comp.has(m.id) ? "checked" : ""}> ${esc(m.nombre)}${m.tipo === "solista" ? ' <small class="status">solista</small>' : ""}</label>`).join("") || `<span class="status">No hay otros ministerios.</span>`}</div>`, "Guardar");
   if (!d) return;
   const elegidos = otros.filter(m => d["m_" + m.id]).map(m => m.id);
   const nueva = { ...c, visibilidad: d.vis || (esPrivada(c) ? "ministerio" : "todos"), compartida_con: elegidos };
   await D.guardar("cif_canciones", nueva);
-  toast(nueva.visibilidad === "todos" ? "Ahora la ve toda la librería." : elegidos.length ? `Compartida con ${elegidos.map(nombreMin).join(", ")}.` : `Solo la ve ${nombreMin(c.ministerio_id)}.`);
+  toast(nueva.visibilidad === "todos" ? `Abierta: ${abiertaTxt(nueva)}.` : elegidos.length ? `Compartida con ${elegidos.map(nombreMin).join(", ")}.` : `Solo la ve ${nombreMin(c.ministerio_id)}.`);
 }
 /** Toda la librería / solo un ministerio + compartir con otros */
 function visibilidadHTML() {
   const c = ed.c, priv = esPrivada(c), mis = misMins();
   const otros = D.lista("cif_ministerios").filter(m => m.id !== c.ministerio_id).sort((a, b) => a.nombre.localeCompare(b.nombre));
   const comp = c.compartida_con || [];
-  return `<div class="seg" role="radiogroup" style="align-self:flex-start"><button type="button" class="${!priv ? "on" : ""}" data-vis="todos">🌐 Toda la librería</button><button type="button" class="${priv ? "on" : ""}" data-vis="ministerio" ${mis.length ? "" : "disabled"}>🔒 Solo un ministerio</button></div>
+  return `<div class="seg" role="radiogroup" style="align-self:flex-start"><button type="button" class="${!priv ? "on" : ""}" data-vis="todos">🌐 ${esc(abiertaTxt(c))}</button><button type="button" class="${priv ? "on" : ""}" data-vis="ministerio" ${mis.length ? "" : "disabled"}>🔒 Solo un ministerio</button></div>
     ${priv ? `<div class="row" style="gap:8px;margin-top:8px"><span style="font-weight:700;font-size:13px">De</span><select class="fsel" id="evmin">${mis.map(m => `<option value="${m.id}" ${m.id === c.ministerio_id ? "selected" : ""}>${esc(m.nombre)}${m.tipo === "solista" ? " (solista)" : ""}</option>`).join("")}</select></div>
       <div class="row" style="gap:6px;margin-top:8px"><span style="font-weight:700;font-size:13px">Compartir con</span>${otros.map(m => `<button type="button" class="tchip ${comp.includes(m.id) ? "on" : ""}" data-comp="${m.id}" style="--c:var(--sea)">${comp.includes(m.id) ? "✓ " : "＋ "}${esc(m.nombre)}</button>`).join("") || `<span class="status">No hay otros ministerios.</span>`}</div>` : ""}`;
 }
@@ -1796,13 +1828,16 @@ function enlazarEditor(base) {
     const ol = $("#olimpiar"); if (ol) ol.onclick = () => { c.orden = []; repintar(); };
   }
   enlazarPanel();
+  // «✓ Guardar» de arriba: se prende en cuanto hay cambios sin guardar
+  const g2 = $("#eguardar2"), revisa = () => setTimeout(() => { if (ed && g2) g2.disabled = ed.ini === JSON.stringify(ed.c); }, 0);
+  if (g2) { g2.onclick = () => $("#eguardar").click(); const mc = $("main"); mc.addEventListener("input", revisa); mc.addEventListener("click", revisa); mc.addEventListener("change", revisa); mc.addEventListener("keyup", revisa); }
   $("#eguardar").onclick = async () => {
     if (!c.titulo.trim()) { $("#etit").focus(); return toast("Ponle título a la canción."); }
     const fila = { ...c, titulo: c.titulo.trim(), autor: (c.autor || "").trim(), origen: c.origen || "manual" };
     if (!base && !fila.ministerio_id) fila.ministerio_id = minActual() ? minActual().id : null;
     if (fila.visibilidad === "ministerio" && !fila.ministerio_id) return toast("Elige de qué ministerio es la canción.");
     const r = await D.guardar("cif_canciones", fila);
-    st.editando = false; const id = r.id; ed = null; toast("Canción guardada para todos."); location.hash = "#cancion/" + id;
+    st.editando = false; const id = r.id; ed = null; toast("Canción guardada."); location.hash = "#cancion/" + id;
   };
   $("#ecancel").onclick = () => { st.editando = false; const id = base && base.id; ed = null; location.hash = id ? "#cancion/" + id : "#libreria"; };
   const bb = $("#eborrar"); if (bb) bb.onclick = async () => { if (await confirmar(`¿Borrar «${base.titulo}» de la librería?`, "Se quita para todos los ministerios (también de sus sets).")) { await D.borrar("cif_canciones", base); st.editando = false; ed = null; location.hash = "#libreria"; } };
@@ -1971,7 +2006,8 @@ function vMinisterio(id) {
         <label class="mcampo" style="margin-top:18px"><b>Descripción</b><small>aparece en el perfil del ministerio</small><textarea class="field mdesc" name="descripcion" rows="3" maxlength="400" placeholder="Ministerio de alabanza de…">${esc(e.descripcion)}</textarea></label>
         <div class="row" style="margin-top:12px"><button class="btn">Guardar</button><button type="button" class="btn ghost" id="mreset">Colores de Tiempo de Dios</button><span class="status" id="mmsg"></span></div></form>`
         : m.descripcion ? `<section class="caja"><h3>Sobre ${esc(m.nombre)}</h3><p class="bio">${esc(m.descripcion)}</p></section>` : ""}
-      ${gestionMin(m)}`,
+      ${gestionMin(m)}
+      ${intercambiosHTML(m)}`,
     after() {
       enlazarMinisterios();
       $("#mprueba").onclick = async () => {
@@ -2033,6 +2069,7 @@ function gestionMin(m) {
       <p class="status" style="margin:8px 0 0">${m.tipo === "solista" ? "Artista" : "Admin"}: ${admins.length ? admins.map(a => esc(nombreDe(a.persona_id))).join(", ") : "nadie todavía"}</p>
       ${dev ? `<div class="minadmin">
           <select class="fsel" data-mtipo="${m.id}" aria-label="Tipo"><option value="ministerio" ${m.tipo !== "solista" ? "selected" : ""}>Ministerio</option><option value="solista" ${m.tipo === "solista" ? "selected" : ""}>🎤 Solista</option></select>
+          <label class="row" style="font-size:13px;font-weight:700;gap:6px" title="Los ministerios del colectivo comparten su librería"><input type="checkbox" data-colect="${m.id}" ${m.colectivo ? "checked" : ""}> Parte del colectivo TDD</label>
           <label class="row" style="font-size:13px;font-weight:700;gap:6px">Suscripción hasta <input type="date" class="fsel" data-susc="${m.id}" value="${esc(m.suscripcion_hasta || "")}"></label>
           <select class="fsel" data-nombra="${m.id}" aria-label="Nombrar admin"><option value="">＋ Nombrar admin…</option>${optPersonas(new Set(admins.map(a => a.persona_id)))}</select>
           <span class="sp"></span><button class="btn xs ghost" data-mborrar="${m.id}">Borrar ministerio</button></div>` : ""}
@@ -2063,7 +2100,7 @@ function vMinisterios() {
     const mio = membresias().find(x => x.ministerio_id === m.id), c = m.color_primario || "#FF3D1A", lg = logoSrc(m.logo);
     return `<div class="mtarj" data-ir="${m.id}" role="link" tabindex="0" style="--c:${esc(c)}">
       ${lg ? `<img class="mlogoxl" src="${esc(lg)}" alt="">` : `<span class="mlogoxl" style="background:${esc(c)}">${esc(iniciales(m.nombre))}</span>`}
-      <b>${esc(m.nombre)}</b><span class="u">${sol ? "🎤 Solista" : "Ministerio"}</span>
+      <b>${esc(m.nombre)}</b><span class="u">${sol ? "🎤 Solista" : "Ministerio"}${m.colectivo ? " · Colectivo TDD" : ""}</span>
       <span>${admins.length ? (sol ? "Artista: " : "Admin: ") + esc(admins.join(", ")) : "Sin admin todavía"}</span>
       ${m.descripcion ? `<p class="bio">${esc(m.descripcion)}</p>` : ""}
       <span class="n">${miem.length} integrante${miem.length === 1 ? "" : "s"} · ${nS} set${nS === 1 ? "" : "s"}</span>
@@ -2080,6 +2117,7 @@ function vMinisterios() {
         <li>${misSol.length ? "Ya pediste entrar ✓" : "Busca tu ministerio abajo y toca «Solicitar unirme»."}</li>
         <li>Un admin de tu ministerio (o el desarrollador) te acepta y te llega un correo.</li></ol>
         <p>Mientras, ya puedes usar la librería y guardar tus tonos.</p></section>` : ""}
+      ${pendInter().length ? `<section class="caja solic"><h3>Canciones por recibir (${pendInter().length})</h3>${pendInter().map(x => `<div class="interrow entra"><span><b>${esc(nombreMin(x.de))}</b> ${x.tipo === "intercambio" ? "propone un intercambio con" : "quiere enviar sus canciones a"} <b>${esc(nombreMin(x.para))}</b></span><a class="btn xs" href="#ministerio/${x.para}">Revisar</a></div>`).join("")}</section>` : ""}
       ${porRevisar.length ? `<section class="caja solic"><h3>Solicitudes por revisar (${porRevisar.length})</h3><ul class="miembros">${porRevisar.map(filaSol).join("")}</ul></section>` : ""}
       ${dev ? `<form class="caja" id="fmin"><h3>Nuevo ministerio</h3><p>Solo tú das de alta ministerios. Un <b>solista</b> también es un ministerio (p. ej. ARIA de Ceci): tiene sus sets, sus canciones nuevas y puede sumar a su banda. Después, los integrantes crean su cuenta y piden entrar; tú o el admin los aceptan.</p>
         <div class="ualta"><input class="field" name="nombre" placeholder="Kairós, ARIA…" required>
@@ -2098,8 +2136,87 @@ function vMinisterios() {
   };
 }
 
+// ================= ENVÍOS E INTERCAMBIOS DE CANCIONES =================
+// Un ministerio le «envía» a otro las canciones que el otro no tiene, o «intercambian» en los dos sentidos.
+// El admin del que recibe acepta; en la nube copia cif_transferir() (migración 009); sin nube se copia aquí mismo.
+const tituloN = t => norm(t).replace(/\s+/g, " ").trim();
+/** Canciones que «origen» ve y «destino» no tiene (por título). Con lo que este dispositivo alcanza a ver. */
+function faltanEn(origen, destino) {
+  const todas = D.lista("cif_canciones").filter(c => !c.borrada);
+  const ya = new Set(todas.filter(c => minVe(destino, c)).map(c => tituloN(c.titulo)));
+  const vistos = new Set();
+  return todas.filter(c => minVe(origen, c)).filter(c => { const k = tituloN(c.titulo); if (ya.has(k) || vistos.has(k)) return false; vistos.add(k); return true; });
+}
+async function copiarLocal(origen, destino) {
+  const lista = faltanEn(origen, destino);
+  for (const c of lista) {
+    const { id, actualizado, actualizado_por, creada_por, ...resto } = c;
+    await D.guardar("cif_canciones", { ...resto, id: D.uuid(), ministerio_id: destino, visibilidad: "ministerio", compartida_con: [], origen: "intercambio", creada_por: yo() ? yo().id : null });
+  }
+  return lista.length;
+}
+function intercambiosHTML(min) {
+  if (!hayColectivo() && D.nube) return "";
+  const admin = rolEn(min.id) === "admin";
+  const xs = D.lista("cif_intercambios").filter(x => x.de === min.id || x.para === min.id).sort((a, b) => String(b.creado || b.actualizado).localeCompare(String(a.creado || a.actualizado)));
+  const entran = xs.filter(x => x.estado === "pendiente" && x.para === min.id), salen = xs.filter(x => x.estado === "pendiente" && x.de === min.id);
+  const hechos = xs.filter(x => x.estado !== "pendiente").slice(0, 6);
+  if (!admin && !xs.length) return "";
+  const otros = D.lista("cif_ministerios").filter(m => m.id !== min.id).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  const tipoTxt = x => x.tipo === "intercambio" ? "intercambio" : "envío";
+  const n = (o, d) => faltanEn(o, d).length;
+  return `<section class="caja" id="inter"><h3>Pasar canciones</h3>
+    <p>Los ministerios del colectivo ya comparten su librería. Con quien no la comparte puedes <b>enviarle</b> tus canciones que no tenga, o hacer un <b>intercambio</b>: cada quien recibe las que le faltan. Se copian (cada quien puede editar las suyas) y el admin del otro ministerio acepta.</p>
+    ${entran.map(x => `<div class="interrow entra"><span><b>${esc(nombreMin(x.de))}</b> ${x.tipo === "intercambio" ? "propone un <b>intercambio</b>" : "te quiere <b>enviar</b> sus canciones"}${x.tipo === "intercambio" ? "" : ` (≈ ${n(x.de, min.id)} que no tienes)`}${x.mensaje ? ` · «${esc(x.mensaje)}»` : ""}</span>
+      ${admin ? `<button class="btn xs" data-xacepta="${x.id}">Aceptar</button><button class="btn xs ghost" data-xrechaza="${x.id}">Rechazar</button>` : `<span class="status">Esperando a un admin</span>`}</div>`).join("")}
+    ${salen.map(x => `<div class="interrow"><span>Propusiste un ${tipoTxt(x)} a <b>${esc(nombreMin(x.para))}</b> · esperando que acepte</span>${admin ? `<button class="btn xs ghost" data-xcancela="${x.id}">Cancelar</button>` : ""}</div>`).join("")}
+    ${admin ? `<form class="interform" id="xform">
+      <select class="field" name="para" required><option value="">¿Con qué ministerio?</option>${otros.map(m => `<option value="${m.id}">${esc(m.nombre)}${m.colectivo && esColectivo(min.id) ? " (comparten librería)" : ""}</option>`).join("")}</select>
+      <div class="seg" role="radiogroup"><label><input type="radio" name="tipo" value="envio" checked><span>Enviar las mías</span></label><label><input type="radio" name="tipo" value="intercambio"><span>Intercambiar</span></label></div>
+      <input class="field" name="mensaje" placeholder="Mensaje (opcional)" autocomplete="off" data-1p-ignore data-lpignore="true">
+      <button class="btn">Proponer</button><span class="status" id="xcuenta"></span></form>` : ""}
+    ${hechos.length ? `<ul class="interhist">${hechos.map(x => `<li><span>${x.estado === "aceptado" ? "✓" : "✕"} ${tipoTxt(x)} ${esc(nombreMin(x.de))} → ${esc(nombreMin(x.para))}</span><small class="status">${x.estado === "aceptado" && x.resultado ? `${x.resultado.a_para || 0} a ${esc(nombreMin(x.para))}${x.tipo === "intercambio" ? ` · ${x.resultado.a_de || 0} a ${esc(nombreMin(x.de))}` : ""}` : x.estado}</small></li>`).join("")}</ul>` : ""}
+  </section>`;
+}
+function enlazarIntercambios() {
+  const f = $("#xform");
+  if (f) {
+    const de = f.closest("[data-min]") ? f.closest("[data-min]").dataset.min : (ruta().p[0]);
+    const cuenta = () => {
+      const para = f.para.value, el = $("#xcuenta"); if (!para) return (el.textContent = "");
+      if (esColectivo(de) && esColectivo(para)) return (el.textContent = "Los dos son del colectivo: ya comparten la librería.");
+      const a = faltanEn(de, para).length, b = faltanEn(para, de).length;
+      el.textContent = f.tipo.value === "intercambio" ? `≈ ${a} pasarían a ${nombreMin(para)} y ≈ ${b} a ${nombreMin(de)}` : `≈ ${a} canciones que ${nombreMin(para)} no tiene`;
+    };
+    f.para.onchange = cuenta; $$("[name=tipo]", f).forEach(r => (r.onchange = cuenta));
+    f.onsubmit = async e => {
+      e.preventDefault(); const para = f.para.value; if (!para) return;
+      await D.guardar("cif_intercambios", { de, para, tipo: f.tipo.value, mensaje: f.mensaje.value.trim() || null, estado: "pendiente", creado_por: yo() ? yo().id : null, creado: new Date().toISOString() });
+      toast(`Listo: le llegó a ${nombreMin(para)} para que un admin lo acepte.`); render();
+    };
+  }
+  $$("[data-xacepta]").forEach(b => b.onclick = async () => {
+    const x = D.uno("cif_intercambios", b.dataset.xacepta); b.disabled = true;
+    try {
+      let r;
+      if (D.nube) r = await D.rpc("cif_transferir", { i: x.id });
+      else { r = { a_para: await copiarLocal(x.de, x.para), a_de: x.tipo === "intercambio" ? await copiarLocal(x.para, x.de) : 0 }; await D.guardar("cif_intercambios", { ...x, estado: "aceptado", resultado: r }); }
+      toast(`Listo: ${r.a_para || 0} canciones pasaron a ${nombreMin(x.para)}${x.tipo === "intercambio" ? ` y ${r.a_de || 0} a ${nombreMin(x.de)}` : ""}.`);
+      render();
+    } catch (er) { b.disabled = false; toast(er.message || String(er)); }
+  });
+  $$("[data-xrechaza]").forEach(b => b.onclick = async () => { const x = D.uno("cif_intercambios", b.dataset.xrechaza); await D.guardar("cif_intercambios", { ...x, estado: "rechazado" }); toast("Rechazado."); });
+  $$("[data-xcancela]").forEach(b => b.onclick = async () => { const x = D.uno("cif_intercambios", b.dataset.xcancela); await D.guardar("cif_intercambios", { ...x, estado: "cancelado" }); toast("Cancelado."); });
+}
+
 /** Botones de ministerios (crear, solicitudes, integrantes, admins, invitar). Los usan la lista y la página de cada ministerio. */
 function enlazarMinisterios() {
+  $$("[data-colect]").forEach(x => x.onchange = async () => {
+    const m = D.uno("cif_ministerios", x.dataset.colect);
+    await D.guardar("cif_ministerios", { ...m, colectivo: x.checked });
+    toast(x.checked ? `${m.nombre} ahora comparte la librería del colectivo.` : `${m.nombre} ya no ve la librería del colectivo (solo la suya y la de Tiempo de Dios).`);
+  });
+  enlazarIntercambios();
   const fm = $("#fmin"); if (fm) fm.onsubmit = async e => {
     e.preventDefault();
     const n = fm.nombre.value.trim(), tipo = fm.tipo.value, adminId = fm.admin.value; if (!n) return;

@@ -130,14 +130,20 @@
     let paginasIndice = 0;
     if (op.portada) {
       nuevaPagina();
-      doc.setFillColor(...C_OSC); doc.rect(0, 0, W, H * 0.46, "F");
-      doc.setFillColor(...C_PRI); doc.rect(0, H * 0.46, W, 7, "F");
+      // título grande (68 pt, hasta 3 renglones); la banda crece si hace falta
       const tp = Math.round(74 * kLogo), yp = logoOk ? 70 + tp + 28 : 128;
+      fuente("bold", 68, [255, 255, 255]);
+      const tl = doc.splitTextToSize(san(op.titulo || "Cancionero"), W - 2 * M).slice(0, 3);
+      const yT = yp + 70, finT = yT + (tl.length - 1) * 70;
+      fuente("normal", 13, C_SEC);
+      const sl = op.subtitulo ? doc.splitTextToSize(san(op.subtitulo), W - 2 * M).slice(0, 2) : [];
+      const ySub = finT + 38, altoP = Math.max(H * 0.46, (sl.length ? ySub + (sl.length - 1) * 17 : finT) + 40);
+      doc.setFillColor(...C_OSC); doc.rect(0, 0, W, altoP, "F");
+      doc.setFillColor(...C_PRI); doc.rect(0, altoP, W, 7, "F");
       if (logoOk) { try { doc.addImage(logoOk.data, logoOk.fmt, M, 70, tp, tp, undefined, "FAST"); } catch (e) { /* sin logo */ } } else puntos(M + 6, 96);
       fuente("normal", 10, [201, 210, 209]); doc.text(san(mk.nombre).toUpperCase() + " · " + san(mk.etiqueta).toUpperCase(), M, yp);
-      fuente("bold", 34, [255, 255, 255]); doc.text(doc.splitTextToSize(san(op.titulo || "Cancionero"), W - 2 * M).slice(0, 2), M, yp + 44);
-      if (op.subtitulo) { fuente("normal", 13, C_SEC); doc.text(doc.splitTextToSize(san(op.subtitulo), W - 2 * M).slice(0, 2), M, H * 0.46 - 40); }
-      fuente("normal", 11, C_TXT); doc.text(`${op.canciones.length} canci${op.canciones.length === 1 ? "ón" : "ones"} · ${cols === 2 ? "dos columnas" : "una columna"}`, M, H * 0.46 + 46);
+      fuente("bold", 68, [255, 255, 255]); doc.text(tl, M, yT, { lineHeightFactor: 70 / 68 });
+      if (sl.length) { fuente("normal", 13, C_SEC); doc.text(sl, M, ySub); }
       if (op.indice) { paginasIndice = Math.max(1, Math.ceil(op.canciones.length / 18)); for (let i = 0; i < paginasIndice; i++) doc.addPage(); }
     }
     const top0 = M - 10;
@@ -178,6 +184,7 @@
         fuente("bold", 11, C_TXT); doc.text(`${i + 1}. ${san(e.titulo)}`.slice(0, 70), M, y);
         fuente("normal", 9, C_MUT); doc.text(san([e.autor, e.extra].filter(Boolean).join(" · ")).slice(0, 80), M + 16, y + 12);
         fuente("bold", 11, C_PRI); doc.text(String(e.pagina), W - M, y, { align: "right" });
+        doc.link(M, y - 12, W - 2 * M, 32, { pageNumber: e.pagina }); // tocar el renglón lleva a la canción
         doc.setDrawColor(221, 229, 229); doc.line(M, y + 21, W - M, y + 21);
         y += 34; n++;
       });

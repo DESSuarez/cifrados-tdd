@@ -6,9 +6,9 @@
    Sin config de Supabase la app corre en "modo local" (un solo dispositivo), útil para probar. */
 (function () {
   "use strict";
-  const TABLAS = ["cif_canciones", "cif_tonos", "cif_sets", "cif_tracks", "cif_ministerios", "cif_miembros", "cif_perfiles", "cif_solicitudes", "cif_amistades", "cif_anuncios"];
+  const TABLAS = ["cif_canciones", "cif_tonos", "cif_sets", "cif_tracks", "cif_ministerios", "cif_miembros", "cif_perfiles", "cif_solicitudes", "cif_amistades", "cif_anuncios", "cif_intercambios"];
   // tablas chicas: se bajan completas para notar las bajas
-  const CHICAS = new Set(["cif_miembros", "cif_ministerios", "cif_perfiles", "cif_solicitudes", "cif_amistades", "cif_anuncios"]);
+  const CHICAS = new Set(["cif_miembros", "cif_ministerios", "cif_perfiles", "cif_solicitudes", "cif_amistades", "cif_anuncios", "cif_intercambios"]);
   const CON_AUTOR = new Set(["cif_canciones", "cif_sets", "cif_tracks"]); // tienen columna actualizado_por
   const LLAVE = { cif_tonos: r => r.cancion_id + "|" + r.persona_id, cif_miembros: r => r.ministerio_id + "|" + r.persona_id };
   const llaveDe = (t, r) => (LLAVE[t] ? LLAVE[t](r) : r.id);
@@ -24,7 +24,7 @@
   function db() {
     if (dbp) return dbp;
     dbp = new Promise((res, rej) => {
-      const r = indexedDB.open("cifrados-tdd", 4);
+      const r = indexedDB.open("cifrados-tdd", 5);
       r.onupgradeneeded = () => {
         const d = r.result;
         TABLAS.forEach(t => { if (!d.objectStoreNames.contains(t)) d.createObjectStore(t); });
