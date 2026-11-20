@@ -666,11 +666,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=26"></script>
-<script src="cifrado.js?v=26"></script>
-<script src="senas.js?v=26"></script>
-<script src="datos.js?v=26"></script>
-<script src="pdf.js?v=26"></script>
+<script src="config.publico.js?v=27"></script>
+<script src="cifrado.js?v=27"></script>
+<script src="senas.js?v=27"></script>
+<script src="datos.js?v=27"></script>
+<script src="pdf.js?v=27"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -2277,7 +2277,8 @@ function vMinisterios() {
 // ================= BANCO DE CANCIONES =================
 // Todas las canciones abiertas de todos los ministerios. Se busca por título o artista y «＋ Añadir» copia la canción
 // a la librería del ministerio elegido arriba del menú (en la nube: cif_banco y cif_agregar, migración 011).
-const banco = { q: "", res: null, cargando: false, error: "", pide: 0 };
+// Filtros del banco (como en la librería): pestaña, artista, tono, etiquetas, ministerio y «solo las que no tengo»
+const banco = { q: "", res: null, cargando: false, error: "", pide: 0, tab: "todas", fArt: "", fTono: "", fTags: [], fMin: "", faltan: false };
 async function buscarBanco() {
   const yo_ = ++banco.pide;
   if (!D.nube) {
@@ -2285,11 +2286,11 @@ async function buscarBanco() {
     banco.res = D.lista("cif_canciones").filter(c => !c.borrada && (c.visibilidad || "todos") === "todos" && (!q || norm(c.titulo + " " + c.autor).includes(q)))
       .sort((a, b) => a.titulo.localeCompare(b.titulo, "es"))
       .filter(c => { const k = tituloN(c.titulo) + "|" + norm(c.autor); if (vistos.has(k)) return false; vistos.add(k); return true; })
-      .map(c => ({ ...c, ministerio: c.ministerio_id ? nombreMin(c.ministerio_id) : "" })).slice(0, 300);
+      .map(c => ({ ...c, ministerio: c.ministerio_id ? nombreMin(c.ministerio_id) : "" })).slice(0, 1000);
     render(); return;
   }
   banco.cargando = true; banco.error = ""; render();
-  try { const r = await D.consulta("cif_banco", { q: banco.q, lim: 300 }); if (yo_ === banco.pide) banco.res = r || []; }
+  try { const r = await D.consulta("cif_banco", { q: banco.q, lim: 1000 }); if (yo_ === banco.pide) banco.res = r || []; }
   catch (e) { banco.error = e.message || String(e); }
   banco.cargando = false; if (yo_ === banco.pide) render();
 }
@@ -2309,18 +2310,50 @@ function vBanco() {
   if (banco.res === null && !banco.cargando && !banco.error) setTimeout(buscarBanco, 0);
   const m = minActual(), puede = !!m && ["admin", "musico"].includes(rolEn(m.id));
   const mias = new Set(canciones().map(c => tituloN(c.titulo)));
-  const res = banco.res || [], faltan = res.filter(r => !mias.has(tituloN(r.titulo)));
+  const todo = banco.res || [];
+  // pestañas con su cuenta, y filtros sobre la pestaña elegida
+  const grupo = r => (esLiturgica(r) ? "liturgicas" : esTDD(r) ? "tdd" : "otras");
+  const n = { todas: todo.length, tdd: 0, otras: 0, liturgicas: 0 }; todo.forEach(r => n[grupo(r)]++);
+  const enTab = banco.tab === "todas" ? todo : todo.filter(r => grupo(r) === banco.tab);
+  const artistas = [...new Set(enTab.flatMap(artistasDe))].sort((a, b) => a.localeCompare(b, "es"));
+  const tonos = C.TONOS.filter(t => enTab.some(r => r.tono === t));
+  const etqs = [...new Set(enTab.flatMap(r => r.etiquetas || []))].sort((a, b) => a.localeCompare(b, "es"));
+  const mins = [...new Set(enTab.map(r => r.ministerio).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+  let res = enTab;
+  if (banco.fArt) res = res.filter(r => artistasDe(r).includes(banco.fArt));
+  if (banco.fTono) res = res.filter(r => r.tono === banco.fTono);
+  if (banco.fMin) res = res.filter(r => r.ministerio === banco.fMin);
+  if (banco.fTags.length) res = res.filter(r => (r.etiquetas || []).some(t => banco.fTags.includes(t)));
+  if (banco.faltan) res = res.filter(r => !mias.has(tituloN(r.titulo)));
+  const faltan = res.filter(r => !mias.has(tituloN(r.titulo)));
+  const hayFiltro = banco.fArt || banco.fTono || banco.fMin || banco.fTags.length || banco.faltan;
   return {
-    band: bandHTML({ tag: "Música", titulo: "Banco de <em>canciones</em>", sub: `<span>Las canciones que suben todos los ministerios</span><span>${m ? "Lo que añadas va a la librería de <b>" + esc(m.nombre) + "</b>" : "Elige un ministerio arriba del menú"}</span>` }),
+    band: bandHTML({ tag: "Música", titulo: "Banco de <em>canciones</em>", sub: `<span>Lo ven todos los usuarios de la plataforma</span><span>${m ? "Lo que añadas va a la librería de <b>" + esc(m.nombre) + "</b>" : "Elige un ministerio arriba del menú"}</span>`,
+      tabs: tabsHTML([["todas", "Todas", n.todas], ["tdd", "Tiempo de Dios", n.tdd], ["otras", "Otras canciones", n.otras], ["liturgicas", "Litúrgicas", n.liturgicas]], banco.tab, "data-btab") }),
     main: `
       <div class="buscador"><input class="field" id="bq" type="search" placeholder="Busca por título o artista…" value="${esc(banco.q)}" autocomplete="off">
         ${puede && faltan.length > 1 ? `<button class="btn ghost" id="baddall" style="flex-basis:auto">＋ Añadir las ${faltan.length} que no tengo</button>` : ""}</div>
-      <p class="status" style="margin:0">${banco.cargando ? "Buscando…" : banco.error ? "" : `${res.length}${res.length >= 300 ? "+" : ""} canciones${banco.q ? " para «" + esc(banco.q) + "»" : ""} · ${res.length - faltan.length} ya están en tu librería`}${!puede && m ? " · Solo músicos y admins de " + esc(m.nombre) + " pueden añadir" : ""}</p>
+      <div class="filtros">
+        <select class="fsel ${banco.fArt ? "on" : ""}" id="bfart" aria-label="Artista"><option value="">Todos los artistas</option>${artistas.map(a => `<option ${a === banco.fArt ? "selected" : ""}>${esc(a)}</option>`).join("")}</select>
+        <select class="fsel ${banco.fTono ? "on" : ""}" id="bfton" aria-label="Tono"><option value="">Cualquier tono</option>${tonos.map(t => `<option ${t === banco.fTono ? "selected" : ""}>${t}</option>`).join("")}</select>
+        ${mins.length > 1 ? `<select class="fsel ${banco.fMin ? "on" : ""}" id="bfmin" aria-label="Subida por"><option value="">Subida por cualquiera</option>${mins.map(x => `<option ${x === banco.fMin ? "selected" : ""}>${esc(x)}</option>`).join("")}</select>` : ""}
+        <button class="tchip ${banco.faltan ? "on" : ""}" id="bffalt">Solo las que no tengo</button>
+        ${etqs.map(t => `<button class="tchip ${banco.fTags.includes(t) ? "on" : ""}" data-btag="${esc(t)}" style="--c:var(--sea)">#${esc(t)}</button>`).join("")}
+        ${hayFiltro ? `<button class="tchip" id="bflimpia" style="--c:var(--muted)">✕ Quitar filtros</button>` : ""}
+      </div>
+      <p class="status" style="margin:0">${banco.cargando ? "Buscando…" : banco.error ? "" : `${res.length} de ${enTab.length}${todo.length >= 1000 ? "+" : ""} canciones${banco.q ? " para «" + esc(banco.q) + "»" : ""} · ${res.length - faltan.length} ya están en tu librería`}${!puede && m ? " · Solo músicos y admins de " + esc(m.nombre) + " pueden añadir" : ""}</p>
       ${banco.error ? `<div class="empty"><strong>No se pudo leer el banco</strong><p>${esc(banco.error)}</p><p>Revisa que esté corrida la migración 011 en Supabase.</p></div>` : ""}
       <ul class="songs">${res.map(r => `<li><div class="srow brow"><div><b>${esc(r.titulo)}</b><small>${artistasHTML(r, false) || "—"}${r.ministerio ? `<span class="etq"> · subida por ${esc(r.ministerio)}</span>` : ""}${r.copias > 1 ? `<span class="etq"> · en ${r.copias} librerías</span>` : ""}</small></div>
         <span class="chips">${r.tono ? `<span class="chip tono">${esc(r.tono)}</span>` : ""}${mias.has(tituloN(r.titulo)) ? `<span class="chip pista">✓ En tu librería</span>` : puede ? `<button class="btn xs badd" data-badd="${r.id}">＋ Añadir a la librería</button>` : ""}</span></div></li>`).join("")}</ul>
-      ${!banco.cargando && banco.res && !res.length ? `<div class="empty"><strong>Sin resultados</strong><p>Prueba con otra parte del título o con el nombre del artista.</p></div>` : ""}`,
+      ${!banco.cargando && banco.res && !res.length ? `<div class="empty"><strong>Sin resultados</strong><p>${hayFiltro ? "Prueba quitando algún filtro." : "Prueba con otra parte del título o con el nombre del artista."}</p></div>` : ""}`,
     after() {
+      $$("[data-btab]").forEach(b => b.onclick = () => { banco.tab = b.dataset.btab; banco.fArt = banco.fTono = banco.fMin = ""; banco.fTags = []; render(); });
+      $("#bfart").onchange = e => { banco.fArt = e.target.value; render(); };
+      $("#bfton").onchange = e => { banco.fTono = e.target.value; render(); };
+      const bm = $("#bfmin"); if (bm) bm.onchange = e => { banco.fMin = e.target.value; render(); };
+      $("#bffalt").onclick = () => { banco.faltan = !banco.faltan; render(); };
+      $$("[data-btag]").forEach(b => b.onclick = () => { const t = b.dataset.btag; banco.fTags = banco.fTags.includes(t) ? banco.fTags.filter(x => x !== t) : banco.fTags.concat(t); render(); });
+      const bl = $("#bflimpia"); if (bl) bl.onclick = () => { banco.fArt = banco.fTono = banco.fMin = ""; banco.fTags = []; banco.faltan = false; render(); };
       const bq = $("#bq"); let t;
       bq.oninput = () => { banco.q = bq.value; clearTimeout(t); t = setTimeout(async () => { await buscarBanco(); const n = $("#bq"); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } }, 300); };
       $$("[data-badd]").forEach(b => b.onclick = async () => {
