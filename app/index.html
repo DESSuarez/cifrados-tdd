@@ -82,6 +82,14 @@ a{color:var(--area-ink)}
 .sync{display:flex;align-items:center;gap:8px;font:500 12px var(--mono);color:var(--muted);padding:8px 10px;border-radius:10px;background:var(--bg);border:1px solid var(--line);cursor:pointer;text-align:left}
 .sync i{width:9px;height:9px;border-radius:50%;flex:none;background:#1DB954}
 .sync.pend i{background:var(--sol)}.sync.off i{background:var(--muted)}.sync.local i{background:var(--baby-ink)}.sync.err i{background:var(--flame)}
+.sync.red i{background:var(--lav);box-shadow:0 0 0 3px color-mix(in srgb,var(--lav) 30%,transparent)}
+.sync:hover{border-color:var(--flame)}
+.cxmodos{display:grid;gap:10px}
+.cxm{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.cxm.act{border-color:var(--flame);background:color-mix(in srgb,var(--flame) 7%,transparent)}
+.cxm>b{font-family:var(--display);font-weight:800;font-size:15px}
+.cxm p{margin:0;font-size:13.5px;color:var(--muted)}.cxm p b{color:var(--fg)}
+.cxm code{font-family:var(--mono);font-size:12px;background:var(--surface);padding:1px 5px;border-radius:5px}
 /* tarjeta de cuenta a todo lo ancho; abajo Apariencia y Salir */
 .userbar{position:relative;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:12px}
 .ubtns{display:flex;gap:6px}
@@ -427,7 +435,13 @@ input[type=date].fsel::-webkit-calendar-picker-indicator{opacity:.6;cursor:point
 .tonosbar .fijo{cursor:default;background:var(--flame-soft);color:var(--flame);border-color:transparent}
 .fsel{height:34px;border:1.5px solid var(--line);border-radius:99px;background:var(--bg);padding:0 12px;font-weight:700;font-size:13px;max-width:220px}
 /* flecha propia con aire respecto al borde (la nativa quedaba pegada) */
-select.fsel{-webkit-appearance:none;appearance:none;padding:0 34px 0 14px;cursor:pointer;
+/* todas las listas desplegables (.fsel, .field, .minsel, Capo) con la misma flecha y aire a la derecha */
+select.field,select.minsel{padding-right:42px!important;background-position:right 16px center!important}
+.ctl select{padding-right:22px;background-position:right 2px center!important}
+select.fsel,select.field,select.minsel,.ctl select{-webkit-appearance:none;appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A9493' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 13px center;background-size:14px}
+select.fsel{padding:0 34px 0 14px;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A9493' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 13px center;background-size:14px}
 .fsel.on{border-color:var(--area);color:var(--area-ink)}
@@ -446,7 +460,8 @@ select.fsel{-webkit-appearance:none;appearance:none;padding:0 34px 0 14px;cursor
 .solic b{display:block;margin-bottom:6px}
 .ulista{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .ucard{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
-.uinfo{min-width:0;display:flex;flex-direction:column}
+.uinfo{min-width:0;display:flex;flex-direction:column;align-items:flex-start}
+.uinfo>small{align-self:stretch}
 .uinfo a{color:var(--fg);text-decoration:none}.uinfo a:hover{text-decoration:underline}
 .uacc{display:flex;flex-direction:column;gap:6px;align-items:stretch}
 @media (max-width:700px){.ucard{grid-template-columns:auto 1fr}.uacc{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}}
@@ -469,10 +484,10 @@ select.fsel{-webkit-appearance:none;appearance:none;padding:0 34px 0 14px;cursor
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=8"></script>
-<script src="cifrado.js?v=8"></script>
-<script src="senas.js?v=8"></script>
-<script src="datos.js?v=8"></script>
+<script src="config.publico.js?v=9"></script>
+<script src="cifrado.js?v=9"></script>
+<script src="senas.js?v=9"></script>
+<script src="datos.js?v=9"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -531,7 +546,7 @@ const yo = () => D.estado.usuario;
 const miPerfil = () => yo() && D.uno("cif_perfiles", yo().id);
 const nombreDe = id => { const p = D.uno("cif_perfiles", id); return p ? p.nombre || "Sin nombre" : "Alguien"; };
 const iniciales = n => String(n || "?").trim().split(/\s+/).slice(0, 2).map(x => x[0]).join("").toUpperCase();
-const esSuper = () => !D.nube || !!(miPerfil() && miPerfil().superadmin);
+const esSuper = () => D.modo === "local" || !!(miPerfil() && miPerfil().superadmin);
 const membresias = () => yo() ? D.lista("cif_miembros").filter(m => m.persona_id === yo().id) : [];
 function misMins() {
   const todos = D.lista("cif_ministerios").sort((a, b) => a.nombre.localeCompare(b.nombre));
@@ -548,7 +563,7 @@ function minActual() {
   return ms.find(m => m.id === st.min) || ms[0];
 }
 // Quién ve una canción (mismo criterio que cif_ve_cancion en SQL): toda la librería, o su ministerio y con quien se compartió
-const veCancion = c => !D.nube || (c.visibilidad || "todos") === "todos" || esSuper() || (yo() && c.creada_por === yo().id)
+const veCancion = c => D.modo === "local" || (c.visibilidad || "todos") === "todos" || esSuper() || (yo() && c.creada_por === yo().id)
   || membresias().some(m => m.ministerio_id === c.ministerio_id || (c.compartida_con || []).includes(m.ministerio_id));
 const nombreMin = id => (D.uno("cif_ministerios", id) || {}).nombre || "otro ministerio";
 const esPrivada = c => (c.visibilidad || "todos") === "ministerio";
@@ -557,7 +572,7 @@ const comparteCancion = c => esSuper() || (yo() && c.creada_por === yo().id) || 
 /** Etiqueta corta de privacidad para listas */
 function chipPrivacidad(c) {
   if (!esPrivada(c)) return "";
-  const mio = membresias().some(m => m.ministerio_id === c.ministerio_id) || !D.nube;
+  const mio = membresias().some(m => m.ministerio_id === c.ministerio_id) || D.modo === "local";
   const n = (c.compartida_con || []).length;
   return mio ? `<span class="chip priv" title="Solo la ve ${esc(nombreMin(c.ministerio_id))}${n ? " y " + n + " ministerio(s) más" : ""}">🔒 ${esc(nombreMin(c.ministerio_id))}${n ? " +" + n : ""}</span>`
     : `<span class="chip comp" title="Te la compartió ${esc(nombreMin(c.ministerio_id))}">↔ de ${esc(nombreMin(c.ministerio_id))}</span>`;
@@ -634,7 +649,7 @@ function shell(band, main) {
       <a class="acct" href="#perfil" title="Mi perfil"><span class="av">${esc(iniciales(nm))}</span><span><b>${esc(nm)}</b><small>${esc(p && p.usuario ? "@" + p.usuario : "")}${p && p.usuario ? " · " : ""}${esc(m ? m.nombre : D.nube ? "Sin ministerio" : "Modo local")}</small></span></a>
       <div class="ubtns">
         <button class="ubtn" id="temab" aria-haspopup="true" aria-expanded="false">${temaActual() === "dia" ? IC.sol : IC.luna}<span>${{ auto: "Auto", dia: "Día", noche: "Noche", retro: "Retro" }[temaActual()]}</span></button>
-        ${D.nube ? `<button class="ubtn" id="salirb">${IC.salir}<span>Salir</span></button>` : ""}
+        ${D.modo !== "local" ? `<button class="ubtn" id="salirb">${IC.salir}<span>Salir</span></button>` : ""}
       </div>
       <div class="temamenu" id="temamenu" role="menu" hidden>${[["dia", "☀️", "Día"], ["noche", "🌙", "Noche"], ["retro", "👾", "Retro"], ["auto", "◐", "Auto (como tu sistema)"]].map(([k, i, l]) => `<button role="menuitemradio" aria-checked="${temaActual() === k}" data-tm="${k}"><span>${i}</span>${l}${temaActual() === k ? '<b>✓</b>' : ""}</button>`).join("")}</div>
     </div>
@@ -658,6 +673,7 @@ function tabsHTML(lista, actual, attr = "data-tab") {
 function render() {
   aplicarEstilo();
   const app = $("#app");
+  if (D.modo === "red" && (!D.pinRed() || !yo() || !miPerfil())) { app.innerHTML = vRedEntrar(); enlazarRedEntrar(); return; }
   if (D.nube && !yo()) { app.innerHTML = vLogin(); enlazarLogin(); return; }
   if (D.nube && (st.ponerClave || D.estado.ponerClave)) { app.innerHTML = vNuevaClave(); enlazarNuevaClave(); return; }
   const r = ruta();
@@ -692,7 +708,7 @@ function enlazarShell() {
   tb.onclick = e => { e.stopPropagation(); tm.hidden = !tm.hidden; tb.setAttribute("aria-expanded", String(!tm.hidden)); };
   $$("[data-tm]", tm).forEach(b => b.onclick = () => aplicarTema(b.dataset.tm));
   document.onclick = e => { if (!tm.hidden && !tm.contains(e.target)) { tm.hidden = true; tb.setAttribute("aria-expanded", "false"); } };
-  $("#syncb").onclick = () => { if (!D.nube) return toast("Modo local: falta configurar Supabase en config.publico.js"); D.sincronizar(); toast("Sincronizando…"); };
+  $("#syncb").onclick = abrirConexion;
   const ms = $("#minsel"); if (ms) ms.onchange = () => { st.min = ms.value; ls.set("cifrados-min", st.min); render(); };
 }
 function alternarLateral() {
@@ -721,6 +737,10 @@ function aplicarTema(t) {
 function pintarSync(e) {
   const b = $("#syncb"), t = $("#synct"); if (!b) return;
   b.className = "sync";
+  if (e.modo === "red") {
+    if (!e.redOk) { b.classList.add("off"); t.textContent = `Red local · sin servidor${e.pendientes ? " · " + e.pendientes + " por enviar" : ""}`; return; }
+    b.classList.add("red"); t.textContent = `Red local · ${e.conectados || 1} conectado${(e.conectados || 1) === 1 ? "" : "s"}`; return;
+  }
   if (!e.nube) { b.classList.add("local"); t.textContent = "Modo local · este dispositivo"; return; }
   if (!e.enLinea) { b.classList.add("off"); t.textContent = `Sin conexión · ${e.pendientes ? e.pendientes + " por subir" : "todo guardado aquí"}`; return; }
   if (e.error) { b.classList.add("err"); t.textContent = e.error; return; }
@@ -844,7 +864,7 @@ function vCancion(p) {
   if (ctxSet) {
     const n = ctxSet.s.items.length, it = ctxSet.item || {};
     setbar = `<div class="setbar"><a class="navbtn" href="#set/${ctxSet.s.id}">← ${esc(ctxSet.s.nombre)}</a><span>${ctxSet.i + 1} de ${n}${it.momento ? " · " + esc(nombreMomento(it.momento)) : ""}${it.persona_id ? " · dirige " + esc(nombreDe(it.persona_id)) : ""}</span><span class="sp"></span>
-      ${D.nube ? `<button class="navbtn ${st.dirigir ? "on" : ""}" id="dirigir" title="Los demás ven la canción y sección que tú marques">📡 Dirigir</button><button class="navbtn ${st.seguir ? "on" : ""}" id="seguir" title="Abrir lo que marque quien dirige">${st.seguir ? '<span class="vivoind"><i></i>Siguiendo</span>' : "Seguir"}</button>` : ""}
+      ${D.modo !== "local" ? `<button class="navbtn ${st.dirigir ? "on" : ""}" id="dirigir" title="Los demás ven la canción y sección que tú marques">📡 Dirigir</button><button class="navbtn ${st.seguir ? "on" : ""}" id="seguir" title="Abrir lo que marque quien dirige">${st.seguir ? '<span class="vivoind"><i></i>Siguiendo</span>' : "Seguir"}</button>` : ""}
       <button class="navbtn" id="prev" ${ctxSet.i <= 0 ? "disabled" : ""}>‹</button><button class="navbtn" id="next" ${ctxSet.i >= n - 1 ? "disabled" : ""}>›</button></div>`;
   }
   const sub = [c.autor && `<span>${esc(c.autor)}</span>`, `<span>Original <b>${esc(original)}</b></span>`, c.bpm && `<span><b>${c.bpm}</b> bpm</span>`, c.compas && `<span><b>${esc(c.compas)}</b></span>`, capo ? `<span>Capo <b>${capo}</b> · formas de <b>${esc(forma)}</b></span>` : "",
@@ -1551,7 +1571,7 @@ function vMinisterios() {
           <span class="sp"></span><button class="btn xs ghost" data-mborrar="${m.id}">Borrar ministerio</button></div>` : ""}
       ${soy || dev ? `<ul class="miembros" style="margin-top:12px">${miem.map(x => `<li><span class="av">${esc(iniciales(nombreDe(x.persona_id)))}</span><span><a href="#persona/${x.persona_id}"><b>${esc(nombreDe(x.persona_id))}</b></a>${(D.uno("cif_perfiles", x.persona_id) || {}).artista ? ' <span class="chip mio">artista</span>' : ""}</span>
         ${admin ? `<select class="fsel" data-rol="${m.id}|${x.persona_id}">${["admin", "musico", "lector"].map(r => `<option value="${r}" ${r === x.rol ? "selected" : ""}>${ROL_TXT[r]}</option>`).join("")}</select><button class="btn xs ghost" data-saca="${m.id}|${x.persona_id}" aria-label="Quitar">✕</button>` : `<span class="chip">${esc(ROL_TXT[x.rol] || x.rol)}</span>`}</li>`).join("") || `<li class="status">Sin integrantes: comparte la liga de la app para que pidan entrar.</li>`}</ul>` : ""}
-      ${admin && !D.nube ? `<div class="row" style="margin-top:10px"><input class="field" data-nuevo="${m.id}" placeholder="Nombre de la persona (modo local)" style="flex:1"><button class="btn sm" data-agrega="${m.id}">Agregar</button></div>` : ""}
+      ${admin && D.modo === "local" ? `<div class="row" style="margin-top:10px"><input class="field" data-nuevo="${m.id}" placeholder="Nombre de la persona (modo local)" style="flex:1"><button class="btn sm" data-agrega="${m.id}">Agregar</button></div>` : ""}
       ${admin && D.nube ? `<form class="row" data-invita="${m.id}" style="margin-top:10px"><input class="field" name="email" type="email" placeholder="correo@… para invitar" required autocomplete="off" data-1p-ignore data-lpignore="true" style="flex:2;min-width:180px"><input class="field" name="nombre" placeholder="Nombre" autocomplete="off" data-1p-ignore data-lpignore="true" style="flex:1;min-width:120px"><button class="btn sm">Invitar al ministerio</button></form>` : ""}
       ${!soy && !dev ? `<div class="row" style="margin-top:10px">${misSol.some(s => s.ministerio_id === m.id) ? `<span class="status">Solicitud enviada · esperando a un admin</span><button class="btn xs ghost" data-cancela="${m.id}">Cancelar</button>` : `<button class="btn sm" data-pide="${m.id}">Solicitar unirme</button>`}</div>` : ""}
     </section>`;
@@ -1690,8 +1710,8 @@ function vUsuarios() {
     main: `
       ${D.nube ? `<section class="caja"><h3>Dar de alta</h3><p>Con <b>invitación</b> le llega un correo para crear su contraseña. Con <b>contraseña</b> la cuenta queda lista sin correo (útil mientras no esté el SMTP propio): pásale la contraseña en persona.</p>
         <form class="ualta" id="ualta">
-          <input class="field" name="email" type="email" placeholder="correo@…" required>
-          <input class="field" name="nombre" placeholder="Nombre">
+          <input class="field" name="email" type="email" placeholder="correo@…" required autocomplete="off" data-1p-ignore data-lpignore="true">
+          <input class="field" name="nombre" placeholder="Nombre" autocomplete="off" data-1p-ignore data-lpignore="true">
           <select class="field" name="ministerio"><option value="">Sin ministerio</option>${mins.map(m => `<option value="${m.id}" ${minActual() && m.id === minActual().id ? "selected" : ""}>${esc(m.nombre)}</option>`).join("")}</select>
           <select class="field" name="rol"><option value="musico">Músico</option><option value="admin">Admin</option><option value="lector">Solo ver</option></select>
           <input class="field" name="password" type="text" placeholder="Contraseña (opcional, mín. 8)" autocomplete="off">
@@ -1996,6 +2016,77 @@ function dialogo(html, ok = "Aceptar", conArchivos = false) {
 }
 function confirmar(titulo, texto = "") { return dialogo(`<h2>${esc(titulo)}</h2>${texto ? `<p>${esc(texto)}</p>` : ""}`, "Sí").then(Boolean); }
 
+// ================= RED LOCAL: entrar y panel de conexión =================
+// Pantalla al abrir la app desde el servidor de red: PIN (lo muestra la compu que dirige) y «¿quién eres?».
+function vRedEntrar() {
+  const conPin = !!D.pinRed();
+  const gente = D.lista("cif_perfiles").sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+  return `<div class="login"><form class="card" id="fred"><img src="icono-512.png" width="56" height="56" alt="" style="border-radius:12px;background:#1B1C1A">
+    <h1>Red local</h1><p>Estás conectado a la red de quien dirige${D.estado.conectados ? ` · ${D.estado.conectados} dispositivo(s)` : ""}. No necesitas internet: el set y las secciones se actualizan para todos aquí.</p>
+    ${!conPin ? `<label class="lb">PIN de la red <small>Aparece en la compu de quien dirige</small><input class="field" name="pin" inputmode="numeric" maxlength="8" autocomplete="off" required style="font:500 22px var(--mono);letter-spacing:.3em;text-align:center"></label><button class="btn">Entrar</button>`
+      : `<label class="lb">¿Quién eres?<select class="field" name="yo"><option value="">Elige tu nombre…</option>${gente.map(p => `<option value="${p.id}">${esc(p.nombre || "Sin nombre")}${p.usuario ? " · @" + esc(p.usuario) : ""}</option>`).join("")}<option value="__nuevo">✎ No estoy en la lista</option></select></label>
+         <label class="lb" id="rnuevo" hidden>Tu nombre<input class="field" name="nombre" autocomplete="name"></label>
+         <button class="btn">Entrar</button><button type="button" class="btn sm ghost" id="rpinotro">Usar otro PIN</button>`}
+    <p class="status" id="rmsg">${esc(D.estado.error || "")}</p></form></div>`;
+}
+function enlazarRedEntrar() {
+  const f = $("#fred"), msg = $("#rmsg");
+  if (f.yo) f.yo.onchange = () => { $("#rnuevo").hidden = f.yo.value !== "__nuevo"; };
+  const otro = $("#rpinotro"); if (otro) otro.onclick = () => { try { localStorage.removeItem("cifrados-red-pin"); } catch (e) {} render(); };
+  f.onsubmit = async e => {
+    e.preventDefault(); msg.textContent = "…";
+    try {
+      if (f.pin) { await D.entrarRed(f.pin.value.trim()); render(); return; }
+      let id = f.yo.value;
+      if (!id) return (msg.textContent = "Elige tu nombre.");
+      if (id === "__nuevo") {
+        const n = f.nombre.value.trim(); if (!n) return (msg.textContent = "Escribe tu nombre.");
+        id = D.uuid(); D.elegirYo(id); await D.guardar("cif_perfiles", { id, nombre: n, artista: true, estilo: {} });
+      } else D.elegirYo(id);
+      const p = miPerfil(); if (p && p.estilo && Object.keys(p.estilo).length) Object.assign(st.estilo, p.estilo);
+      render();
+    } catch (er) { msg.textContent = er.pin ? "PIN incorrecto." : "No encuentro el servidor de red: revisa que sigas en la misma red."; }
+  };
+}
+
+/** Panel «Conexión»: sin internet (siempre), en línea (nube) y red local (servidor en la compu que dirige). */
+function abrirConexion() {
+  const e = D.estado, dl = document.createElement("dialog");
+  const base = () => (($("#cxbase", dl) || {}).value || "http://localhost:8787").replace(/\/+$/, "");
+  const pinta = () => {
+    const modo = D.modo;
+    dl.innerHTML = `<div class="dlg"><h2>Conexión</h2>
+      <div class="cxmodos">
+        <section class="cxm ${!navigator.onLine || (modo === "red" && !e.redOk) ? "act" : ""}"><b>📴 Sin internet</b>
+          <p>Siempre activo: todo queda guardado en este dispositivo. Al volver la conexión se sube solo.${e.pendientes ? ` <b>${e.pendientes} cambio(s) por subir.</b>` : ""}</p></section>
+        <section class="cxm ${modo === "nube" && navigator.onLine ? "act" : ""}"><b>☁️ En línea</b>
+          <p>${modo === "nube" ? (navigator.onLine ? "Conectado a la nube: los cambios llegan a todos los ministerios en tiempo real." : "Sin internet ahora mismo.") : modo === "red" ? "Esta pantalla está en la red local. Para la nube abre cifrados.tiempodedios.mx cuando haya internet." : "Falta configurar la nube."}</p></section>
+        <section class="cxm ${modo === "red" && e.redOk ? "act" : ""}"><b>📡 Red local (sin internet)</b>
+          ${modo === "red" ? `<p>${e.redOk ? `Conectado a <b>${esc(location.host)}</b> · ${e.conectados || 1} dispositivo(s). Lo que cambies (sets, secciones, tonos, «Dirigir») les llega al instante a todos aquí.` : "Sin respuesta del servidor de red: revisa que la compu que dirige siga encendida y en la misma red."}</p>
+              <p class="status">Para que otros entren: misma red y abrir <b>${esc(location.origin)}</b> con el PIN.</p>
+              <div class="row"><button class="btn sm" data-cx="recargar">Volver a cargar todo</button></div>`
+            : `<p>Para tocar sin internet: en la compu de quien dirige corre el servidor de red (<code>node red/servidor.js</code>). Todos se conectan a la misma red (un router aunque no tenga internet) y abren la dirección que muestra, con su PIN.</p>
+              ${modo === "nube" ? `<p class="status">En esa misma compu, desde aquí:</p>
+              <div class="row"><input class="field" id="cxbase" value="${esc(ls.get("cifrados-red-base", "http://localhost:8787"))}" style="flex:1;min-width:200px;height:38px"></div>
+              <div class="row" style="margin-top:8px"><button class="btn sm" data-cx="enviar">⬆ Enviar mi copia a la red</button><button class="btn sm ghost" data-cx="traer">⬇ Traer cambios de la red a la nube</button></div>` : ""}`}
+        </section>
+      </div>
+      <p class="status" id="cxmsg"></p>
+      <div class="row"><span class="sp"></span>${modo !== "local" ? `<button class="btn ghost" data-cx="sinc">Sincronizar ahora</button>` : ""}<button class="btn" data-cx="cerrar">Listo</button></div></div>`;
+    $$("[data-cx]", dl).forEach(b => b.onclick = async () => {
+      const a = b.dataset.cx, msg = $("#cxmsg", dl);
+      if (a === "cerrar") { dl.close(); dl.remove(); return; }
+      try {
+        if (a === "sinc" || a === "recargar") { msg.textContent = "Sincronizando…"; await D.sincronizar(); msg.textContent = "Listo."; }
+        if (a === "enviar") { ls.set("cifrados-red-base", base()); msg.textContent = "Enviando…"; const r = await D.enviarARed(base()); msg.textContent = `Listo: ${r.cargados} registros en la red. Ya pueden entrar los demás.`; }
+        if (a === "traer") { ls.set("cifrados-red-base", base()); msg.textContent = "Trayendo…"; const n = await D.traerDeRed(base()); msg.textContent = n ? `${n} cambio(s) de la red; se están subiendo a la nube.` : "No hay cambios nuevos en la red."; }
+      } catch (er) { msg.textContent = /fetch|Failed|NetworkError|Load failed/i.test(er.message) ? "No encuentro el servidor de red en esa dirección. ¿Está corriendo «node red/servidor.js» en esta compu?" : er.message; }
+    });
+  };
+  document.body.appendChild(dl); pinta(); dl.showModal();
+  dl.addEventListener("close", () => dl.remove());
+}
+
 // ================= Login =================
 function vLogin() {
   return `<div class="login"><form class="card" id="flog"><img src="icono-512.png" width="56" height="56" alt="" style="border-radius:12px;background:#1B1C1A"><h1>Cifrados</h1><p>Tiempo de Dios · la librería de canciones de todos los ministerios.</p>
@@ -2069,14 +2160,14 @@ function enlazarLogin() {
   if (D.estado.limpiado) setTimeout(() => toast("Se borró lo que tenías en modo local; ahora todo vive en la nube."), 600);
   if (tipo || st.avisoLogin) history.replaceState(null, "", location.pathname + "#libreria");
   // modo local: crea mi perfil la primera vez
-  if (!D.nube && !miPerfil()) await D.guardar("cif_perfiles", { id: yo().id, nombre: "Yo", artista: true, estilo: st.estilo });
+  if (D.modo === "local" && !miPerfil()) await D.guardar("cif_perfiles", { id: yo().id, nombre: "Yo", artista: true, estilo: st.estilo });
   const p = miPerfil(); if (p && p.estilo && Object.keys(p.estilo).length) {
     st.estilo = Object.assign(st.estilo, p.estilo);
     if (!p.estilo.notacion) st.estilo.notacion = p.estilo.nashville ? "nashville" : p.estilo.latina ? "latino" : st.estilo.notacion;
     delete st.estilo.nashville; delete st.estilo.latina;
   }
   render();
-  D.alEstado(() => { if (D.nube && yo() && $(".login")) render(); });
+  D.alEstado(() => { if (D.modo !== "local" && yo() && miPerfil() && $(".login")) render(); });
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     // cuando se instala una versión nueva de la app, se recarga sola (salvo si alguien está editando)
     const habia = !!navigator.serviceWorker.controller;

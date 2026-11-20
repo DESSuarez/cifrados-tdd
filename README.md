@@ -35,6 +35,13 @@ El correo integrado de Supabase solo manda unos pocos por hora: para invitacione
 4. **Plantillas:** copia las de `supabase/correos/` (ver su README).
 5. **Avisos de ministerios** (alguien pidió entrar, solicitud aceptada/rechazada): Edge Functions → **Secrets** → agrega `SMTP_USER` (el correo) y `SMTP_PASS` (su contraseña). Sin estos secretos todo funciona, solo no se mandan esos avisos.
 
+## Tres formas de conexión
+- **Sin internet:** siempre activo. Cada dispositivo guarda todo y sube sus cambios al volver la conexión.
+- **En línea:** la nube (Supabase) actualiza a todos los ministerios en tiempo real.
+- **Red local:** sin internet, con un servidor pequeño en la compu de quien dirige. Ver [red/README.md](red/README.md).
+
+El indicador de abajo a la izquierda abre el panel **Conexión** con las tres.
+
 ## Probar local
 ```bash
 cd app && python3 -m http.server 8000

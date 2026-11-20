@@ -15,6 +15,9 @@
   const cfg = window.CIFRADOS_CONFIG || {};
   const nube = !!(cfg.supabaseUrl && cfg.supabaseAnonKey && window.supabase);
   const sb = nube ? window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, { auth: { persistSession: true } }) : null;
+  // Modo RED: la app la sirve el servidor de red local (red/servidor.js) en la compu de quien dirige; no necesita internet.
+  const red = !!cfg.red && !nube;
+  const MODO = nube ? "nube" : red ? "red" : "local";
 
   // ---------- IndexedDB mínimo ----------
   let dbp;
@@ -59,7 +62,7 @@
     clearTimeout(avisoPend);
     avisoPend = setTimeout(() => oyentes.forEach(f => { try { f(tabla); } catch (e) { console.error(e); } }), 30);
   }
-  const estado = { enLinea: navigator.onLine, sincronizando: false, pendientes: 0, ultima: null, nube, usuario: null, error: "" };
+  const estado = { enLinea: navigator.onLine, sincronizando: false, pendientes: 0, ultima: null, nube, modo: MODO, usuario: null, error: "", redOk: false, conectados: 0 };
   const oyEstado = new Set();
   const avisaEstado = () => oyEstado.forEach(f => f({ ...estado }));
 
@@ -112,6 +115,7 @@
   // ---------- Sincronización ----------
   let subiendo = false;
   async function subir() {
+    if (red) return subirRed();
     if (!nube || !estado.usuario || !navigator.onLine || subiendo) return;
     subiendo = true; estado.sincronizando = true; avisaEstado();
     try {
@@ -177,9 +181,102 @@
     canal.subscribe();
   }
 
+  // ---------- RED LOCAL (servidor en la compu de quien dirige) ----------
+  const RED_PIN = "cifrados-red-pin", RED_YO = "cifrados-red-yo";
+  const lsg = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const lss = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+  async function fetchRed(ruta, opts = {}, base = location.origin, pin = lsg(RED_PIN)) {
+    const r = await fetch(base + ruta, { ...opts, headers: { "Content-Type": "application/json", "x-pin": pin || "", ...(opts.headers || {}) } });
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 401) { const e = new Error(j.error || "PIN incorrecto."); e.pin = true; throw e; }
+    if (!r.ok) throw new Error(j.error || "Error " + r.status);
+    return j;
+  }
+  /** Baja todo lo del servidor de red (reemplaza la copia local de este dispositivo). */
+  async function bajarRed() {
+    try {
+      const { tablas } = await fetchRed("/api/datos");
+      for (const t of TABLAS) {
+        mem[t].clear(); await tx(t, "readwrite", s => s.clear());
+        await aplicar(t, tablas[t] || []);
+      }
+      estado.redOk = true; estado.error = "";
+    } catch (e) { estado.redOk = false; estado.error = e.pin ? "PIN incorrecto" : "No encuentro el servidor de red."; if (e.pin) throw e; }
+    avisaEstado();
+  }
+  let subiendoRed = false;
+  async function subirRed() {
+    if (!red || subiendoRed || !lsg(RED_PIN)) return;
+    subiendoRed = true; estado.sincronizando = true; avisaEstado();
+    try {
+      const d = await db();
+      const items = await new Promise((res, rej) => {
+        const out = []; const c = d.transaction("_salida").objectStore("_salida").openCursor();
+        c.onsuccess = () => { const cur = c.result; if (cur) { out.push([cur.key, cur.value]); cur.continue(); } else res(out); };
+        c.onerror = () => rej(c.error);
+      });
+      if (items.length) {
+        await fetchRed("/api/guardar", { method: "POST", body: JSON.stringify({ cambios: items.map(([, it]) => it) }) });
+        await tx("_salida", "readwrite", s => items.forEach(([k]) => s.delete(k)));
+        estado.pendientes = Math.max(0, estado.pendientes - items.length);
+      }
+      estado.redOk = true;
+    } catch (e) { estado.redOk = false; estado.error = "Sin conexión con el servidor de red; se reintentará."; }
+    subiendoRed = false; estado.sincronizando = false; avisaEstado();
+  }
+  let ws = null, wsReintento = null;
+  const vivosRed = new Map(); // setId → función
+  function conectarWS() {
+    if (!red || !lsg(RED_PIN) || (ws && ws.readyState <= 1)) return;
+    try { ws = new WebSocket(location.origin.replace(/^http/, "ws") + "/ws?pin=" + encodeURIComponent(lsg(RED_PIN))); } catch (e) { return; }
+    ws.onopen = () => { estado.redOk = true; estado.error = ""; avisaEstado(); subirRed().then(() => bajarRed()).catch(() => {}); };
+    ws.onmessage = ev => {
+      let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+      if (m.tipo === "cambios") m.cambios.forEach(c => aplicar(c.tabla, [c.fila], c.op === "delete"));
+      else if (m.tipo === "recarga") bajarRed().catch(() => {});
+      else if (m.tipo === "conectados") { estado.conectados = m.n; avisaEstado(); }
+      else if (m.tipo === "vivo" && vivosRed.has(m.set)) vivosRed.get(m.set)(m.payload);
+    };
+    ws.onclose = () => { estado.redOk = false; estado.conectados = 0; avisaEstado(); clearTimeout(wsReintento); wsReintento = setTimeout(conectarWS, 3000); };
+    ws.onerror = () => {};
+  }
+  /** Entrar a la red con el PIN que muestra el servidor. */
+  async function entrarRed(pin) {
+    await fetchRed("/api/datos", {}, location.origin, pin); // valida el PIN
+    lss(RED_PIN, pin); await bajarRed(); conectarWS();
+  }
+  /** En la red cada quien dice quién es (es una red de confianza; no hay contraseñas). */
+  function elegirYo(id) { lss(RED_YO, id); estado.usuario = id ? { id, email: "" } : null; avisaEstado(); }
+  const pinRed = () => lsg(RED_PIN);
+
+  // Desde la app de la nube, en la MISMA compu donde corre el servidor (http://localhost:8787):
+  /** Copia todo lo de este dispositivo al servidor de red, para usarlo sin internet. */
+  async function enviarARed(base) {
+    const tablas = Object.fromEntries(TABLAS.map(t => [t, [...mem[t].values()]]));
+    return fetchRed("/api/cargar", { method: "POST", body: JSON.stringify({ tablas }) }, base, "");
+  }
+  /** Trae lo que cambió en la red (sets, tonos, canciones…) y lo sube a la nube. */
+  async function traerDeRed(base) {
+    const { tablas } = await fetchRed("/api/datos", {}, base, "");
+    let n = 0;
+    for (const t of TABLAS) for (const fila of tablas[t] || []) {
+      const act = mem[t].get(llaveDe(t, fila));
+      if (!act || (fila.actualizado || "") > (act.actualizado || "")) {
+        await aplicar(t, [fila]);
+        await tx("_salida", "readwrite", s => s.add({ tabla: t, op: "upsert", fila })); estado.pendientes++; n++;
+      }
+    }
+    avisaEstado(); subir();
+    return n;
+  }
+
   // ---------- "Seguir al director": el líder del set marca la canción y a todos se les abre ----------
   const vivos = new Map();
   function canalVivo(setId, alRecibir) {
+    if (red) {
+      vivosRed.set(setId, alRecibir);
+      return { enviar: payload => { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ tipo: "vivo", set: setId, payload })); }, salir: () => vivosRed.delete(setId) };
+    }
     if (!nube) return { enviar() {}, salir() {} };
     const ch = sb.channel("vivo-" + setId, { config: { broadcast: { self: false } } });
     ch.on("broadcast", { event: "pos" }, ({ payload }) => alRecibir(payload)).subscribe();
@@ -187,7 +284,7 @@
     return { enviar: payload => ch.send({ type: "broadcast", event: "pos", payload }), salir: () => { sb.removeChannel(ch); vivos.delete(setId); } };
   }
 
-  async function sincronizar() { await subir(); await bajar(); }
+  async function sincronizar() { if (red) { await subirRed(); await bajarRed().catch(() => {}); conectarWS(); return; } await subir(); await bajar(); }
   window.addEventListener("online", () => { estado.enLinea = true; avisaEstado(); sincronizar(); });
   window.addEventListener("offline", () => { estado.enLinea = false; avisaEstado(); });
 
@@ -195,7 +292,7 @@
   async function iniciar() {
     // Si este navegador estuvo en modo local (o en otro proyecto de Supabase), esos datos no se suben:
     // sus ids no existen en la nube. Se borran y se empieza limpio con lo de la nube.
-    const modo = nube ? "nube:" + cfg.supabaseUrl : "local";
+    const modo = nube ? "nube:" + cfg.supabaseUrl : red ? "red:" + location.origin : "local";
     const antes = (await meta.get("modo")) || ((await meta.get("yo")) ? "local" : null);
     if (antes && antes !== modo) {
       for (const t of TABLAS.concat(["_salida", "_meta"])) await tx(t, "readwrite", s => s.clear());
@@ -208,6 +305,10 @@
       estado.usuario = data.session ? data.session.user : null;
       sb.auth.onAuthStateChange((ev, s) => { if (ev === "PASSWORD_RECOVERY") estado.ponerClave = "recovery"; const antes = estado.usuario; estado.usuario = s ? s.user : null; avisaEstado(); if (!antes && estado.usuario) { sincronizar(); escuchar(); } });
       if (estado.usuario) { escuchar(); sincronizar(); }
+    } else if (red) {
+      // red local: cada quien elige quién es; los datos vienen del servidor de la compu que dirige
+      const id = lsg(RED_YO); estado.usuario = id ? { id, email: "" } : null;
+      if (lsg(RED_PIN)) { await bajarRed().catch(() => {}); conectarWS(); }
     } else {
       // modo local: una persona fija en este dispositivo
       let yo = await meta.get("yo");
@@ -224,6 +325,7 @@
   async function recuperar(email) { const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname }); if (error) throw error; }
   async function salir() {
     if (nube) await sb.auth.signOut();
+    if (red) { lss(RED_YO, null); lss(RED_PIN, null); }
     // borra lo local para que otra persona no vea datos ajenos en este dispositivo
     for (const t of TABLAS.concat(["_salida", "_meta"])) await tx(t, "readwrite", s => s.clear());
     location.reload();
@@ -233,9 +335,15 @@
     if (!nube) throw new Error("Esto necesita la nube: configura Supabase en config.publico.js.");
     if (!navigator.onLine) throw new Error("Sin conexión: inténtalo cuando haya internet.");
     const { data } = await sb.auth.getSession();
-    const r = await fetch(`${cfg.supabaseUrl}/functions/v1/${nombre}`, { method: "POST",
-      headers: { "Content-Type": "application/json", apikey: cfg.supabaseAnonKey, Authorization: "Bearer " + (data.session ? data.session.access_token : cfg.supabaseAnonKey) },
-      body: JSON.stringify(body || {}) });
+    let r;
+    try {
+      r = await fetch(`${cfg.supabaseUrl}/functions/v1/${nombre}`, { method: "POST",
+        headers: { "Content-Type": "application/json", apikey: cfg.supabaseAnonKey, Authorization: "Bearer " + (data.session ? data.session.access_token : cfg.supabaseAnonKey) },
+        body: JSON.stringify(body || {}) });
+    } catch (e) {
+      // «Failed to fetch»: Supabase responde sin permisos de CORS cuando la función no existe o tiene «Verify JWT» prendido
+      throw new Error(`La función «${nombre}» de Supabase no responde. Despliégala (Edge Functions → Deploy a new function → Via Editor, nombre «${nombre}») y apaga «Verify JWT» en sus detalles.`);
+    }
     const j = await r.json().catch(() => ({}));
     if (r.status === 404 && !j.error) throw new Error(`Falta desplegar la función «${nombre}» en Supabase.`);
     if (!r.ok || j.error) throw new Error(j.error || "Error " + r.status);
@@ -276,7 +384,8 @@
     alEstado: f => (oyEstado.add(f), f({ ...estado })),
     entrar, registrarse, recuperar, salir, rpc, fn, nuevaClave, canalVivo,
     subirAudio, audio, borrarAudio, audioLocal,
-    nube, sb,
+    nube, sb, modo: MODO, red,
+    entrarRed, elegirYo, pinRed, enviarARed, traerDeRed,
     aplicarLocal: aplicar,
   };
 })();
