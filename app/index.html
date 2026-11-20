@@ -436,6 +436,18 @@ input[type=range]{width:100%;accent-color:var(--area)}
 .csvozadd{margin-left:8px;padding:2px 10px;border-radius:99px;border:1.5px dashed var(--line);background:none;color:var(--muted);font:800 12px var(--body);cursor:pointer;vertical-align:middle;letter-spacing:0;text-transform:none}
 .csvozadd:hover{border-color:var(--sc);color:var(--fg)}
 button.csvoz{cursor:pointer}
+.dlgsub{margin:6px 0 0;font:800 15px var(--display)}.dlgsub small{font:500 12.5px var(--body);color:var(--muted);margin-left:6px}
+.vocespanel{border:1.5px solid var(--line);border-radius:14px;background:var(--surface);padding:14px 16px;margin:10px 0}
+.vphead{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}.vphead b{font:900 17px var(--display)}.vphead small{color:var(--muted)}
+.vpgrid{display:grid;grid-template-columns:minmax(110px,auto) 1fr 1fr auto;gap:8px 12px;align-items:center}
+.vpth{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.vpsec{font:900 12px var(--display);letter-spacing:.06em;text-transform:uppercase;padding-left:8px;border-left:4px solid var(--sc)}
+.vpcel{display:flex;flex-wrap:wrap;gap:4px;min-width:0}
+.vchip{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:99px;font:800 12.5px var(--body)}
+.vchip.pri{background:var(--flame);color:#fff}
+.vchip.cor{background:color-mix(in srgb,var(--sea) 22%,transparent);color:var(--fg);border:1.5px solid var(--sea)}
+.vvacio{color:var(--muted)}
+@media (max-width:640px){.vpgrid{grid-template-columns:1fr 1fr}.vpsec{grid-column:1/-1;margin-top:6px}.vpth{display:none}.vpgrid .btn{grid-column:1/-1;justify-self:start}}
 .vozres{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
 .vozres .chip{border-left:4px solid var(--sc);font-size:12px}
 .csvoz{display:inline-flex;align-items:center;margin-left:8px;padding:2px 10px;border-radius:99px;background:#1B1C1A;color:#fff;border:2px solid var(--sc);font:800 12px var(--body);letter-spacing:0;text-transform:none;vertical-align:middle}
@@ -713,11 +725,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=34"></script>
-<script src="cifrado.js?v=34"></script>
-<script src="senas.js?v=34"></script>
-<script src="datos.js?v=34"></script>
-<script src="pdf.js?v=34"></script>
+<script src="config.publico.js?v=35"></script>
+<script src="cifrado.js?v=35"></script>
+<script src="senas.js?v=35"></script>
+<script src="datos.js?v=35"></script>
+<script src="pdf.js?v=35"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -758,7 +770,7 @@ const st = {
   tonoVista: {},  // por canción en esta sesión
   capo: {},
   editando: false, arrastrando: false, abiertos: new Set(),
-  dirigir: false, seguir: ls.get("cifrados-seguir", true),
+  dirigir: false, seguir: ls.get("cifrados-seguir", true), modoVoces: ls.get("cifrados-voces", false),
 };
 // una sola notación: americano (C D E), latino (Do Re Mi) o Nashville (1 4 5)
 if (!st.estilo.notacion) st.estilo.notacion = st.estilo.nashville ? "nashville" : st.estilo.latina ? "latino" : "americano";
@@ -1330,7 +1342,9 @@ function vCancion(p) {
     ${!veCancion(c) && minActual() && ["admin", "musico"].includes(rolEn(minActual().id)) ? `<button class="ctl noesc" id="cadd" title="Esta canción la trajo otro ministerio al set">＋ Añadir a mi librería</button>` : ""}
     ${esMusico() && puedeEditarCancion(c) ? `<a class="ctl noesc" href="#editar/${c.id}">✎ Editar</a>` : ""}
     <button class="ctl noesc" id="tprint" title="Exportar PDF (1 o 2 columnas)">⎙ PDF</button>
+    ${ctxSet ? `<button class="ctl noesc ${st.modoVoces ? "on" : ""}" id="tvoces" title="Ver y asignar voz principal y coros de cada parte (solo en sets)">🎤 Voces</button>` : ""}
   </div>
+  ${ctxSet && st.modoVoces ? vocesPanelHTML(ctxSet, c, orden) : ""}
   <div class="tonosbar noesc">
     <span class="tbl">Tonos</span>
     <button class="tchip ${tono === original && !capo ? "on" : ""}" data-tono="${esc(original)}" data-capo="0">Original <small>${esc(original)}</small></button>
@@ -1390,13 +1404,14 @@ function vCancion(p) {
         const puedeV = editaSet(ctxSet.s);
         $$(".csec[data-sec]").forEach(sec => {
           const h = sec.querySelector(".csn"); if (!h || h.querySelector(".csvoz,.csvozadd")) return;
-          const ids = vocesSec(ctxSet.item, sec.dataset.sec);
-          if (ids.length) h.insertAdjacentHTML("beforeend", ` <${puedeV ? "button type=\"button\"" : "span"} class="csvoz" data-cvoz="${esc(sec.dataset.sec)}" title="${puedeV ? "Cambiar quién canta" : ""}">🎤 ${esc(vocesTxt(ids))}</${puedeV ? "button" : "span"}>`);
+          if (tieneVoces(ctxSet.item, sec.dataset.sec)) h.insertAdjacentHTML("beforeend", ` <${puedeV ? "button type=\"button\"" : "span"} class="csvoz" data-cvoz="${esc(sec.dataset.sec)}" title="${puedeV ? "Cambiar quién canta" : ""}">🎤 ${esc(resumenVoces(ctxSet.item, sec.dataset.sec))}</${puedeV ? "button" : "span"}>`);
           else if (puedeV) h.insertAdjacentHTML("beforeend", ` <button type="button" class="csvozadd" data-cvoz="${esc(sec.dataset.sec)}" title="¿Quién canta esta parte?">🎤 ＋</button>`);
         });
         $$("[data-cvoz]").forEach(b => b.onclick = ev => { ev.stopPropagation(); elegirVoces(ctxSet.s.id, ctxSet.i, b.dataset.cvoz); });
       }
       // canción que trajo otro ministerio (p. ej. a un set compartido): enlazarla a mi librería
+      const tv = $("#tvoces"); if (tv) tv.onclick = () => { st.modoVoces = !st.modoVoces; ls.set("cifrados-voces", st.modoVoces); render(); };
+      $$("[data-pvoz]").forEach(b => b.onclick = () => elegirVoces(ctxSet.s.id, ctxSet.i, b.dataset.pvoz));
       const ca = $("#cadd"); if (ca) ca.onclick = async () => {
         const m = minActual(); ca.disabled = true;
         try {
@@ -1622,22 +1637,48 @@ const bloquesDe = (it, c) => (it.estructura && it.estructura.length ? it.estruct
 /** Quién canta cada parte de una canción en un set: it.voces = {«Verso 1»: persona_id | "__todos"} */
 const nombreCorto = id => (id === "__todos" ? "Todos" : (nombreDe(id) || "").split(" ")[0]);
 // it.voces = {«Verso 1»: [persona_id, …] | ["__todos"]} (antes era un solo id: se acepta igual)
-const vocesSec = (it, sec) => { const v = (it && it.voces || {})[sec]; return !v ? [] : Array.isArray(v) ? v : [v]; };
+// it.voces = {«Verso 1»: {p: [voz principal…], c: [coros…]}} — «__todos» = Todos.
+// (Antes era una lista o un solo id: se lee como voz principal.)
+const rolesSec = (it, sec) => {
+  const v = (it && it.voces || {})[sec];
+  if (!v) return { p: [], c: [] };
+  if (typeof v === "string") return { p: [v], c: [] };
+  if (Array.isArray(v)) return { p: v, c: [] };
+  return { p: v.p || [], c: v.c || [] };
+};
+const vocesSec = (it, sec) => rolesSec(it, sec).p;
+const tieneVoces = (it, sec) => { const r = rolesSec(it, sec); return r.p.length + r.c.length > 0; };
 const vocesTxt = ids => ids.map(nombreCorto).join(" + ");
-/** Ventana para elegir quién canta una sección (una, dos o tres voces…). Guarda en el set para todos sus ministerios. */
+const resumenVoces = (it, sec) => { const r = rolesSec(it, sec); return [r.p.length ? vocesTxt(r.p) : "", r.c.length ? "coros: " + vocesTxt(r.c) : ""].filter(Boolean).join(" · "); };
+/** Modo «Voces» en la canción dentro de un set: cada parte, en el orden del set, con su voz principal y sus coros. */
+function vocesPanelHTML(ctx, c, orden) {
+  const it = ctx.item || {}, puede = editaSet(ctx.s);
+  const partes = (orden && orden.length ? orden : C.secciones(c.contenido));
+  const vistas = new Set(), filas = partes.filter(p => (vistas.has(p) ? false : vistas.add(p)));
+  const chips = (ids, cls) => ids.length ? ids.map(id => `<span class="vchip ${cls}">${esc(id === "__todos" ? "Todos" : nombreDe(id))}</span>`).join("") : `<span class="vvacio">—</span>`;
+  const sinNada = !filas.some(p => tieneVoces(it, p));
+  return `<section class="vocespanel noesc"><div class="vphead"><b>🎤 Voces</b><small>${esc(ctx.s.nombre)} · ${puede ? "toca una parte para asignar" : "solo lectura"}</small></div>
+    <div class="vpgrid"><span class="vpth">Parte</span><span class="vpth">Voz principal</span><span class="vpth">Coros</span><span></span>
+    ${filas.map(p => { const r = rolesSec(it, p); return `<span class="vpsec" style="--sc:var(${C.colorSeccion(p)})">${esc(p)}</span><span class="vpcel">${chips(r.p, "pri")}</span><span class="vpcel">${chips(r.c, "cor")}</span>${puede ? `<button class="btn xs ghost" data-pvoz="${esc(p)}">${tieneVoces(it, p) ? "Cambiar" : "＋ Asignar"}</button>` : "<span></span>"}`; }).join("")}</div>
+    ${sinNada ? `<p class="status" style="margin:8px 0 0">Aún no hay voces asignadas en esta canción.</p>` : ""}</section>`;
+}
+/** Ventana para elegir la voz principal (una o varias) y los coros de una sección. Lo ven todos los ministerios del set. */
 async function elegirVoces(setId, i, sec) {
   const s = D.uno("cif_sets", setId); if (!s) return;
-  const it = s.items[i], ya = new Set(vocesSec(it, sec)), gente = cantantesDe(personasSet(s));
-  const d = await dialogo(`<h2>¿Quién canta «${esc(sec)}»?</h2><p>Marca a una persona o a varias (a dos o tres voces). Lo ven todos los ministerios del set.</p>
-    <div class="compchk"><label><input type="checkbox" name="v___todos" ${ya.has("__todos") ? "checked" : ""}> <b>Todos</b></label>
-    ${gente.map(p => `<label><input type="checkbox" name="v_${p.id}" ${ya.has(p.id) ? "checked" : ""}> ${esc(p.nombre)}${p.voz ? ` <small class="status">${esc(p.voz)}</small>` : ""}</label>`).join("")}</div>`, "Guardar");
+  const it = s.items[i], r = rolesSec(it, sec), P = new Set(r.p), Cc = new Set(r.c), gente = cantantesDe(personasSet(s));
+  const lista = (pre, ya, todos) => `<div class="compchk">${todos ? `<label><input type="checkbox" name="${pre}___todos" ${ya.has("__todos") ? "checked" : ""}> <b>Todos</b></label>` : ""}
+    ${gente.map(p => `<label><input type="checkbox" name="${pre}_${p.id}" ${ya.has(p.id) ? "checked" : ""}> ${esc(p.nombre)}${p.voz ? ` <small class="status">${esc(p.voz)}</small>` : ""}</label>`).join("")}</div>`;
+  const d = await dialogo(`<h2>Voces de «${esc(sec)}»</h2><p>Lo ven todos los ministerios del set.</p>
+    <h3 class="dlgsub">🎤 Voz principal <small>una, o dos o tres si la cantan juntos</small></h3>${lista("p", P, true)}
+    <h3 class="dlgsub">🎶 Coros <small>quienes hacen segundas y armonías</small></h3>${lista("c", Cc, false)}`, "Guardar");
   if (!d) return;
-  const ids = d.v___todos ? ["__todos"] : gente.filter(p => d["v_" + p.id]).map(p => p.id);
+  const pIds = d.p___todos ? ["__todos"] : gente.filter(x => d["p_" + x.id]).map(x => x.id);
+  const cIds = gente.filter(x => d["c_" + x.id] && !pIds.includes(x.id)).map(x => x.id);
   const act = D.uno("cif_sets", setId), items = act.items.map(x => ({ ...x })), voces = { ...(items[i].voces || {}) };
-  if (ids.length) voces[sec] = ids; else delete voces[sec];
+  if (pIds.length || cIds.length) voces[sec] = { p: pIds, c: cIds }; else delete voces[sec];
   items[i] = { ...items[i], voces };
   await D.guardar("cif_sets", { ...act, items });
-  toast(ids.length ? `${sec}: ${vocesTxt(ids)}` : `${sec}: sin asignar`);
+  toast(pIds.length || cIds.length ? `${sec}: ${resumenVoces(items[i], sec)}` : `${sec}: sin asignar`);
 }
 function cantantesDe(gente) { const c = gente.filter(p => p.artista || p.voz); return c.length ? c : gente; }
 function estructuraHTML(it, i, c, puede, gente = []) {
@@ -1645,11 +1686,11 @@ function estructuraHTML(it, i, c, puede, gente = []) {
   const usadas = [...new Set(bl)], cant = cantantesDe(gente);
   return `<div class="estr" data-estr="${i}">
 
-    ${bl.map((b, k) => `<span class="blq" data-k="${k}" style="--sc:var(${C.colorSeccion(b)})">${puede ? `<span class="blqa" title="Arrastra para mover">⋮⋮</span>` : ""}<span class="blqn">${esc(b)}</span>${vocesSec(it, b).length ? `<small class="blqv">🎤 ${esc(vocesTxt(vocesSec(it, b)))}</small>` : ""}${puede ? `<button data-dup="${k}" title="Duplicar">⧉</button><button data-del="${k}" title="Quitar">✕</button>` : ""}</span>`).join("") || `<span class="status">La canción no tiene secciones marcadas.</span>`}
+    ${bl.map((b, k) => `<span class="blq" data-k="${k}" style="--sc:var(${C.colorSeccion(b)})">${puede ? `<span class="blqa" title="Arrastra para mover">⋮⋮</span>` : ""}<span class="blqn">${esc(b)}</span>${tieneVoces(it, b) ? `<small class="blqv">🎤 ${esc(resumenVoces(it, b))}</small>` : ""}${puede ? `<button data-dup="${k}" title="Duplicar">⧉</button><button data-del="${k}" title="Quitar">✕</button>` : ""}</span>`).join("") || `<span class="status">La canción no tiene secciones marcadas.</span>`}
     ${puede && secs.length ? `<select class="fsel" data-addblq="${i}" aria-label="Agregar sección"><option value="">＋ Sección</option>${secs.map(s => `<option>${esc(s)}</option>`).join("")}</select>` : ""}
     ${puede && it.estructura ? `<button class="btn xs ghost" data-reset="${i}">Como la canción</button>` : ""}
   </div>
-  ${puede && usadas.length ? `<div class="vozsecs"><b>🎤 ¿Quién canta cada parte?</b>${usadas.map(sec => `<button type="button" class="vozsec ${vocesSec(it, sec).length ? "on" : ""}" data-vsec="${i}" data-sec="${esc(sec)}" style="--sc:var(${C.colorSeccion(sec)})"><span>${esc(sec)}</span><em>${vocesSec(it, sec).length ? esc(vocesTxt(vocesSec(it, sec))) : "＋ Asignar"}</em></button>`).join("")}</div>` : ""}`;
+  ${puede && usadas.length ? `<div class="vozsecs"><b>🎤 ¿Quién canta cada parte?</b>${usadas.map(sec => `<button type="button" class="vozsec ${tieneVoces(it, sec) ? "on" : ""}" data-vsec="${i}" data-sec="${esc(sec)}" style="--sc:var(${C.colorSeccion(sec)})"><span>${esc(sec)}</span><em>${tieneVoces(it, sec) ? esc(resumenVoces(it, sec)) : "＋ Asignar"}</em></button>`).join("")}</div>` : ""}`;
 }
 function itemHTML(s, it, i, puede, gente) {
   const c = D.uno("cif_canciones", it.cancion_id) || { titulo: "(canción borrada)", tono: "", contenido: "" };
@@ -1668,7 +1709,7 @@ function itemHTML(s, it, i, puede, gente) {
       <button class="btn xs ${abierto ? "on" : "ghost"}" data-abre="${it.id}" title="Estructura en bloques">▦ Estructura</button>
       ${puede ? `<button class="btn xs ghost" data-quita="${i}" aria-label="Quitar">✕</button>` : ""}</div>
     ${abierto ? estructuraHTML(it, i, c, puede, gente) : ""}
-    ${!abierto && it.voces && Object.keys(it.voces).length ? `<div class="vozres">${Object.keys(it.voces).filter(sec => vocesSec(it, sec).length).map(sec => `<span class="chip" style="--sc:var(${C.colorSeccion(sec)})">${esc(sec)} · 🎤 ${esc(vocesTxt(vocesSec(it, sec)))}</span>`).join("")}</div>` : ""}</li>`;
+    ${!abierto && it.voces && Object.keys(it.voces).length ? `<div class="vozres">${Object.keys(it.voces).filter(sec => tieneVoces(it, sec)).map(sec => `<span class="chip" style="--sc:var(${C.colorSeccion(sec)})">${esc(sec)} · 🎤 ${esc(resumenVoces(it, sec))}</span>`).join("")}</div>` : ""}</li>`;
 }
 function vSet(id) {
   const s = D.uno("cif_sets", id);
