@@ -533,6 +533,7 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 input[type=date].fsel{padding:0 12px;color:var(--fg);font-family:var(--mono);font-weight:500;color-scheme:light dark}
 input[type=date].fsel::-webkit-calendar-picker-indicator{opacity:.6;cursor:pointer}
 .mincard{display:flex;flex-direction:column}
+select.ivoz.on{border-color:var(--flame);font-weight:800}
 .chip.compart{background:var(--sea-soft,rgba(69,122,127,.15));color:var(--fg);border-color:var(--sea)}
 .interrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;margin-top:8px}
 .interrow>span{flex:1;min-width:220px}
@@ -666,11 +667,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=27"></script>
-<script src="cifrado.js?v=27"></script>
-<script src="senas.js?v=27"></script>
-<script src="datos.js?v=27"></script>
-<script src="pdf.js?v=27"></script>
+<script src="config.publico.js?v=28"></script>
+<script src="cifrado.js?v=28"></script>
+<script src="senas.js?v=28"></script>
+<script src="datos.js?v=28"></script>
+<script src="pdf.js?v=28"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1205,7 +1206,7 @@ function vCancion(p) {
   const original = c.tono || C.adivinaTono(c.contenido) || "C";
   const mt = miTono(c.id);
   const tono = st.tonoVista[c.id] || (ctxSet && ctxSet.item && ctxSet.item.tono) || (mt && mt.tono) || original;
-  const capo = st.capo[c.id] ?? (ctxSet ? 0 : (mt && mt.capo) || 0);
+  const capo = st.capo[c.id] ?? (ctxSet ? (ctxSet.item && ctxSet.item.capo) || 0 : (mt && mt.capo) || 0);
   const semis = C.distancia(original, tono) - capo;
   const forma = C.transportaTono(tono, -capo);
   const e = st.estilo;
@@ -1226,7 +1227,7 @@ function vCancion(p) {
   let setbar = "";
   if (ctxSet) {
     const n = ctxSet.s.items.length, it = ctxSet.item || {};
-    setbar = `<div class="setbar"><a class="navbtn" href="#set/${ctxSet.s.id}">← ${esc(ctxSet.s.nombre)}</a><span>${ctxSet.i + 1} de ${n}${it.momento ? " · " + esc(nombreMomento(it.momento)) : ""}${it.persona_id ? " · dirige " + esc(nombreDe(it.persona_id)) : ""}</span><span class="sp"></span>
+    setbar = `<div class="setbar"><a class="navbtn" href="#set/${ctxSet.s.id}">← ${esc(ctxSet.s.nombre)}</a><span>${ctxSet.i + 1} de ${n}${it.momento ? " · " + esc(nombreMomento(it.momento)) : ""}${it.persona_id ? " · voz principal: " + esc(nombreDe(it.persona_id)) : ""}</span><span class="sp"></span>
       ${D.modo !== "local" ? `<button class="navbtn ${st.dirigir ? "on" : ""}" id="dirigir" title="Los demás ven la canción y sección que tú marques">📡 Dirigir</button><button class="navbtn ${st.seguir ? "on" : ""}" id="seguir" title="Abrir lo que marque quien dirige">${st.seguir ? '<span class="vivoind"><i></i>Siguiendo</span>' : "Seguir"}</button>` : ""}
       <button class="navbtn" id="prev" ${ctxSet.i <= 0 ? "disabled" : ""}>‹</button><button class="navbtn" id="next" ${ctxSet.i >= n - 1 ? "disabled" : ""}>›</button></div>`;
   }
@@ -1477,7 +1478,7 @@ function vSets() {
     band: bandHTML({ tag: m.nombre, titulo: "Sets de <em>" + esc(m.nombre) + "</em>", sub: `<span>Se actualizan en tiempo real para todo el ministerio y los ministerios invitados</span>` }),
     main: `${puede ? `<div class="row"><button class="btn" id="nset">${IC.mas} Nuevo set</button><button class="btn ghost" id="nmisa">⛪ Nueva misa</button></div>` : ""}
       ${sets.length ? `${prox.length ? `<h2 class="status">PRÓXIMOS</h2><ul class="sets">${prox.map(card).join("")}</ul>` : ""}${pas.length ? `<h2 class="status">ANTERIORES</h2><ul class="sets">${pas.map(card).join("")}</ul>` : ""}`
-        : `<div class="empty"><strong>Sin sets todavía</strong><p>Arma el set del domingo o la misa por momentos: canciones, tono de cada una y quién dirige. Todo el equipo lo ve al momento.</p></div>`}`,
+        : `<div class="empty"><strong>Sin sets todavía</strong><p>Arma el set del domingo o la misa por momentos: canciones, voz principal y el tono de cada una. Todo el equipo lo ve al momento.</p></div>`}`,
     after() {
       const nuevo = async tipo => {
         const dom = new Date(); dom.setDate(dom.getDate() + ((7 - dom.getDay()) % 7));
@@ -1537,7 +1538,7 @@ function itemHTML(s, it, i, puede, gente) {
     <span class="num">${i + 1}</span>
     <div class="tit"><a href="#cancion/${it.cancion_id}/set/${s.id}/${i}">${esc(c.titulo)}</a><small>${esc(c.autor || "")}${it.nota ? " · " + esc(it.nota) : ""}${it.estructura ? " · estructura propia" : ""}</small></div>
     <div class="opts">${puede ? `<select data-itono="${i}" title="Tono">${opT}</select>
-      <select data-iper="${i}" title="Dirige"><option value="">¿Quién dirige?</option>${gente.map(p => { const t = D.uno("cif_tonos", it.cancion_id + "|" + p.id); return `<option value="${p.id}" ${p.id === it.persona_id ? "selected" : ""}>${esc(p.nombre)}${t ? " · " + t.tono : ""}</option>`; }).join("")}</select>
+      <select class="ivoz ${it.persona_id ? "on" : ""}" data-iper="${i}" title="Voz principal: si tiene su tono guardado, la canción se pone en ese tono"><option value="">🎤 Voz principal</option>${gente.map(p => ({ p, t: D.uno("cif_tonos", it.cancion_id + "|" + p.id) })).sort((a, b) => (b.t ? 1 : 0) - (a.t ? 1 : 0) || (a.p.nombre || "").localeCompare(b.p.nombre || "")).map(({ p, t }) => `<option value="${p.id}" ${p.id === it.persona_id ? "selected" : ""}>🎤 ${esc(p.nombre)}${t ? ` · ★ ${t.tono}${t.capo ? " capo " + t.capo : ""}` : " · sin tono"}</option>`).join("")}</select>
       <input data-inota="${i}" value="${esc(it.nota || "")}" placeholder="Nota" style="width:110px">`
       : `<span class="chip tono">${esc(it.tono || orig)}</span>${it.persona_id ? `<span class="chip">${esc(nombreDe(it.persona_id))}</span>` : ""}`}
       <button class="btn xs ${abierto ? "on" : "ghost"}" data-abre="${it.id}" title="Estructura en bloques">▦ Estructura</button>
@@ -1580,7 +1581,7 @@ function vSet(id) {
       // PDF del set: cada canción en su tono, con su estructura en bloques, momento y quién dirige
       $("#spdf").onclick = () => abrirExportar({ multiple: true, minId: s.ministerio_id, titulo: s.nombre,
         subtitulo: [s.fecha ? new Date(s.fecha + "T12:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "", m ? m.nombre : ""].filter(Boolean).join(" · "),
-        items: s.items.map(it => ({ it, c: D.uno("cif_canciones", it.cancion_id) })).filter(x => x.c).map(({ it, c }) => ({ c, tono: it.tono, orden: it.estructura && it.estructura.length ? it.estructura : c.orden, nota: it.nota, momento: it.momento ? nombreMomento(it.momento) : "", persona: it.persona_id ? "Dirige " + nombreDe(it.persona_id) : "" })) });
+        items: s.items.map(it => ({ it, c: D.uno("cif_canciones", it.cancion_id) })).filter(x => x.c).map(({ it, c }) => ({ c, tono: it.tono, capo: it.capo || 0, orden: it.estructura && it.estructura.length ? it.estructura : c.orden, nota: it.nota, momento: it.momento ? nombreMomento(it.momento) : "", persona: it.persona_id ? "Voz principal: " + nombreDe(it.persona_id) : "" })) });
       if (!puede) return;
       const guarda = cambios => D.guardar("cif_sets", { ...(D.uno("cif_sets", id) || s), ...cambios });
       const itemsAct = () => (D.uno("cif_sets", id) || s).items.map(x => ({ ...x }));
@@ -1601,9 +1602,13 @@ function vSet(id) {
       $$("[data-itono]").forEach(x => x.onchange = () => ponItem(+x.dataset.itono, { tono: x.value }));
       $$("[data-inota]").forEach(x => x.onchange = () => ponItem(+x.dataset.inota, { nota: x.value.trim() }));
       $$("[data-iper]").forEach(x => x.onchange = () => {
-        const i = +x.dataset.iper, it = itemsAct(), t = x.value && D.uno("cif_tonos", it[i].cancion_id + "|" + x.value);
-        ponItem(i, { persona_id: x.value || null, ...(t ? { tono: t.tono } : {}) });
-        if (t) toast(`Se puso el tono de ${nombreDe(x.value)}: ${t.tono}`);
+        // voz principal: si tiene su tono guardado para esta canción, el set se pone en ese tono (y capo)
+        const i = +x.dataset.iper, it = itemsAct(), cid = it[i].cancion_id, t = x.value && D.uno("cif_tonos", cid + "|" + x.value);
+        ponItem(i, { persona_id: x.value || null, ...(t ? { tono: t.tono, capo: t.capo || 0 } : {}) });
+        if (t) { delete st.tonoVista[cid]; delete st.capo[cid]; }
+        x.blur();
+        if (t) toast(`Voz principal: ${nombreDe(x.value)} · la canción queda en su tono, ${t.tono}${t.capo ? " con capo " + t.capo : ""}.`);
+        else if (x.value) toast(`${nombreDe(x.value)} aún no guarda su tono en esta canción; se queda en ${it[i].tono || "el original"}.`);
       });
       const nuevoItem = (c, momento) => ({ id: D.uuid(), cancion_id: c.id, tono: c.tono || C.adivinaTono(c.contenido), persona_id: null, nota: "", ...(momento ? { momento } : {}) });
       // misa: agregar a un momento (queda en el orden de la misa)
