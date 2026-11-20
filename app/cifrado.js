@@ -412,6 +412,8 @@
 
   const CIF = { SOST, BEM, TONOS, MAYORES, MENORES, notaIdx, tonoInfo, nombreTono, transportaTono, distancia, usaBemoles, tonoDeSbp,
     esAcorde, transportaAcorde, nashville, latina, acordesDelTono, silabas, iniciosSilaba, leer, ajustarASilabas, ajustarLinea,
-    esLineaAcordes, deAcordesArriba, aHTML, secciones, colorSeccion, adivinaTono, esc };
+    esLineaAcordes, deAcordesArriba, aHTML, secciones, colorSeccion, adivinaTono, esc,
+    /** Bloques ya en el orden pedido (lo usa el PDF). */
+    bloques: (texto, orden) => (orden && orden.length ? ordenar(leer(texto), orden) : leer(texto)) };
   if (typeof module !== "undefined" && module.exports) module.exports = CIF; else root.CIF = CIF;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -364,5 +364,39 @@ do $$ begin
   alter table cif_perfiles add constraint cif_perfiles_bio_tam check (bio is null or length(bio) <= 280);
 exception when duplicate_object then null; end $$;
 
+-- =====================================================================
+-- Versión 7: un solo desarrollador (= migraciones/006)
+-- =====================================================================
+
+create or replace function cif_proteger_perfil() returns trigger language plpgsql as $$
+begin
+  -- auth.uid() es null solo en SQL Editor / service role: desde la app siempre se conserva el valor anterior
+  if new.superadmin is distinct from old.superadmin and auth.uid() is not null then new.superadmin := old.superadmin; end if;
+  return new;
+end $$;
+
+-- y al crear un perfil desde la app nunca nace como desarrollador
+create or replace function cif_proteger_perfil_alta() returns trigger language plpgsql as $$
+begin
+  if auth.uid() is not null then new.superadmin := false; end if;
+  return new;
+end $$;
+drop trigger if exists cif_proteger_perfil_alta on cif_perfiles;
+create trigger cif_proteger_perfil_alta before insert on cif_perfiles for each row execute function cif_proteger_perfil_alta();
+
+-- =====================================================================
+-- Versión 8: perfil y marca del ministerio (= migraciones/007)
+-- =====================================================================
+
+alter table cif_ministerios add column if not exists logo text;              -- data:image/png;base64,… (≈20–60 KB)
+alter table cif_ministerios add column if not exists color_oscuro text;      -- banda de arriba (#1B1C1A)
+alter table cif_ministerios add column if not exists color_primario text;    -- acordes y barras (#FF3D1A)
+alter table cif_ministerios add column if not exists color_secundario text;  -- subtítulos (#98D5E0)
+alter table cif_ministerios add column if not exists descripcion text;
+
+do $$ begin
+  alter table cif_ministerios add constraint cif_ministerios_logo_tam check (logo is null or length(logo) < 400000);
+exception when duplicate_object then null; end $$;
+
 -- Primer superadmin (cambia el correo y corre esta línea):
 -- update cif_perfiles set superadmin = true where id = (select id from auth.users where email = 'tu-correo@tiempodedios.mx');
