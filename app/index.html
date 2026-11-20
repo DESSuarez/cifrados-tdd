@@ -667,11 +667,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=29"></script>
-<script src="cifrado.js?v=29"></script>
-<script src="senas.js?v=29"></script>
-<script src="datos.js?v=29"></script>
-<script src="pdf.js?v=29"></script>
+<script src="config.publico.js?v=30"></script>
+<script src="cifrado.js?v=30"></script>
+<script src="senas.js?v=30"></script>
+<script src="datos.js?v=30"></script>
+<script src="pdf.js?v=30"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1783,7 +1783,7 @@ function panelEditor() {
   const c = ed.c;
   if (ed.paso === "letra") return `
     <p class="edhelp">Escribe o pega la letra. Marca cada parte con los botones. Si pegas una canción con <b>acordes arriba</b> (como en LaCuerda), se convierte sola y cada acorde queda en su sílaba.</p>
-    <div class="secbtns">${["Intro", "Verso 1", "Verso 2", "Pre-coro", "Coro", "Puente", "Instrumental", "Final"].map(s => `<button data-sec="${s}" style="--sc:var(${C.colorSeccion(s)})">＋ ${s}</button>`).join("")}</div>
+    <div class="secbtns">${["Intro", "Verso 1", "Verso 2", "Verso 3", "Verso 4", "Pre-coro", "Coro", "Coro 2", "Coro final", "Puente", "Instrumental", "Final"].map(s => `<button data-sec="${s}" style="--sc:var(${C.colorSeccion(s)})">＋ ${s}</button>`).join("")}</div>
     <textarea class="field letra" id="eletra" spellcheck="false" placeholder="{c: Verso 1}\nA veces das y a veces quitas…">${esc(c.contenido)}</textarea>
     <div class="row"><button class="btn sm ghost" id="econv">Convertir «acordes arriba»</button><button class="btn sm ghost" id="eajus">Pegar acordes a la sílaba</button><button class="btn sm" id="eira">Siguiente: acordes →</button></div>`;
   if (ed.paso === "texto") return `
