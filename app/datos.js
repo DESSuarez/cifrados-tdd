@@ -130,6 +130,14 @@
         if (it.op === "upsert") {
           const conflicto = it.tabla === "cif_tonos" ? "cancion_id,persona_id" : it.tabla === "cif_miembros" ? "ministerio_id,persona_id" : "id";
           ({ error } = await sb.from(it.tabla).upsert(it.fila, { onConflict: conflicto }));
+          // Un upsert también tiene que pasar la regla de INSERTAR. Al cambiar una fila que ya existe y que esa regla no
+          // permite crear (p. ej. el admin acepta la solicitud de otra persona, o un ministerio invitado edita un set),
+          // la base lo rechaza aunque sí se pueda ACTUALIZAR: entonces se reintenta como update.
+          if (error && (error.code === "42501" || /row-level security/i.test(error.message || ""))) {
+            let q = sb.from(it.tabla).update(it.fila);
+            for (const k of conflicto.split(",")) q = q.eq(k, it.fila[k]);
+            ({ error } = await q);
+          }
         } else {
           let q = sb.from(it.tabla).delete();
           if (it.tabla === "cif_tonos") q = q.eq("cancion_id", it.fila.cancion_id).eq("persona_id", it.fila.persona_id);
@@ -141,7 +149,10 @@
         // Con código (permiso, llave foránea, columna, duplicado…) el servidor la rechazó: reintentar no sirve,
         // se descarta para que no atore la cola (antes un solo cambio malo dejaba "Subiendo N cambios…" para siempre).
         if (error && !error.code && !/permission|policy|violates|RLS/i.test(error.message)) throw error;
-        if (error) { estado.error = ""; console.warn("La nube rechazó un cambio de " + it.tabla + ":", error.message); }
+        if (error) {
+          estado.error = ""; console.warn("La nube rechazó un cambio de " + it.tabla + ":", error.message);
+          try { window.dispatchEvent(new CustomEvent("cif-rechazo", { detail: { tabla: it.tabla, mensaje: error.message } })); } catch (e) { /* sin ventana */ }
+        }
         await tx("_salida", "readwrite", s => s.delete(k));
         estado.pendientes = Math.max(0, estado.pendientes - 1);
       }

@@ -667,11 +667,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=28"></script>
-<script src="cifrado.js?v=28"></script>
-<script src="senas.js?v=28"></script>
-<script src="datos.js?v=28"></script>
-<script src="pdf.js?v=28"></script>
+<script src="config.publico.js?v=29"></script>
+<script src="cifrado.js?v=29"></script>
+<script src="senas.js?v=29"></script>
+<script src="datos.js?v=29"></script>
+<script src="pdf.js?v=29"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -906,7 +906,7 @@ const amistadCon = id => yo() && D.lista("cif_amistades").find(a => (a.de === yo
 const amigos = () => yo() ? D.lista("cif_amistades").filter(a => a.estado === "aceptada" && (a.de === yo().id || a.para === yo().id)).map(a => (a.de === yo().id ? a.para : a.de)) : [];
 const pendAmigos = () => yo() ? D.lista("cif_amistades").filter(a => a.estado === "pendiente" && a.para === yo().id) : [];
 const pendInter = () => D.lista("cif_intercambios").filter(x => x.estado === "pendiente" && rolEn(x.para) === "admin");
-const pendMin = () => D.lista("cif_solicitudes").filter(s => s.estado === "pendiente" && rolEn(s.ministerio_id) === "admin" && (!yo() || s.persona_id !== yo().id));
+const pendMin = () => D.lista("cif_solicitudes").filter(s => s.estado === "pendiente" && rolEn(s.ministerio_id) === "admin" && !D.uno("cif_miembros", s.ministerio_id + "|" + s.persona_id) && (!yo() || s.persona_id !== yo().id));
 // Suscripción: el desarrollador la activa por ministerio (fecha de vigencia)
 const hoyISO = () => new Date().toISOString().slice(0, 10);
 const suscrito = () => esSuper() || misMins().some(m => m.suscripcion_hasta && m.suscripcion_hasta >= hoyISO() && rolEn(m.id) !== "lector");
@@ -952,6 +952,9 @@ function ruta() {
   return { v: v || "libreria", p };
 }
 let vengoDeApp = false; // ya se navegó dentro de la app: «← Atrás» puede usar el historial
+// Si la nube rechaza un cambio (permisos, datos inválidos), se avisa en lugar de perderlo en silencio
+const TABLA_TXT = { cif_solicitudes: "la solicitud", cif_sets: "el set", cif_canciones: "la canción", cif_miembros: "los integrantes", cif_ministerios: "el ministerio", cif_perfiles: "el perfil", cif_intercambios: "el envío de canciones", cif_tonos: "el tono" };
+window.addEventListener("cif-rechazo", e => toast(`No se pudo guardar ${TABLA_TXT[e.detail.tabla] || "un cambio"} en la nube: ${e.detail.mensaje}`));
 // La librería recuerda hasta dónde bajaste: al volver (menú, «Atrás» o el navegador) queda en el mismo lugar.
 let scrollLib = 0;
 window.addEventListener("scroll", () => { if (ruta().v === "libreria") scrollLib = window.scrollY; }, { passive: true });
@@ -2195,7 +2198,7 @@ function gestionMin(m) {
   const personas = D.lista("cif_perfiles").sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
   const optPersonas = (excluir = new Set()) => personas.filter(p => !excluir.has(p.id)).map(p => `<option value="${p.id}">${esc(p.nombre || "Sin nombre")}${p.usuario ? " · @" + esc(p.usuario) : ""}</option>`).join("");
   // solicitudes que yo puedo resolver (admin de ese ministerio o desarrollador)
-  const porRevisar = D.lista("cif_solicitudes").filter(s => s.estado === "pendiente" && rolEn(s.ministerio_id) === "admin" && (!yo() || s.persona_id !== yo().id));
+  const porRevisar = D.lista("cif_solicitudes").filter(s => s.estado === "pendiente" && rolEn(s.ministerio_id) === "admin" && !D.uno("cif_miembros", s.ministerio_id + "|" + s.persona_id) && (!yo() || s.persona_id !== yo().id));
   const filaSol = filaSolicitud;
 
 
@@ -2233,7 +2236,7 @@ function vMinisterios() {
   const personas = D.lista("cif_perfiles").sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
   const optPersonas = (excluir = new Set()) => personas.filter(p => !excluir.has(p.id)).map(p => `<option value="${p.id}">${esc(p.nombre || "Sin nombre")}${p.usuario ? " · @" + esc(p.usuario) : ""}</option>`).join("");
   // solicitudes que yo puedo resolver (admin de ese ministerio o desarrollador)
-  const porRevisar = D.lista("cif_solicitudes").filter(s => s.estado === "pendiente" && rolEn(s.ministerio_id) === "admin" && (!yo() || s.persona_id !== yo().id));
+  const porRevisar = D.lista("cif_solicitudes").filter(s => s.estado === "pendiente" && rolEn(s.ministerio_id) === "admin" && !D.uno("cif_miembros", s.ministerio_id + "|" + s.persona_id) && (!yo() || s.persona_id !== yo().id));
   const filaSol = filaSolicitud;
 
   const card = m => {
