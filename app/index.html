@@ -437,6 +437,14 @@ input[type=range]{width:100%;accent-color:var(--area)}
 .csvozadd:hover{border-color:var(--sc);color:var(--fg)}
 button.csvoz{cursor:pointer}
 .rolesed{grid-column:1/-1}
+/* Formulario «Mis datos»: todos los campos con el mismo título, ayuda y control */
+.pcampos{display:grid;grid-template-columns:1fr 1fr;gap:20px 16px}
+.pcampo{display:flex;flex-direction:column;gap:6px;min-width:0}
+.pcampo.ancho{grid-column:1/-1}
+.pcampo>b{font-weight:800;font-size:15px}
+.pcampo>small{color:var(--muted);font-size:13px;margin-top:-4px}
+.pcampo .rolchips{margin:2px 0}
+@media (max-width:640px){.pcampos{grid-template-columns:1fr}}
 .rolchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
 .compchk label.canta{font-weight:700}
 .dlgsub{margin:6px 0 0;font:800 15px var(--display)}.dlgsub small{font:500 12.5px var(--body);color:var(--muted);margin-left:6px}
@@ -728,11 +736,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=36"></script>
-<script src="cifrado.js?v=36"></script>
-<script src="senas.js?v=36"></script>
-<script src="datos.js?v=36"></script>
-<script src="pdf.js?v=36"></script>
+<script src="config.publico.js?v=37"></script>
+<script src="cifrado.js?v=37"></script>
+<script src="senas.js?v=37"></script>
+<script src="datos.js?v=37"></script>
+<script src="pdf.js?v=37"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -773,7 +781,7 @@ const st = {
   tonoVista: {},  // por canción en esta sesión
   capo: {},
   editando: false, arrastrando: false, abiertos: new Set(),
-  dirigir: false, seguir: ls.get("cifrados-seguir", true), modoVoces: ls.get("cifrados-voces", false),
+  dirigir: false, seguir: ls.get("cifrados-seguir", true), modoVoces: ls.get("cifrados-voces2", true),
 };
 // una sola notación: americano (C D E), latino (Do Re Mi) o Nashville (1 4 5)
 if (!st.estilo.notacion) st.estilo.notacion = st.estilo.nashville ? "nashville" : st.estilo.latina ? "latino" : "americano";
@@ -1345,9 +1353,8 @@ function vCancion(p) {
     ${!veCancion(c) && minActual() && ["admin", "musico"].includes(rolEn(minActual().id)) ? `<button class="ctl noesc" id="cadd" title="Esta canción la trajo otro ministerio al set">＋ Añadir a mi librería</button>` : ""}
     ${esMusico() && puedeEditarCancion(c) ? `<a class="ctl noesc" href="#editar/${c.id}">✎ Editar</a>` : ""}
     <button class="ctl noesc" id="tprint" title="Exportar PDF (1 o 2 columnas)">⎙ PDF</button>
-    ${ctxSet ? `<button class="ctl noesc ${st.modoVoces ? "on" : ""}" id="tvoces" title="Ver y asignar voz principal y coros de cada parte (solo en sets)">🎤 Voces</button>` : ""}
+    ${ctxSet ? `<button class="ctl noesc ${st.modoVoces ? "on" : ""}" id="tvoces" title="Mostrar u ocultar la voz principal y los coros junto a cada parte de la letra (solo en sets)">🎤 Voces</button>` : ""}
   </div>
-  ${ctxSet && st.modoVoces ? vocesPanelHTML(ctxSet, c, orden) : ""}
   <div class="tonosbar noesc">
     <span class="tbl">Tonos</span>
     <button class="tchip ${tono === original && !capo ? "on" : ""}" data-tono="${esc(original)}" data-capo="0">Original <small>${esc(original)}</small></button>
@@ -1403,7 +1410,7 @@ function vCancion(p) {
       };
       const q = $("#qmio"); if (q) q.onclick = () => { D.borrar("cif_tonos", { cancion_id: c.id, persona_id: yo().id }); toast("Se quitó tu tono."); };
       const gp = $("#gpara"); if (gp) gp.onchange = async () => { if (!gp.value) return; const id = gp.value; gp.blur(); await D.guardar("cif_tonos", { cancion_id: c.id, persona_id: id, tono, capo }); toast(`Guardado ${tono} para ${nombreDe(id)}.`); };
-      if (ctxSet && ctxSet.item) {
+      if (ctxSet && ctxSet.item && st.modoVoces) {
         const puedeV = editaSet(ctxSet.s);
         $$(".csec[data-sec]").forEach(sec => {
           const h = sec.querySelector(".csn"); if (!h || h.querySelector(".csvoz,.csvozadd")) return;
@@ -1413,7 +1420,7 @@ function vCancion(p) {
         $$("[data-cvoz]").forEach(b => b.onclick = ev => { ev.stopPropagation(); elegirVoces(ctxSet.s.id, ctxSet.i, b.dataset.cvoz); });
       }
       // canción que trajo otro ministerio (p. ej. a un set compartido): enlazarla a mi librería
-      const tv = $("#tvoces"); if (tv) tv.onclick = () => { st.modoVoces = !st.modoVoces; ls.set("cifrados-voces", st.modoVoces); render(); };
+      const tv = $("#tvoces"); if (tv) tv.onclick = () => { st.modoVoces = !st.modoVoces; ls.set("cifrados-voces2", st.modoVoces); render(); };
       $$("[data-pvoz]").forEach(b => b.onclick = () => elegirVoces(ctxSet.s.id, ctxSet.i, b.dataset.pvoz));
       const ca = $("#cadd"); if (ca) ca.onclick = async () => {
         const m = minActual(); ca.disabled = true;
@@ -2920,6 +2927,10 @@ function vPersona(id) {
     band: bandHTML({ tag: soyYo ? "Mis tonos" : "Perfil", titulo: esc(p.nombre || "Sin nombre"), sub: [p.usuario && `<span>@${esc(p.usuario)}</span>`, p.voz && `<span>${esc(p.voz)}</span>`, mins.length && `<span>${esc(mins.join(" · "))}</span>`, `<span><b>${tonos.length}</b> tonos</span>`].filter(Boolean).join("") }),
     main: `${cartaPerfil(p, { mio: false, extra: `${favs.length ? `<div class="favs"><b>❤️ Canciones favoritas</b><div class="row" style="gap:6px">${favs.map(c => `<a class="chip fav" href="#cancion/${c.id}">${esc(c.titulo)}</a>`).join("")}</div></div>` : ""}${soyYo ? `<a class="btn xs ghost" href="#perfil">✎ Editar mi perfil</a>` : ""}` })}
       ${!soyYo && !a && yo() ? `<div class="row"><button class="btn" id="pamigo">＋ Agregar como amigo</button></div>` : ""}
+      ${esSuper() && !soyYo ? `<section class="caja asigtono" id="prolotro"><h3>🎼 ¿Qué hace ${esc((p.nombre || "").split(" ")[0])} en el ministerio?</h3>
+        <p class="status" style="margin:0">Solo tú (desarrollador) lo cambias aquí; cada quien también lo marca en su perfil. Sirve para asignarle voces en los sets.</p>
+        <div class="rolchips">${ROLES_MUSICA.map(r => `<button type="button" class="tchip ${rolesDe(p).includes(r) ? "on" : ""}" data-rolo="${esc(r)}" style="--c:var(--flame)">${esc(r)}</button>`).join("")}</div>
+        <div class="row"><input class="field" id="prolotroin" value="${esc(rolesDe(p).filter(r => !ROLES_MUSICA.includes(r)).join(", "))}" placeholder="Otro (soprano, saxofón…)" autocomplete="off" data-1p-ignore="true" data-lpignore="true" style="flex:1;min-width:180px"><button class="btn" id="prolotrog" type="button">Guardar</button></div></section>` : ""}
       ${puedoAsignarA(id) ? `<form class="caja asigtono" id="ptono"><h3>🎤 ${soyYo ? "Guardar un tono" : "Asignar un tono a " + esc((p.nombre || "").split(" ")[0])}</h3>
         <p class="status" style="margin:0">${soyYo ? "Elige la canción y el tono en que la cantas." : "Como admin de su ministerio puedes dejarle su tono. Se ve en la canción y en los sets donde sea voz principal."}</p>
         <div class="asigfila"><input class="field" name="cancion" list="ptonolista" placeholder="Busca la canción…" autocomplete="off" data-1p-ignore data-lpignore="true" required>
@@ -2947,6 +2958,13 @@ function vPersona(id) {
       }
       $$("[data-tquita]").forEach(x => x.onclick = async ev => { ev.preventDefault(); ev.stopPropagation(); if (!(await confirmar("¿Quitar este tono?"))) return; await D.borrar("cif_tonos", { cancion_id: x.dataset.tquita, persona_id: id }); toast("Tono quitado."); });
       enlazarSubidas(id);
+      // el desarrollador marca qué hace la persona (voz principal, coros, piano…)
+      $$("[data-rolo]").forEach(b => b.onclick = () => b.classList.toggle("on"));
+      const rg = $("#prolotrog"); if (rg) rg.onclick = async () => {
+        const voz = [...new Set($$("[data-rolo].on").map(b => b.dataset.rolo).concat(rolesDe({ voz: $("#prolotroin").value })))].join(", ");
+        await D.guardar("cif_perfiles", { ...D.uno("cif_perfiles", id), voz: voz || null });
+        toast(`Guardado: ${nombreDe(id)} · ${voz || "sin rol"}.`); render();
+      };
       // al abrir desde aquí, la canción se ve en el tono de esta persona
       $$("[data-vertono]").forEach(x => x.onclick = () => { st.tonoVista[x.dataset.cid] = x.dataset.vertono; st.capo[x.dataset.cid] = +x.dataset.capo; });
     },
@@ -2972,18 +2990,18 @@ function vPerfil() {
     main: `
       ${cartaPerfil({ id: yo() ? yo().id : "", ...p }, { mio: true, email: D.nube ? email : "" })}
       <form class="caja" id="fperfil"><h3>Mis datos</h3>
-        <div class="grid2 perfilcampos">
-          <label class="lb">Nombre <small>Así te ve el equipo</small><input class="field" name="nombre" value="${esc(p.nombre || "")}" maxlength="60" required autocomplete="name"></label>
-          <label class="lb">@usuario <small>Para que tus amigos te encuentren</small><span class="arroba"><b>@</b><input class="field" name="usuario" value="${esc(p.usuario || "")}" placeholder="diego.tdd" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" data-1p-ignore data-lpignore="true"></span></label>
-          <div class="lb rolesed">¿Qué haces en el ministerio? <small>Elige todo lo que aplique: así te asignan en el modo Voces de los sets</small>
+        <div class="pcampos">
+          <label class="pcampo"><b>Nombre</b><small>Así te ve el equipo</small><input class="field" name="nombre" value="${esc(p.nombre || "")}" maxlength="60" required autocomplete="off" data-1p-ignore="true" data-lpignore="true" data-bwignore="true" data-form-type="other"></label>
+          <label class="pcampo"><b>@usuario</b><small>Para que tus amigos te encuentren</small><span class="arroba"><b>@</b><input class="field" name="usuario" value="${esc(p.usuario || "")}" placeholder="diego.tdd" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" data-1p-ignore="true" data-lpignore="true" data-bwignore="true" data-form-type="other"></span></label>
+          <div class="pcampo ancho"><b>¿Qué haces en el ministerio?</b><small>Elige todo lo que aplique: así te asignan en el modo Voces de los sets</small>
             <div class="rolchips" id="prol">${ROLES_MUSICA.map(r => `<button type="button" class="tchip ${rolesDe(p).includes(r) ? "on" : ""}" data-rol="${esc(r)}" style="--c:var(--flame)">${esc(r)}</button>`).join("")}</div>
-            <input class="field" name="voz" value="${esc(rolesDe(p).filter(r => !ROLES_MUSICA.includes(r)).join(", "))}" placeholder="Otro (soprano, saxofón, sonido…)" autocomplete="off" data-1p-ignore data-lpignore="true"></div>
+            <input class="field" name="voz" value="${esc(rolesDe(p).filter(r => !ROLES_MUSICA.includes(r)).join(", "))}" placeholder="Otro (soprano, saxofón, sonido…)" autocomplete="off" data-1p-ignore="true" data-lpignore="true" data-bwignore="true" data-form-type="other"></div>
+          <label class="pcampo ancho"><b>Sobre mí</b><small>Una descripción corta (máx. 280)</small><textarea class="field" name="bio" rows="3" maxlength="280" placeholder="Canto en Kairós desde 2019, me encanta la adoración en vivo…">${esc(p.bio || "")}</textarea></label>
+          <div class="pcampo ancho"><b>❤️ Mis canciones favoritas</b><small>Hasta 5, de la librería</small>
+            <div id="pfavs">${favoritasHTML()}</div>
+            <input class="field" id="pfavq" placeholder="Buscar canción para agregar…" autocomplete="off" data-1p-ignore="true" data-lpignore="true" data-bwignore="true" data-form-type="other">
+            <div class="row" id="pfavres" style="gap:6px"></div></div>
         </div>
-        <label class="lb" style="margin-top:14px">Sobre mí <small>Una descripción corta (máx. 280)</small><textarea class="field" name="bio" rows="3" maxlength="280" placeholder="Canto en Kairós desde 2019, me encanta la adoración en vivo…">${esc(p.bio || "")}</textarea></label>
-        <div class="lb" style="margin-top:14px">❤️ Mis canciones favoritas <small>Hasta 5, de la librería</small>
-          <div id="pfavs">${favoritasHTML()}</div>
-          <input class="field" id="pfavq" placeholder="Buscar canción para agregar…" autocomplete="off" data-1p-ignore data-lpignore="true" style="height:40px;margin-top:6px">
-          <div class="row" id="pfavres" style="gap:6px;margin-top:6px"></div></div>
         <label class="row" style="margin-top:14px;font-weight:700"><input type="checkbox" name="artista" ${p.artista ? "checked" : ""}> Dirijo o canto: quiero guardar mis tonos</label>
         <div class="row" style="margin-top:14px"><button class="btn">Guardar cambios</button><span class="status" id="pmsg"></span></div>
       </form>
