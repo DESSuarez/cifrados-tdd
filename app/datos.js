@@ -133,8 +133,11 @@
           else q = q.eq("id", it.fila.id);
           ({ error } = await q);
         }
-        if (error && !/permission|policy|violates|RLS/i.test(error.message)) throw error; // red: se reintenta después
-        if (error) { estado.error = "No se pudo guardar en la nube (sin permiso): " + it.tabla; console.warn(error); }
+        // Sin código = falló la red: se deja en la bandeja y se reintenta después.
+        // Con código (permiso, llave foránea, columna, duplicado…) el servidor la rechazó: reintentar no sirve,
+        // se descarta para que no atore la cola (antes un solo cambio malo dejaba "Subiendo N cambios…" para siempre).
+        if (error && !error.code && !/permission|policy|violates|RLS/i.test(error.message)) throw error;
+        if (error) { estado.error = ""; console.warn("La nube rechazó un cambio de " + it.tabla + ":", error.message); }
         await tx("_salida", "readwrite", s => s.delete(k));
         estado.pendientes = Math.max(0, estado.pendientes - 1);
       }

@@ -93,8 +93,10 @@ a{color:var(--area-ink)}
 .temamenu button:hover{background:var(--surface)}
 .temamenu button span{width:22px;text-align:center}
 .temamenu button b{margin-left:auto;color:var(--flame)}
-.acct{flex:1;min-width:0;display:flex;align-items:center;gap:10px;height:52px;padding:0 10px 0 8px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);text-align:left;text-decoration:none}
+.acct{flex:1;min-width:0;display:flex;align-items:center;gap:12px;min-height:62px;padding:11px 14px 11px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);text-align:left;text-decoration:none}
 .acct:hover{border-color:var(--flame)}
+.acct .av{width:38px;height:38px;font-size:14px}
+.acct>span:not(.av){gap:2px}
 .av{width:32px;height:32px;border-radius:50%;background:var(--flame);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
 .acct>span:not(.av){flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
 .acct b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.acct small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -377,7 +379,19 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 .miembros li{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
 .miembros li>span:not(.av){flex:1;min-width:0}
 .miembros a{color:var(--fg);text-decoration:none}.miembros a:hover{text-decoration:underline}
-.miembros select{height:32px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg)}
+.miembros select.fsel{height:32px;font-size:12.5px}
+/* fecha con el mismo estilo de píldora que los filtros */
+input[type=date].fsel{padding:0 12px;color:var(--fg);font-family:var(--mono);font-weight:500;color-scheme:light dark}
+input[type=date].fsel::-webkit-calendar-picker-indicator{opacity:.6;cursor:pointer}
+.mincard{display:flex;flex-direction:column}
+.avisomin{display:block;padding:12px 16px;border-radius:12px;background:var(--flame-soft);color:var(--fg);text-decoration:none;border-left:5px solid var(--flame)}
+.avisomin:hover{filter:brightness(.97)}
+.minnombre{height:40px;max-width:320px;font:900 18px var(--display);border-color:transparent;background:transparent;padding:0 8px;margin-left:-8px}
+.minnombre:hover{border-color:var(--line)}.minnombre:focus{background:var(--bg)}
+.minadmin{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding:10px 12px;border:1px dashed var(--line);border-radius:12px}
+.pasos ol{margin:4px 0 10px;padding-left:22px;display:grid;gap:6px}
+.pasos li.ok{color:#1DB954;font-weight:700}
+.solic .miembros li{flex-wrap:wrap}
 .codigo{font:500 20px var(--mono);letter-spacing:.2em;background:var(--bg);border:1.5px dashed var(--line);border-radius:10px;padding:6px 14px}
 
 @media print{
@@ -450,10 +464,10 @@ select.fsel{-webkit-appearance:none;appearance:none;padding:0 34px 0 14px;cursor
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=6"></script>
-<script src="cifrado.js?v=6"></script>
-<script src="senas.js?v=6"></script>
-<script src="datos.js?v=6"></script>
+<script src="config.publico.js?v=7"></script>
+<script src="cifrado.js?v=7"></script>
+<script src="senas.js?v=7"></script>
+<script src="datos.js?v=7"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -738,6 +752,7 @@ function vLibreria() {
     otras: ["Aún no hay canciones", "Importa tu exportación de SongbookPro (.sbp), archivos ChordPro o crea una con el constructor."],
     liturgicas: ["Aún no hay canciones litúrgicas", "Ponle la etiqueta «Litúrgica» a una canción (o un título que empiece con «Misa»)."] }[st.tab];
   const main = `
+    ${D.nube && !esSuper() && !membresias().length ? `<a class="avisomin" href="#ministerios"><b>Aún no estás en un ministerio.</b> ${D.lista("cif_solicitudes").some(s => yo() && s.persona_id === yo().id && s.estado === "pendiente") ? "Tu solicitud está en revisión." : "Pide entrar al tuyo para ver sus sets →"}</a>` : ""}
     <div class="buscador"><input class="field" id="q" type="search" placeholder="Buscar por título, autor o letra…" value="${esc(st.q)}" autocomplete="off">
       ${esMusico() ? `<a class="btn" href="#nueva">${IC.mas} Nueva</a>${suscrito() ? `<button class="btn ghost" id="imp">Importar</button>` : ""}` : ""}</div>
     <div class="filtros">
@@ -1441,57 +1456,107 @@ function vSenas() {
 }
 
 // ================= MINISTERIOS =================
-// Cualquiera pide entrar a un ministerio; un admin de ese ministerio acepta o rechaza.
-// Solo el desarrollador (superadmin) crea ministerios y activa su suscripción.
+// Flujo: el desarrollador da de alta el ministerio (y puede nombrar a su admin) → cada persona crea su cuenta
+// → pide entrar a su ministerio → un admin de ese ministerio o el desarrollador acepta o rechaza.
+const ROL_TXT = { admin: "Admin", musico: "Músico", lector: "Solo ver" };
 function vMinisterios() {
   const todos = D.lista("cif_ministerios").sort((a, b) => a.nombre.localeCompare(b.nombre));
   const mios = new Set(membresias().map(m => m.ministerio_id));
   const misSol = yo() ? D.lista("cif_solicitudes").filter(s => s.persona_id === yo().id && s.estado === "pendiente") : [];
+  const dev = esSuper();
+  const personas = D.lista("cif_perfiles").sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+  const optPersonas = (excluir = new Set()) => personas.filter(p => !excluir.has(p.id)).map(p => `<option value="${p.id}">${esc(p.nombre || "Sin nombre")}${p.usuario ? " · @" + esc(p.usuario) : ""}</option>`).join("");
+  // solicitudes que yo puedo resolver (admin de ese ministerio o desarrollador)
+  const porRevisar = D.lista("cif_solicitudes").filter(s => s.estado === "pendiente" && rolEn(s.ministerio_id) === "admin" && (!yo() || s.persona_id !== yo().id));
+  const filaSol = x => `<li><span class="av">${esc(iniciales(nombreDe(x.persona_id)))}</span><span><b>${esc(nombreDe(x.persona_id))}</b> <small class="status">quiere entrar a</small> <b>${esc((D.uno("cif_ministerios", x.ministerio_id) || {}).nombre || "?")}</b>${x.mensaje ? `<br><small class="status">«${esc(x.mensaje)}»</small>` : ""}</span>
+    <select class="fsel" data-solrol="${x.id}" aria-label="Entra como"><option value="musico">Como músico</option><option value="lector">Solo ver</option><option value="admin">Como admin</option></select>
+    <button class="btn xs" data-acepta="${x.id}">Aceptar</button><button class="btn xs ghost" data-rechaza="${x.id}">Rechazar</button></li>`;
+
   const card = m => {
     const rol = rolEn(m.id), admin = rol === "admin", soy = mios.has(m.id);
     const miem = D.lista("cif_miembros").filter(x => x.ministerio_id === m.id).sort((a, b) => nombreDe(a.persona_id).localeCompare(nombreDe(b.persona_id)));
-    const sols = D.lista("cif_solicitudes").filter(x => x.ministerio_id === m.id && x.estado === "pendiente");
+    const admins = miem.filter(x => x.rol === "admin");
     const vigente = m.suscripcion_hasta && m.suscripcion_hasta >= hoyISO();
-    return `<section class="caja"><div class="row"><h3 style="margin:0">${esc(m.nombre)}</h3>${soy ? `<span class="chip">${esc({ admin: "Admin", musico: "Músico", lector: "Solo ver" }[rol] || rol || "")}</span>` : ""}
-        <span class="chip ${vigente ? "pista" : ""}">${vigente ? "Suscripción hasta " + esc(m.suscripcion_hasta) : "Sin suscripción"}</span><span class="sp"></span>
-        ${esSuper() ? `<label class="row" style="font-size:13px;font-weight:700">Suscripción hasta <input type="date" class="fsel" data-susc="${m.id}" value="${esc(m.suscripcion_hasta || "")}"></label>` : ""}</div>
-      ${admin && sols.length ? `<div class="solic"><b>Quieren entrar (${sols.length})</b><ul class="miembros">${sols.map(x => `<li><span class="av">${esc(iniciales(nombreDe(x.persona_id)))}</span><span><b>${esc(nombreDe(x.persona_id))}</b>${x.mensaje ? `<br><small class="status">${esc(x.mensaje)}</small>` : ""}</span><button class="btn xs" data-acepta="${x.id}">Aceptar</button><button class="btn xs ghost" data-rechaza="${x.id}">Rechazar</button></li>`).join("")}</ul></div>` : ""}
-      ${soy || esSuper() ? `<ul class="miembros" style="margin-top:12px">${miem.map(x => `<li><span class="av">${esc(iniciales(nombreDe(x.persona_id)))}</span><span><a href="#persona/${x.persona_id}"><b>${esc(nombreDe(x.persona_id))}</b></a>${(D.uno("cif_perfiles", x.persona_id) || {}).artista ? ' <span class="chip mio">artista</span>' : ""}</span>
-        ${admin ? `<select data-rol="${m.id}|${x.persona_id}">${["admin", "musico", "lector"].map(r => `<option value="${r}" ${r === x.rol ? "selected" : ""}>${{ admin: "Admin", musico: "Músico", lector: "Solo ver" }[r]}</option>`).join("")}</select><button class="btn xs ghost" data-saca="${m.id}|${x.persona_id}" aria-label="Quitar">✕</button>` : `<span class="chip">${esc(x.rol)}</span>`}</li>`).join("") || `<li class="status">Sin integrantes</li>`}</ul>` : ""}
+    return `<section class="caja mincard">
+      <div class="row">
+        ${dev ? `<input class="field minnombre" data-mnom="${m.id}" value="${esc(m.nombre)}" aria-label="Nombre del ministerio">` : `<h3 style="margin:0">${esc(m.nombre)}</h3>`}
+        ${soy ? `<span class="chip">Tú: ${esc(ROL_TXT[membresias().find(x => x.ministerio_id === m.id).rol] || "")}</span>` : ""}
+        <span class="chip ${vigente ? "pista" : ""}">${vigente ? "Suscripción hasta " + esc(m.suscripcion_hasta) : "Sin suscripción"}</span>
+        <span class="chip">${miem.length} integrante${miem.length === 1 ? "" : "s"}</span>
+      </div>
+      <p class="status" style="margin:8px 0 0">Admin: ${admins.length ? admins.map(a => esc(nombreDe(a.persona_id))).join(", ") : "nadie todavía"}</p>
+      ${dev ? `<div class="minadmin">
+          <label class="row" style="font-size:13px;font-weight:700;gap:6px">Suscripción hasta <input type="date" class="fsel" data-susc="${m.id}" value="${esc(m.suscripcion_hasta || "")}"></label>
+          <select class="fsel" data-nombra="${m.id}" aria-label="Nombrar admin"><option value="">＋ Nombrar admin…</option>${optPersonas(new Set(admins.map(a => a.persona_id)))}</select>
+          <span class="sp"></span><button class="btn xs ghost" data-mborrar="${m.id}">Borrar ministerio</button></div>` : ""}
+      ${soy || dev ? `<ul class="miembros" style="margin-top:12px">${miem.map(x => `<li><span class="av">${esc(iniciales(nombreDe(x.persona_id)))}</span><span><a href="#persona/${x.persona_id}"><b>${esc(nombreDe(x.persona_id))}</b></a>${(D.uno("cif_perfiles", x.persona_id) || {}).artista ? ' <span class="chip mio">artista</span>' : ""}</span>
+        ${admin ? `<select class="fsel" data-rol="${m.id}|${x.persona_id}">${["admin", "musico", "lector"].map(r => `<option value="${r}" ${r === x.rol ? "selected" : ""}>${ROL_TXT[r]}</option>`).join("")}</select><button class="btn xs ghost" data-saca="${m.id}|${x.persona_id}" aria-label="Quitar">✕</button>` : `<span class="chip">${esc(ROL_TXT[x.rol] || x.rol)}</span>`}</li>`).join("") || `<li class="status">Sin integrantes: comparte la liga de la app para que pidan entrar.</li>`}</ul>` : ""}
       ${admin && !D.nube ? `<div class="row" style="margin-top:10px"><input class="field" data-nuevo="${m.id}" placeholder="Nombre de la persona (modo local)" style="flex:1"><button class="btn sm" data-agrega="${m.id}">Agregar</button></div>` : ""}
-      ${admin && D.nube ? `<form class="row" data-invita="${m.id}" style="margin-top:10px"><input class="field" name="email" type="email" placeholder="correo@… para invitar" required style="flex:2;min-width:180px"><input class="field" name="nombre" placeholder="Nombre" style="flex:1;min-width:120px"><button class="btn sm">Invitar al ministerio</button></form>` : ""}
-      ${!soy && !esSuper() ? `<div class="row" style="margin-top:10px">${misSol.some(s => s.ministerio_id === m.id) ? `<span class="status">Solicitud enviada · esperando a un admin</span><button class="btn xs ghost" data-cancela="${m.id}">Cancelar</button>` : `<button class="btn sm" data-pide="${m.id}">Solicitar unirme</button>`}</div>` : ""}
+      ${admin && D.nube ? `<form class="row" data-invita="${m.id}" style="margin-top:10px"><input class="field" name="email" type="email" placeholder="correo@… para invitar" required autocomplete="off" data-1p-ignore data-lpignore="true" style="flex:2;min-width:180px"><input class="field" name="nombre" placeholder="Nombre" autocomplete="off" data-1p-ignore data-lpignore="true" style="flex:1;min-width:120px"><button class="btn sm">Invitar al ministerio</button></form>` : ""}
+      ${!soy && !dev ? `<div class="row" style="margin-top:10px">${misSol.some(s => s.ministerio_id === m.id) ? `<span class="status">Solicitud enviada · esperando a un admin</span><button class="btn xs ghost" data-cancela="${m.id}">Cancelar</button>` : `<button class="btn sm" data-pide="${m.id}">Solicitar unirme</button>`}</div>` : ""}
     </section>`;
   };
   const propios = todos.filter(m => mios.has(m.id)), otros = todos.filter(m => !mios.has(m.id));
+  const sinMinisterio = !dev && !propios.length;
   return {
-    band: bandHTML({ tag: "Equipo", titulo: "Ministerios", sub: `<span>Cada ministerio tiene sus sets e integrantes; la librería es de todos</span>${esSuper() ? "<span>Tú: desarrollador</span>" : ""}` }),
-    main: `${esSuper() ? `<section class="caja"><h3>Nuevo ministerio</h3><p>Solo el desarrollador da de alta ministerios.</p><div class="row"><input class="field" id="mnom" placeholder="Kairós, Un Corazón…" style="flex:1"><button class="btn" id="mcrear">Crear</button></div></section>` : ""}
-      ${propios.length ? `<h2 class="status">MIS MINISTERIOS</h2>${propios.map(card).join("")}` : ""}
-      ${otros.length ? `<h2 class="status">${propios.length ? "OTROS MINISTERIOS" : "MINISTERIOS"}</h2>${otros.map(card).join("")}` : ""}
-      ${!todos.length ? `<div class="empty"><strong>Aún no hay ministerios</strong><p>${esSuper() ? "Crea el primero arriba." : "Cuando el desarrollador dé de alta tu ministerio aparecerá aquí."}</p></div>` : ""}`,
+    band: bandHTML({ tag: "Equipo", titulo: "Ministerios", sub: `<span>Cada ministerio tiene sus sets e integrantes; la librería es de todos</span>${dev ? "<span>Tú: desarrollador</span>" : ""}` }),
+    main: `
+      ${sinMinisterio ? `<section class="caja pasos"><h3>¿Cómo entro a mi ministerio?</h3><ol>
+        <li class="ok">Ya tienes tu cuenta.</li>
+        <li>${misSol.length ? "Ya pediste entrar ✓" : "Busca tu ministerio abajo y toca «Solicitar unirme»."}</li>
+        <li>Un admin de tu ministerio (o el desarrollador) te acepta y te llega un correo.</li></ol>
+        <p>Mientras, ya puedes usar la librería y guardar tus tonos.</p></section>` : ""}
+      ${porRevisar.length ? `<section class="caja solic"><h3>Solicitudes por revisar (${porRevisar.length})</h3><ul class="miembros">${porRevisar.map(filaSol).join("")}</ul></section>` : ""}
+      ${dev ? `<form class="caja" id="fmin"><h3>Nuevo ministerio</h3><p>Solo tú das de alta ministerios. Después, sus integrantes crean su cuenta y piden entrar; tú o el admin que nombres los aceptan.</p>
+        <div class="ualta"><input class="field" name="nombre" placeholder="Kairós, Un Corazón…" required>
+          <select class="field" name="admin"><option value="">Admin: lo nombro después</option>${optPersonas()}</select>
+          <label class="field" style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px">Suscripción hasta <input type="date" name="susc" style="border:0;background:none;flex:1;min-width:0"></label>
+          <button class="btn">Crear ministerio</button></div></form>` : ""}
+      ${dev ? (todos.length ? `<h2 class="status">TODOS LOS MINISTERIOS (${todos.length})</h2>${todos.map(card).join("")}` : "")
+        : `${propios.length ? `<h2 class="status">MIS MINISTERIOS</h2>${propios.map(card).join("")}` : ""}${otros.length ? `<h2 class="status">${propios.length ? "OTROS MINISTERIOS" : "ELIGE TU MINISTERIO"}</h2>${otros.map(card).join("")}` : ""}`}
+      ${!todos.length ? `<div class="empty"><strong>Aún no hay ministerios</strong><p>${dev ? "Crea el primero arriba." : "Cuando el desarrollador dé de alta tu ministerio aparecerá aquí."}</p></div>` : ""}`,
     after() {
-      const mc = $("#mcrear"); if (mc) mc.onclick = async () => {
-        const n = $("#mnom").value.trim(); if (!n) return;
-        const m = await D.guardar("cif_ministerios", { nombre: n, codigo: Math.random().toString(36).slice(2, 8).toUpperCase(), color: "flame", creado_por: yo().id });
-        await D.guardar("cif_miembros", { ministerio_id: m.id, persona_id: yo().id, rol: "admin" });
-        st.min = m.id; ls.set("cifrados-min", m.id); toast(`Ministerio «${n}» creado.`);
+      const fm = $("#fmin"); if (fm) fm.onsubmit = async e => {
+        e.preventDefault();
+        const n = fm.nombre.value.trim(); if (!n) return;
+        const m = await D.guardar("cif_ministerios", { nombre: n, codigo: Math.random().toString(36).slice(2, 8).toUpperCase(), color: "flame", creado_por: yo().id, suscripcion_hasta: fm.susc.value || null });
+        if (fm.admin.value) await D.guardar("cif_miembros", { ministerio_id: m.id, persona_id: fm.admin.value, rol: "admin" });
+        st.min = m.id; ls.set("cifrados-min", m.id); fm.reset();
+        toast(`Ministerio «${n}» creado${fm.admin.value ? " con su admin" : ""}.`);
       };
+      $$("[data-mnom]").forEach(x => x.onchange = () => { const m = D.uno("cif_ministerios", x.dataset.mnom), v = x.value.trim(); x.blur(); if (!v) { x.value = m.nombre; return; } D.guardar("cif_ministerios", { ...m, nombre: v }); toast("Nombre actualizado."); });
       $$("[data-susc]").forEach(x => x.onchange = () => { const m = D.uno("cif_ministerios", x.dataset.susc); x.blur(); D.guardar("cif_ministerios", { ...m, suscripcion_hasta: x.value || null }); });
+      $$("[data-nombra]").forEach(x => x.onchange = async () => {
+        const m = x.dataset.nombra, p = x.value; x.blur(); if (!p) return;
+        await D.guardar("cif_miembros", { ...(D.uno("cif_miembros", m + "|" + p) || {}), ministerio_id: m, persona_id: p, rol: "admin" });
+        toast(`${nombreDe(p)} ahora es admin de ${(D.uno("cif_ministerios", m) || {}).nombre}.`);
+      });
+      $$("[data-mborrar]").forEach(b => b.onclick = async () => {
+        const m = D.uno("cif_ministerios", b.dataset.mborrar);
+        const d = await dialogo(`<h2>¿Borrar ${esc(m.nombre)}?</h2><p>Se borran sus sets, integrantes y solicitudes. La librería y los tonos no se tocan. No se puede deshacer.</p><label class="lb">Escribe el nombre para confirmar<input class="field" name="conf" autocomplete="off"></label>`, "Borrar");
+        if (!d) return;
+        if (norm(d.conf) !== norm(m.nombre)) return toast("El nombre no coincide; no se borró.");
+        await D.borrar("cif_ministerios", m);
+        // lo dependiente se borra en cascada en la nube; aquí se limpia la copia local
+        D.lista("cif_miembros").filter(x => x.ministerio_id === m.id).forEach(x => D.aplicarLocal("cif_miembros", [x], true));
+        D.lista("cif_sets").filter(x => x.ministerio_id === m.id).forEach(x => D.aplicarLocal("cif_sets", [x], true));
+        D.lista("cif_solicitudes").filter(x => x.ministerio_id === m.id).forEach(x => D.aplicarLocal("cif_solicitudes", [x], true));
+        toast(`«${m.nombre}» se borró.`);
+      });
       $$("[data-pide]").forEach(b => b.onclick = async () => {
         const m = D.uno("cif_ministerios", b.dataset.pide);
-        const d = await dialogo(`<h2>Unirme a ${esc(m.nombre)}</h2><p>Un admin del ministerio revisará tu solicitud.</p><label class="lb">Mensaje (opcional)<input class="field" name="mensaje" placeholder="Canto en el coro de los domingos…"></label>`, "Enviar solicitud");
+        const d = await dialogo(`<h2>Unirme a ${esc(m.nombre)}</h2><p>Un admin del ministerio o el desarrollador revisará tu solicitud.</p><label class="lb">Mensaje (opcional)<input class="field" name="mensaje" placeholder="Canto en el coro de los domingos…"></label>`, "Enviar solicitud");
         if (!d) return;
         const s = await D.guardar("cif_solicitudes", { ministerio_id: m.id, persona_id: yo().id, mensaje: d.mensaje || null, estado: "pendiente" });
-        toast("Solicitud enviada. Le avisamos por correo a los admins.");
+        toast("Solicitud enviada. Te avisamos por correo cuando te acepten.");
         avisarCorreo("aviso_solicitud", s.id);
       });
       $$("[data-cancela]").forEach(b => b.onclick = () => { D.lista("cif_solicitudes").filter(s => s.ministerio_id === b.dataset.cancela && s.persona_id === yo().id && s.estado === "pendiente").forEach(s => D.borrar("cif_solicitudes", s)); });
       $$("[data-acepta]").forEach(b => b.onclick = async () => {
-        const s = D.uno("cif_solicitudes", b.dataset.acepta);
-        await D.guardar("cif_miembros", { ministerio_id: s.ministerio_id, persona_id: s.persona_id, rol: "musico" });
+        const s = D.uno("cif_solicitudes", b.dataset.acepta), sel = $(`[data-solrol="${s.id}"]`), rol = sel ? sel.value : "musico";
+        await D.guardar("cif_miembros", { ministerio_id: s.ministerio_id, persona_id: s.persona_id, rol });
         await D.guardar("cif_solicitudes", { ...s, estado: "aceptada" });
-        toast(`${nombreDe(s.persona_id)} ya es parte del ministerio (como músico).`);
+        toast(`${nombreDe(s.persona_id)} ya es parte del ministerio (${ROL_TXT[rol].toLowerCase()}).`);
         avisarCorreo("aviso_respuesta", s.id);
       });
       $$("[data-rechaza]").forEach(b => b.onclick = async () => { const s = D.uno("cif_solicitudes", b.dataset.rechaza); await D.guardar("cif_solicitudes", { ...s, estado: "rechazada" }); toast("Solicitud rechazada."); avisarCorreo("aviso_respuesta", s.id); });
@@ -1950,7 +2015,16 @@ function enlazarLogin() {
   }
   render();
   D.alEstado(() => { if (D.nube && yo() && $(".login")) render(); });
-  if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
+  if ("serviceWorker" in navigator && location.protocol !== "file:") {
+    // cuando se instala una versión nueva de la app, se recarga sola (salvo si alguien está editando)
+    const habia = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!habia) return;
+      if (st.editando) toast("Hay una versión nueva de Cifrados: recarga al terminar de editar.");
+      else location.reload();
+    });
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
 })();
 </script>
 </body>
