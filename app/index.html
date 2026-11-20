@@ -115,6 +115,18 @@ a{color:var(--area-ink)}
 .acct .av{width:38px;height:38px;font-size:14px}
 .acct>span:not(.av){gap:2px}
 .av{width:32px;height:32px;border-radius:50%;background:var(--flame);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+img.av{object-fit:cover;background:var(--surface)}
+/* Perfil: foto, descripción y favoritas */
+.fotoedit{display:flex;flex-direction:column;align-items:center;gap:6px}
+.fotobtn{position:relative;cursor:pointer;border-radius:50%}
+.fotobtn>span:last-of-type:not(.av){position:absolute;right:-2px;bottom:-2px;width:30px;height:30px;border-radius:50%;background:var(--bg);border:1.5px solid var(--line);display:grid;place-items:center;font-size:14px}
+.fotobtn:hover .av{filter:brightness(.92)}
+.carta{display:flex;gap:18px;align-items:flex-start;padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:var(--surface);flex-wrap:wrap}
+.carta>div{flex:1;min-width:220px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.bio{margin:0;font-size:15.5px;line-height:1.55;white-space:pre-wrap}
+.favs{display:flex;flex-direction:column;gap:6px}.favs>b{font-size:13px}
+.chip.fav{background:var(--rosa-soft);color:var(--rosa-ink);border-color:transparent;text-decoration:none;height:28px;padding:0 12px;font-size:12.5px}
+.chip.fav:hover{filter:brightness(.96)}
 .acct>span:not(.av){flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
 .acct b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.acct small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .temabtn{width:48px;height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);display:grid;place-items:center;padding:0}
@@ -493,10 +505,10 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=11"></script>
-<script src="cifrado.js?v=11"></script>
-<script src="senas.js?v=11"></script>
-<script src="datos.js?v=11"></script>
+<script src="config.publico.js?v=12"></script>
+<script src="cifrado.js?v=12"></script>
+<script src="senas.js?v=12"></script>
+<script src="datos.js?v=12"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -555,6 +567,25 @@ const yo = () => D.estado.usuario;
 const miPerfil = () => yo() && D.uno("cif_perfiles", yo().id);
 const nombreDe = id => { const p = D.uno("cif_perfiles", id); return p ? p.nombre || "Sin nombre" : "Alguien"; };
 const iniciales = n => String(n || "?").trim().split(/\s+/).slice(0, 2).map(x => x[0]).join("").toUpperCase();
+/** Foto de la persona (o sus iniciales). x = perfil o id. */
+function avatar(x, respaldo, clase = "") {
+  const p = typeof x === "string" ? D.uno("cif_perfiles", x) : x;
+  const n = (p && p.nombre) || respaldo || (typeof x === "string" ? nombreDe(x) : "?");
+  return p && p.foto ? `<img class="av ${clase}" src="${esc(p.foto)}" alt="${esc(n)}">` : `<span class="av ${clase}">${esc(iniciales(n))}</span>`;
+}
+/** Recorta al centro y comprime la foto a 192×192 JPEG (≈10 KB) para guardarla dentro del perfil. */
+function fotoChica(archivo) {
+  return new Promise((ok, mal) => {
+    const img = new Image(), url = URL.createObjectURL(archivo);
+    img.onload = () => {
+      const lado = Math.min(img.width, img.height), c = document.createElement("canvas"); c.width = c.height = 192;
+      c.getContext("2d").drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, 192, 192);
+      URL.revokeObjectURL(url); ok(c.toDataURL("image/jpeg", 0.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); mal(new Error("No pude leer esa imagen.")); };
+    img.src = url;
+  });
+}
 const esSuper = () => D.modo === "local" || !!(miPerfil() && miPerfil().superadmin);
 const membresias = () => yo() ? D.lista("cif_miembros").filter(m => m.persona_id === yo().id) : [];
 function misMins() {
@@ -618,7 +649,7 @@ function ruta() {
   const [v, ...p] = h.split("/").map(decodeURIComponent);
   return { v: v || "libreria", p };
 }
-window.addEventListener("hashchange", () => { cerrarMenu(); st.editando = false; render(); window.scrollTo(0, 0); });
+window.addEventListener("hashchange", () => { cerrarMenu(); st.editando = false; favEd = null; render(); window.scrollTo(0, 0); });
 
 let renderPend = false;
 D.alCambiar(() => {
@@ -655,7 +686,7 @@ function shell(band, main) {
     </nav>
     <button class="sync" id="syncb" title="Sincronizar ahora"><i></i><span id="synct">…</span></button>
     <div class="userbar">
-      <a class="acct" href="#perfil" title="Mi perfil"><span class="av">${esc(iniciales(nm))}</span><span><b>${esc(nm)}</b><small>${esc(p && p.usuario ? "@" + p.usuario : "")}${p && p.usuario ? " · " : ""}${esc(m ? m.nombre : D.nube ? "Sin ministerio" : "Modo local")}</small></span></a>
+      <a class="acct" href="#perfil" title="Mi perfil">${avatar(p, nm)}<span><b>${esc(nm)}</b><small>${esc(p && p.usuario ? "@" + p.usuario : "")}${p && p.usuario ? " · " : ""}${esc(m ? m.nombre : D.nube ? "Sin ministerio" : "Modo local")}</small></span></a>
       <div class="ubtns">
         <button class="ubtn" id="temab" aria-haspopup="true" aria-expanded="false">${temaActual() === "dia" ? IC.sol : IC.luna}<span>${{ auto: "Auto", dia: "Día", noche: "Noche", retro: "Retro" }[temaActual()]}</span></button>
         ${D.modo !== "local" ? `<button class="ubtn" id="salirb">${IC.salir}<span>Salir</span></button>` : ""}
@@ -1556,7 +1587,7 @@ function vMinisterios() {
   const optPersonas = (excluir = new Set()) => personas.filter(p => !excluir.has(p.id)).map(p => `<option value="${p.id}">${esc(p.nombre || "Sin nombre")}${p.usuario ? " · @" + esc(p.usuario) : ""}</option>`).join("");
   // solicitudes que yo puedo resolver (admin de ese ministerio o desarrollador)
   const porRevisar = D.lista("cif_solicitudes").filter(s => s.estado === "pendiente" && rolEn(s.ministerio_id) === "admin" && (!yo() || s.persona_id !== yo().id));
-  const filaSol = x => `<li><span class="av">${esc(iniciales(nombreDe(x.persona_id)))}</span><span><b>${esc(nombreDe(x.persona_id))}</b> <small class="status">quiere entrar a</small> <b>${esc((D.uno("cif_ministerios", x.ministerio_id) || {}).nombre || "?")}</b>${x.mensaje ? `<br><small class="status">«${esc(x.mensaje)}»</small>` : ""}</span>
+  const filaSol = x => `<li>${avatar(x.persona_id)}<span><b>${esc(nombreDe(x.persona_id))}</b> <small class="status">quiere entrar a</small> <b>${esc((D.uno("cif_ministerios", x.ministerio_id) || {}).nombre || "?")}</b>${x.mensaje ? `<br><small class="status">«${esc(x.mensaje)}»</small>` : ""}</span>
     <select class="fsel" data-solrol="${x.id}" aria-label="Entra como"><option value="musico">Como músico</option><option value="lector">Solo ver</option><option value="admin">Como admin</option></select>
     <button class="btn xs" data-acepta="${x.id}">Aceptar</button><button class="btn xs ghost" data-rechaza="${x.id}">Rechazar</button></li>`;
 
@@ -1579,7 +1610,7 @@ function vMinisterios() {
           <label class="row" style="font-size:13px;font-weight:700;gap:6px">Suscripción hasta <input type="date" class="fsel" data-susc="${m.id}" value="${esc(m.suscripcion_hasta || "")}"></label>
           <select class="fsel" data-nombra="${m.id}" aria-label="Nombrar admin"><option value="">＋ Nombrar admin…</option>${optPersonas(new Set(admins.map(a => a.persona_id)))}</select>
           <span class="sp"></span><button class="btn xs ghost" data-mborrar="${m.id}">Borrar ministerio</button></div>` : ""}
-      ${soy || dev ? `<ul class="miembros" style="margin-top:12px">${miem.map(x => `<li><span class="av">${esc(iniciales(nombreDe(x.persona_id)))}</span><span><a href="#persona/${x.persona_id}"><b>${esc(nombreDe(x.persona_id))}</b></a>${(D.uno("cif_perfiles", x.persona_id) || {}).artista ? ' <span class="chip mio">artista</span>' : ""}</span>
+      ${soy || dev ? `<ul class="miembros" style="margin-top:12px">${miem.map(x => `<li>${avatar(x.persona_id)}<span><a href="#persona/${x.persona_id}"><b>${esc(nombreDe(x.persona_id))}</b></a>${(D.uno("cif_perfiles", x.persona_id) || {}).artista ? ' <span class="chip mio">artista</span>' : ""}</span>
         ${admin ? `<select class="fsel" data-rol="${m.id}|${x.persona_id}">${["admin", "musico", "lector"].map(r => `<option value="${r}" ${r === x.rol ? "selected" : ""}>${ROL_TXT[r]}</option>`).join("")}</select><button class="btn xs ghost" data-saca="${m.id}|${x.persona_id}" aria-label="Quitar">✕</button>` : `<span class="chip">${esc(ROL_TXT[x.rol] || x.rol)}</span>`}</li>`).join("") || `<li class="status">Sin integrantes: comparte la liga de la app para que pidan entrar.</li>`}</ul>` : ""}
       ${admin && D.modo === "local" ? `<div class="row" style="margin-top:10px"><input class="field" data-nuevo="${m.id}" placeholder="Nombre de la persona (modo local)" style="flex:1"><button class="btn sm" data-agrega="${m.id}">Agregar</button></div>` : ""}
       ${admin && D.nube ? `<form class="row" data-invita="${m.id}" style="margin-top:10px"><input class="field" name="email" type="email" placeholder="correo@… para invitar" required autocomplete="off" data-1p-ignore data-lpignore="true" style="flex:2;min-width:180px"><input class="field" name="nombre" placeholder="Nombre" autocomplete="off" data-1p-ignore data-lpignore="true" style="flex:1;min-width:120px"><button class="btn sm">Invitar al ministerio</button></form>` : ""}
@@ -1704,7 +1735,7 @@ function vUsuarios() {
   const estado = u => !D.nube || !u.id ? "" : u.ultimo ? `<span class="chip pista">Activo · ${fechaCorta(u.ultimo)}</span>` : u.invitado ? `<span class="chip mio">Invitado · sin entrar</span>` : u.confirmado ? `<span class="chip">Nunca ha entrado</span>` : `<span class="chip mio">Sin confirmar correo</span>`;
   const fila = ({ id, p, u }) => {
     const ms = D.lista("cif_miembros").filter(m => m.persona_id === id);
-    return `<li class="ucard"><span class="av">${esc(iniciales(p.nombre || u.email))}</span>
+    return `<li class="ucard">${avatar(p, u.email)}
       <div class="uinfo"><b><a href="#persona/${id}">${esc(p.nombre || "(sin nombre)")}</a></b>${p.usuario ? ` <small class="status">@${esc(p.usuario)}</small>` : ""}${p.superadmin ? ' <span class="chip mio">Desarrollador</span>' : ""}
         <small class="status">${esc(u.email || "")}${u.creado ? " · alta " + fechaCorta(u.creado) : ""}</small>
         <div class="row" style="gap:6px;margin-top:4px">${estado(u)}${ms.map(m => `<span class="chip">${esc((D.uno("cif_ministerios", m.ministerio_id) || {}).nombre || "?")} · ${esc({ admin: "Admin", musico: "Músico", lector: "Solo ver" }[m.rol])} <button class="xmini" data-umsaca="${m.ministerio_id}|${id}" title="Quitar del ministerio">✕</button></span>`).join("")}</div></div>
@@ -1770,7 +1801,7 @@ function vAmigos() {
   const ams = amigos().map(id => D.uno("cif_perfiles", id) || { id, nombre: "Alguien" }).sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
   const recibidas = pendAmigos(), enviadas = yo() ? D.lista("cif_amistades").filter(a => a.estado === "pendiente" && a.de === yo().id) : [];
   const nTonos = id => D.lista("cif_tonos").filter(t => t.persona_id === id).length;
-  const persona = (p, extra) => `<li><span class="av">${esc(iniciales(p.nombre))}</span><span><a href="#persona/${p.id}"><b>${esc(p.nombre || "Sin nombre")}</b></a>${p.usuario ? ` <small class="status">@${esc(p.usuario)}</small>` : ""}<br><small class="status">${nTonos(p.id)} tonos guardados</small></span>${extra || ""}</li>`;
+  const persona = (p, extra) => `<li>${avatar(p)}<span><a href="#persona/${p.id}"><b>${esc(p.nombre || "Sin nombre")}</b></a>${p.usuario ? ` <small class="status">@${esc(p.usuario)}</small>` : ""}<br><small class="status">${nTonos(p.id)} tonos guardados</small></span>${extra || ""}</li>`;
   const res = busquedaAmigos.res;
   return {
     band: bandHTML({ tag: "Equipo", titulo: "Amigos y <em>sus tonos</em>", sub: `<span>Agrega a quien quieras para ver en qué tono canta cada canción</span>` }),
@@ -1810,9 +1841,15 @@ function vPersona(id) {
   const soyYo = yo() && id === yo().id, a = amistadCon(id);
   const tonos = D.lista("cif_tonos").filter(t => t.persona_id === id).map(t => ({ t, c: D.uno("cif_canciones", t.cancion_id) })).filter(x => x.c && !x.c.borrada).sort((x, y) => x.c.titulo.localeCompare(y.c.titulo, "es"));
   const mins = D.lista("cif_miembros").filter(m => m.persona_id === id).map(m => (D.uno("cif_ministerios", m.ministerio_id) || {}).nombre).filter(Boolean);
+  const favs = (p.favoritas || []).map(cid => D.uno("cif_canciones", cid)).filter(c => c && !c.borrada && veCancion(c));
   return {
     band: bandHTML({ tag: soyYo ? "Mis tonos" : "Perfil", titulo: esc(p.nombre || "Sin nombre"), sub: [p.usuario && `<span>@${esc(p.usuario)}</span>`, p.voz && `<span>${esc(p.voz)}</span>`, mins.length && `<span>${esc(mins.join(" · "))}</span>`, `<span><b>${tonos.length}</b> tonos</span>`].filter(Boolean).join("") }),
-    main: `${!soyYo && !a && yo() ? `<div class="row"><button class="btn" id="pamigo">＋ Agregar como amigo</button></div>` : ""}
+    main: `<section class="carta">${avatar(p, "", "grande")}<div>
+        ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : `<p class="status">${soyYo ? "Aún no escribes tu descripción." : "Sin descripción."}</p>`}
+        ${favs.length ? `<div class="favs"><b>❤️ Canciones favoritas</b><div class="row" style="gap:6px">${favs.map(c => `<a class="chip fav" href="#cancion/${c.id}">${esc(c.titulo)}</a>`).join("")}</div></div>` : ""}
+        ${soyYo ? `<a class="btn xs ghost" href="#perfil" style="margin-top:8px">✎ Editar mi perfil</a>` : ""}</div></section>
+      ${!soyYo && !a && yo() ? `<div class="row"><button class="btn" id="pamigo">＋ Agregar como amigo</button></div>` : ""}
+      <h2 class="status" style="margin:0">TONOS GUARDADOS</h2>
       ${tonos.length ? `<ul class="songs">${tonos.map(({ t, c }) => `<li><a class="srow" href="#cancion/${c.id}" data-vertono="${esc(t.tono)}" data-capo="${t.capo || 0}" data-cid="${c.id}"><div><b>${esc(c.titulo)}</b><small>${esc(c.autor || "—")} · original ${esc(c.tono || "")}</small></div><span class="chips"><span class="chip mio">★ ${esc(t.tono)}${t.capo ? " · capo " + t.capo : ""}</span></span></a></li>`).join("")}</ul>`
         : `<div class="empty"><strong>${soyYo ? "Aún no guardas tonos" : "Sin tonos guardados"}</strong><p>${soyYo ? "Abre una canción, ponla en tu tono y toca «★ Este es mi tono». Queda en tu perfil y lo ve tu equipo." : "Cuando guarde tonos aparecerán aquí."}</p></div>`}`,
     after() {
@@ -1821,6 +1858,14 @@ function vPersona(id) {
       $$("[data-vertono]").forEach(x => x.onclick = () => { st.tonoVista[x.dataset.cid] = x.dataset.vertono; st.capo[x.dataset.cid] = +x.dataset.capo; });
     },
   };
+}
+
+// favoritas en edición (se reinicia al guardar o al salir del perfil)
+let favEd = null;
+function favoritasHTML() {
+  if (!favEd) favEd = ((miPerfil() || {}).favoritas || []).slice();
+  const cs = favEd.map(id => D.uno("cif_canciones", id)).filter(Boolean);
+  return cs.length ? `<div class="row" style="gap:6px">${cs.map(c => `<button type="button" class="tchip on" data-favq="${c.id}" style="--c:var(--rosa)" title="Quitar">❤️ ${esc(c.titulo)} ✕</button>`).join("")}</div>` : `<span class="status">Aún no eliges favoritas.</span>`;
 }
 
 // ================= MI PERFIL =================
@@ -1833,7 +1878,8 @@ function vPerfil() {
     band: bandHTML({ tag: "Perfil", titulo: "Mi <em>perfil</em>", sub: `${email && D.nube ? `<span>${esc(email)}</span>` : ""}${esSuper() && D.nube ? "<span>Desarrollador</span>" : ""}` }),
     main: `
       <section class="perfilcab">
-        <span class="av grande">${esc(iniciales(p.nombre || email))}</span>
+        <div class="fotoedit"><label class="fotobtn" title="Cambiar foto">${avatar(p, email, "grande")}<span>📷</span><input type="file" id="pfoto" accept="image/*" hidden></label>
+          ${p.foto ? `<button type="button" class="btn xs ghost" id="pfotoq">Quitar foto</button>` : `<small class="status">Toca para poner tu foto</small>`}</div>
         <div><h2>${esc(p.nombre || "Sin nombre")}</h2><p>${p.usuario ? "@" + esc(p.usuario) : "Aún sin @usuario"}${p.voz ? " · " + esc(p.voz) : ""}</p>
           <div class="row" style="gap:6px;margin-top:8px">${mins.map(({ m, min }) => `<span class="chip">${esc(min.nombre)} · ${esc({ admin: "Admin", musico: "Músico", lector: "Solo ver" }[m.rol])}</span>`).join("") || `<a class="chip" href="#ministerios">Sin ministerio · pedir entrar</a>`}</div></div>
       </section>
@@ -1843,6 +1889,11 @@ function vPerfil() {
           <label class="lb">@usuario <small>Para que tus amigos te encuentren</small><span class="arroba"><b>@</b><input class="field" name="usuario" value="${esc(p.usuario || "")}" placeholder="diego.tdd" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" data-1p-ignore data-lpignore="true"></span></label>
           <label class="lb">Voz o instrumento <small>Opcional</small><input class="field" name="voz" value="${esc(p.voz || "")}" placeholder="Tenor, guitarra…" autocomplete="off" data-1p-ignore data-lpignore="true"></label>
         </div>
+        <label class="lb" style="margin-top:14px">Sobre mí <small>Una descripción corta (máx. 280)</small><textarea class="field" name="bio" rows="3" maxlength="280" placeholder="Canto en Kairós desde 2019, me encanta la adoración en vivo…">${esc(p.bio || "")}</textarea></label>
+        <div class="lb" style="margin-top:14px">❤️ Mis canciones favoritas <small>Hasta 5, de la librería</small>
+          <div id="pfavs">${favoritasHTML()}</div>
+          <input class="field" id="pfavq" placeholder="Buscar canción para agregar…" autocomplete="off" data-1p-ignore data-lpignore="true" style="height:40px;margin-top:6px">
+          <div class="row" id="pfavres" style="gap:6px;margin-top:6px"></div></div>
         <label class="row" style="margin-top:14px;font-weight:700"><input type="checkbox" name="artista" ${p.artista ? "checked" : ""}> Dirijo o canto: quiero guardar mis tonos</label>
         <div class="row" style="margin-top:14px"><button class="btn">Guardar cambios</button><span class="status" id="pmsg"></span></div>
       </form>
@@ -1869,9 +1920,27 @@ function vPerfil() {
         if (usuario && !/^[a-z0-9._]{2,30}$/.test(usuario)) return (msg.textContent = "El @usuario lleva de 2 a 30 letras sin acento, números, punto o guion bajo.");
         if (usuario && D.lista("cif_perfiles").some(x => x.id !== yo().id && (x.usuario || "").toLowerCase() === usuario)) return (msg.textContent = "Ese @usuario ya lo tiene alguien más.");
         const act = miPerfil() || { id: yo().id, estilo: st.estilo };
-        await D.guardar("cif_perfiles", { ...act, nombre, usuario: usuario || null, voz: voz || null, artista: f.artista.checked });
-        f.querySelector("button").blur(); toast("Perfil guardado."); render();
+        await D.guardar("cif_perfiles", { ...act, nombre, usuario: usuario || null, voz: voz || null, artista: f.artista.checked, bio: f.bio.value.trim().slice(0, 280) || null, favoritas: favEd.slice(0, 5) });
+        favEd = null; f.querySelector("button").blur(); toast("Perfil guardado."); render();
       };
+      // foto: se recorta y comprime aquí mismo y se guarda al momento
+      $("#pfoto").onchange = async ev => {
+        const a = ev.target.files[0]; if (!a) return;
+        try { const foto = await fotoChica(a); await D.guardar("cif_perfiles", { ...(miPerfil() || { id: yo().id, estilo: st.estilo }), foto }); toast("Foto guardada."); render(); }
+        catch (er) { toast(er.message); }
+      };
+      const fq = $("#pfotoq"); if (fq) fq.onclick = async () => { await D.guardar("cif_perfiles", { ...miPerfil(), foto: null }); toast("Foto quitada."); render(); };
+      // favoritas: se editan aquí y se guardan con «Guardar cambios»
+      const pintaFav = () => { $("#pfavs").innerHTML = favoritasHTML(); $$("[data-favq]").forEach(b => b.onclick = () => { favEd = favEd.filter(x => x !== b.dataset.favq); pintaFav(); }); };
+      pintaFav();
+      const fqi = $("#pfavq"), fres = $("#pfavres");
+      fqi.oninput = () => {
+        const q = norm(fqi.value);
+        const r = q.length < 2 ? [] : canciones().filter(c => !favEd.includes(c.id) && norm(c.titulo + " " + c.autor).includes(q)).slice(0, 6);
+        fres.innerHTML = r.map(c => `<button type="button" class="tchip" data-favadd="${c.id}" style="--c:var(--rosa)">＋ ${esc(c.titulo)}</button>`).join("") || (q.length >= 2 ? `<span class="status">Sin resultados</span>` : "");
+        $$("[data-favadd]", fres).forEach(b => b.onclick = () => { if (favEd.length >= 5) return toast("Máximo 5 favoritas."); favEd.push(b.dataset.favadd); fqi.value = ""; fres.innerHTML = ""; pintaFav(); });
+      };
+      fqi.onkeydown = ev => { if (ev.key === "Enter") ev.preventDefault(); };
       const fp = $("#fpass"); if (fp) fp.onsubmit = async e => {
         e.preventDefault(); const m2 = $("#cmsg2");
         if (fp.pass.value !== fp.pass2.value) return (m2.textContent = "Las contraseñas no coinciden.");

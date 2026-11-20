@@ -349,5 +349,20 @@ grant usage on schema public to service_role;
 grant select, insert, update, delete on cif_perfiles, cif_ministerios, cif_miembros, cif_canciones, cif_tonos, cif_sets, cif_tracks, cif_solicitudes, cif_amistades, cif_anuncios to service_role;
 grant execute on all functions in schema public to service_role;
 
+-- =====================================================================
+-- Versión 6: foto, descripción y favoritas en el perfil (= migraciones/005)
+-- =====================================================================
+
+alter table cif_perfiles add column if not exists foto text;                          -- data:image/jpeg;base64,…
+alter table cif_perfiles add column if not exists bio text;                           -- máx. 280 caracteres
+alter table cif_perfiles add column if not exists favoritas uuid[] not null default '{}'; -- hasta 5 canciones
+
+do $$ begin
+  alter table cif_perfiles add constraint cif_perfiles_foto_tam check (foto is null or length(foto) < 200000);
+exception when duplicate_object then null; end $$;
+do $$ begin
+  alter table cif_perfiles add constraint cif_perfiles_bio_tam check (bio is null or length(bio) <= 280);
+exception when duplicate_object then null; end $$;
+
 -- Primer superadmin (cambia el correo y corre esta línea):
 -- update cif_perfiles set superadmin = true where id = (select id from auth.users where email = 'tu-correo@tiempodedios.mx');
