@@ -744,11 +744,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=39"></script>
-<script src="cifrado.js?v=39"></script>
-<script src="senas.js?v=39"></script>
-<script src="datos.js?v=39"></script>
-<script src="pdf.js?v=39"></script>
+<script src="config.publico.js?v=40"></script>
+<script src="cifrado.js?v=40"></script>
+<script src="senas.js?v=40"></script>
+<script src="datos.js?v=40"></script>
+<script src="pdf.js?v=40"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1416,7 +1416,7 @@ function vCancion(p) {
       $("#vmas").onclick = () => cambiarVel(1);
       $("#tesc").onclick = () => { document.body.classList.add("escenario"); document.documentElement.requestFullscreen?.().catch(() => {}); };
       $("#tescx").onclick = () => { document.body.classList.remove("escenario"); if (document.fullscreenElement) document.exitFullscreen(); };
-      $("#tprint").onclick = () => abrirExportar({ items: [{ c, tono, capo, orden, voces: ctxSet && st.modoVoces ? vocesPDF(ctxSet.item) : null }], titulo: c.titulo, minId: ctxSet ? ctxSet.s.ministerio_id : (minActual() || {}).id });
+      $("#tprint").onclick = () => abrirExportar({ items: [{ c, tono, capo, orden, voces: ctxSet ? vocesPDF(ctxSet.item) : null }], titulo: c.titulo, minId: ctxSet ? ctxSet.s.ministerio_id : (minActual() || {}).id });
       const tc = $("#tcomp"); if (tc) tc.onclick = () => compartirCancion(c);
       $$("[data-ir]").forEach(b => b.onclick = () => { irSeccion(b.dataset.ir); if (st.dirigir && vivo) vivo.enviar({ i: ctxSet.i, sec: b.dataset.ir }); });
       $$("[data-tono]").forEach(b => b.onclick = () => { st.tonoVista[c.id] = b.dataset.tono; st.capo[c.id] = +b.dataset.capo; render(); if (rep.track && rep.auto) ajustarPitch(); });
@@ -1788,7 +1788,7 @@ function vSet(id) {
       // PDF del set: cada canción en su tono, con su estructura en bloques, momento y quién dirige
       $("#spdf").onclick = () => abrirExportar({ multiple: true, minId: s.ministerio_id, titulo: s.nombre,
         subtitulo: [s.fecha ? new Date(s.fecha + "T12:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "", m ? m.nombre : ""].filter(Boolean).join(" · "),
-        items: s.items.map(it => ({ it, c: D.uno("cif_canciones", it.cancion_id) })).filter(x => x.c).map(({ it, c }) => ({ c, tono: it.tono, capo: it.capo || 0, orden: it.estructura && it.estructura.length ? it.estructura : c.orden, nota: it.nota, momento: it.momento ? nombreMomento(it.momento) : "", persona: it.persona_id ? "Voz principal: " + nombreDe(it.persona_id) : "", voces: st.modoVoces ? vocesPDF(it) : null })) });
+        items: s.items.map(it => ({ it, c: D.uno("cif_canciones", it.cancion_id) })).filter(x => x.c).map(({ it, c }) => ({ c, tono: it.tono, capo: it.capo || 0, orden: it.estructura && it.estructura.length ? it.estructura : c.orden, nota: it.nota, momento: it.momento ? nombreMomento(it.momento) : "", persona: it.persona_id ? "Voz principal: " + nombreDe(it.persona_id) : "", voces: vocesPDF(it) })) });
       if (!puede) return;
       const guarda = cambios => D.guardar("cif_sets", { ...(D.uno("cif_sets", id) || s), ...cambios });
       const itemsAct = () => (D.uno("cif_sets", id) || s).items.map(x => ({ ...x }));
@@ -2274,6 +2274,7 @@ async function abrirExportar(conf) {
     ${conf.multiple ? `<label class="lb">Título<input class="field" name="titulo" value="${esc(conf.titulo || "Cancionero")}"></label>
       <div class="row"><label class="row"><input type="checkbox" name="portada" ${pr.portada ? "checked" : ""}> Portada</label><label class="row"><input type="checkbox" name="indice" ${pr.indice ? "checked" : ""}> Índice</label></div>` : ""}
     ${conf.tonoMio ? `<label class="lb">Tono<select class="field" name="tonos"><option value="orig">El original de cada canción</option><option value="mio">Mi tono cuando lo tengo guardado</option></select></label>` : ""}
+    ${conf.items.some(x => x.voces) ? `<label class="row"><input type="checkbox" name="conVoces" ${st.modoVoces ? "checked" : ""}> 🎤 Incluir voces (quién canta cada parte)</label>` : ""}
     <label class="row"><input type="checkbox" name="soloLetra" ${st.estilo.sinAcordes ? "checked" : ""}> Solo letra (para voces)</label>
     ${conf.filtros ? `<details class="pdffiltro"><summary>Elegir artistas o ministerios</summary><p class="status">Si marcas alguno, se exportan sus canciones en lugar de la lista actual.</p>
       <b>Artistas</b><div class="pdfchk">${autores.map((a, i) => `<label><input type="checkbox" name="a_${i}"> ${esc(a)}</label>`).join("")}</div>
@@ -2286,6 +2287,8 @@ async function abrirExportar(conf) {
     if (aSel.length || mSel.length) d.titulo = d.titulo && d.titulo !== (conf.titulo || "Cancionero") ? d.titulo : "Cancionero · " + aSel.concat(mSel.map(nombreMin)).join(", ");
   }
   if (!items.length) return toast("No hay canciones para exportar.");
+  // voces: según la casilla (que empieza como el modo Voces de este dispositivo) y se recuerda para la próxima
+  if (conf.items.some(x => x.voces)) { st.modoVoces = !!d.conVoces; ls.set("cifrados-voces2", st.modoVoces); if (!d.conVoces) items = items.map(x => ({ ...x, voces: null })); }
   if (d.tonos === "mio") items = items.map(x => { const t = miTono(x.c.id); return t ? { ...x, tono: t.tono, capo: t.capo || 0 } : x; });
   const cols = +d.cols === 2 ? 2 : 1;
   ls.set("cifrados-pdf", { cols, portada: !!d.portada, indice: !!d.indice });
