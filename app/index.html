@@ -622,7 +622,7 @@ function enlazarShell() {
   $("#ocultarLat").onclick = alternarLateral;
   const sb = $("#sideborde"); if (sb) sb.onmouseenter = () => document.documentElement.classList.add("asoma");
   $("#side").onmouseleave = () => document.documentElement.classList.remove("asoma");
-  const sb = $("#salirb"); if (sb) sb.onclick = async () => { if (await confirmar("¿Cerrar sesión?", "Se borra la copia de este dispositivo; tus datos siguen en la nube.")) D.salir(); };
+  const bSalir = $("#salirb"); if (bSalir) bSalir.onclick = async () => { if (await confirmar("¿Cerrar sesión?", "Se borra la copia de este dispositivo; tus datos siguen en la nube.")) D.salir(); };
   $("#temab").onclick = () => {
     const orden = ["auto", "dia", "noche", "retro"], act = ls.get("cifrados-tema-v", "auto");
     const sig = orden[(orden.indexOf(act) + 1) % orden.length]; aplicarTema(sig);
