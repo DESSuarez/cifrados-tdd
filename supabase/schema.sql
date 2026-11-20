@@ -521,5 +521,33 @@ end $$;
 revoke execute on function cif_copiar_canciones(uuid, uuid) from public, anon, authenticated;
 grant execute on function cif_transferir(uuid) to authenticated;
 
+-- =====================================================================
+-- Versión 11: canciones de los ministerios del colectivo = de Tiempo de Dios (= migraciones/010)
+-- =====================================================================
+
+create or replace function cif_es_tdd(aut text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select cif_norm(aut) like '%tiempo de dios%'
+      or exists (
+        select 1 from unnest(string_to_array(coalesce(aut, ''), ' × ')) a
+        join cif_ministerios m on m.colectivo and cif_norm(m.nombre) = cif_norm(a)) $$;
+
+create or replace function cif_min_ve(x uuid, m uuid, comp uuid[], vis text, aut text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select cif_es_tdd(aut)
+      or m = x
+      or x = any(coalesce(comp, '{}'))
+      or (coalesce(vis, 'todos') = 'todos'
+          and exists (select 1 from cif_ministerios where id = x and colectivo)
+          and (m is null or exists (select 1 from cif_ministerios where id = m and colectivo))) $$;
+
+create or replace function cif_ve_cancion(m uuid, comp uuid[], vis text, aut text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select cif_super()
+      or cif_es_tdd(aut)
+      or exists (select 1 from cif_miembros mi where mi.persona_id = auth.uid() and cif_min_ve(mi.ministerio_id, m, comp, vis, aut)) $$;
+
+grant execute on function cif_es_tdd(text) to authenticated;
+
 -- Primer superadmin (cambia el correo y corre esta línea):
 -- update cif_perfiles set superadmin = true where id = (select id from auth.users where email = 'tu-correo@tiempodedios.mx');

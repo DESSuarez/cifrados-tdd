@@ -622,11 +622,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=19"></script>
-<script src="cifrado.js?v=19"></script>
-<script src="senas.js?v=19"></script>
-<script src="datos.js?v=19"></script>
-<script src="pdf.js?v=19"></script>
+<script src="config.publico.js?v=20"></script>
+<script src="cifrado.js?v=20"></script>
+<script src="senas.js?v=20"></script>
+<script src="datos.js?v=20"></script>
+<script src="pdf.js?v=20"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -855,7 +855,9 @@ const MOMENTOS = [["entrada", "Entrada"], ["piedad", "Piedad"], ["gloria", "Glor
 const RE_MOMENTO = { entrada: /entrada|venimos|vine a adorar/, piedad: /piedad|kyrie|senor ten/, gloria: /\bgloria\b/, aleluya: /aleluya/, ofertorio: /ofertorio|ofrenda|te entrego|esto que/, santo: /\bsanto\b/, cordero: /cordero|agnus/, comunion: /comunion|eucarist|pan de vida|quedate/, salida: /salida|madre|maria|ave maria/ };
 const nombreMomento = k => (MOMENTOS.find(m => m[0] === k) || [k, "Otros"])[1];
 const esLiturgica = c => (c.etiquetas || []).some(t => norm(t).startsWith("liturg")) || /^misa\b/i.test(c.titulo || "");
-const esTDD = c => norm(c.autor).includes("tiempo de dios");
+// Canción «de Tiempo de Dios»: uno de sus artistas es Tiempo de Dios o un ministerio del colectivo (igual que cif_es_tdd en SQL, migración 010).
+// Va a la pestaña Tiempo de Dios y la ven todos los ministerios, sin tener que poner «Tiempo de Dios» como artista.
+const esTDD = c => norm(c.autor).includes("tiempo de dios") || artistasDe(c).some(a => { const m = minDeArtista(a); return !!(m && m.colectivo); });
 // Varios artistas por canción: se guardan en «autor» unidos con « × » (p. ej. «Tiempo de Dios × Surgit Iglessia»),
 // así se ven igual en la librería, los sets y los PDF sin cambiar la base de datos.
 const SEP_ART = " × ";
@@ -864,7 +866,7 @@ const artistasDe = c => String((c && c.autor) || "").split(/\s+×\s+/).map(x => 
 function minDeArtista(n) {
   const k = norm(n); if (!k) return null;
   const m = D.lista("cif_ministerios").find(x => norm(x.nombre) === k);
-  if (m) return { id: m.id, nombre: m.nombre, logo: logoSrc(m.logo), color: m.color_primario || "#FF3D1A", solista: m.tipo === "solista" };
+  if (m) return { id: m.id, nombre: m.nombre, logo: logoSrc(m.logo), color: m.color_primario || "#FF3D1A", solista: m.tipo === "solista", colectivo: !!m.colectivo };
   if (k === "tiempo de dios") return { id: null, nombre: "Tiempo de Dios", logo: "favicon.png", color: "#FF3D1A", tdd: true };
   return null;
 }
