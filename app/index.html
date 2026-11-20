@@ -295,6 +295,14 @@ label.lb small{font-weight:500;color:var(--muted)}
 .tchip:hover{border-color:var(--c,var(--area))}
 .tchip.on{background:var(--c,var(--area));border-color:var(--c,var(--area));color:#fff}
 .tchip small{font-family:var(--mono);font-weight:500;opacity:.8}
+.tchip .tico{width:18px;height:18px;border-radius:50%;object-fit:cover;margin-left:-4px;background:#fff}
+.arts{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 6px;vertical-align:middle}
+.art.min{display:inline-flex;align-items:center;gap:5px;font-weight:700;color:inherit;text-decoration:none}
+.art.min img,.art.min i{width:16px;height:16px;border-radius:50%;object-fit:cover;flex:none;display:inline-grid;place-items:center;font:800 8px var(--body);font-style:normal;color:#fff;background:#fff}
+.art.min small{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:99px;background:var(--c);color:#fff;font-weight:600}
+a.art.min:hover{text-decoration:underline}
+.artx{opacity:.6}
+.subarts .art.min img,.subarts .art.min i{width:20px;height:20px}
 .caja{border:1px solid var(--line);border-radius:16px;padding:18px;background:var(--surface)}
 .caja h3{margin:0 0 10px;font-family:var(--display);font-weight:900;font-size:18px}
 .caja>p{margin:0 0 10px;color:var(--muted)}
@@ -603,11 +611,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=16"></script>
-<script src="cifrado.js?v=16"></script>
-<script src="senas.js?v=16"></script>
-<script src="datos.js?v=16"></script>
-<script src="pdf.js?v=16"></script>
+<script src="config.publico.js?v=17"></script>
+<script src="cifrado.js?v=17"></script>
+<script src="senas.js?v=17"></script>
+<script src="datos.js?v=17"></script>
+<script src="pdf.js?v=17"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -817,6 +825,30 @@ const RE_MOMENTO = { entrada: /entrada|venimos|vine a adorar/, piedad: /piedad|k
 const nombreMomento = k => (MOMENTOS.find(m => m[0] === k) || [k, "Otros"])[1];
 const esLiturgica = c => (c.etiquetas || []).some(t => norm(t).startsWith("liturg")) || /^misa\b/i.test(c.titulo || "");
 const esTDD = c => norm(c.autor).includes("tiempo de dios");
+// Varios artistas por canción: se guardan en «autor» unidos con « × » (p. ej. «Tiempo de Dios × Surgit Iglessia»),
+// así se ven igual en la librería, los sets y los PDF sin cambiar la base de datos.
+const SEP_ART = " × ";
+const artistasDe = c => String((c && c.autor) || "").split(/\s+×\s+/).map(x => x.trim()).filter(Boolean);
+/** Si el artista es un ministerio de la app (o Tiempo de Dios), devuelve sus datos para mostrarlo con su logo. */
+function minDeArtista(n) {
+  const k = norm(n); if (!k) return null;
+  const m = D.lista("cif_ministerios").find(x => norm(x.nombre) === k);
+  if (m) return { id: m.id, nombre: m.nombre, logo: logoSrc(m.logo), color: m.color_primario || "#FF3D1A", solista: m.tipo === "solista" };
+  if (k === "tiempo de dios") return { id: null, nombre: "Tiempo de Dios", logo: "favicon.png", color: "#FF3D1A", tdd: true };
+  return null;
+}
+/** Artistas de la canción: los ministerios salen con su logo y la etiqueta «Ministerio». links=false dentro de otra liga. */
+function artistasHTML(c, links = true) {
+  const as = artistasDe(c); if (!as.length) return "";
+  return `<span class="arts">${as.map(a => {
+    const m = minDeArtista(a);
+    if (!m) return `<span class="art">${esc(a)}</span>`;
+    const ico = m.logo ? `<img src="${esc(m.logo)}" alt="">` : `<i style="background:${esc(m.color)}">${esc(iniciales(m.nombre))}</i>`;
+    const tipo = m.tdd ? "Colectivo" : m.solista ? "Solista" : "Ministerio";
+    const inner = `${ico}${esc(m.nombre)}<small>${tipo}</small>`;
+    return links && m.id ? `<a class="art min" href="#ministerio/${m.id}" style="--c:${esc(m.color)}" title="Ver el perfil de ${esc(m.nombre)}">${inner}</a>` : `<span class="art min" style="--c:${esc(m.color)}">${inner}</span>`;
+  }).join('<span class="artx">×</span>')}</span>`;
+}
 function momentoDe(c) { const t = norm(c.titulo + " " + (c.etiquetas || []).join(" ")); for (const [k] of MOMENTOS) if (RE_MOMENTO[k].test(t)) return k; return null; }
 const ETIQUETAS_SUG = ["Alabanza", "Adoración", "Litúrgica", "Espíritu Santo", "Mariana", "Eucaristía", "Sanación", "Navidad", "Cuaresma", "Pascua", "Infantil", "Himno"];
 
@@ -988,12 +1020,12 @@ function vLibreria() {
   const enTab = todas.filter(c => grupoDe(c) === st.tab);
   const conMio = new Set(yo() ? D.lista("cif_tonos").filter(t => t.persona_id === yo().id).map(t => t.cancion_id) : []);
   const conPista = new Set(D.lista("cif_tracks").map(t => t.cancion_id));
-  const autores = [...new Set(enTab.map(c => c.autor).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+  const autores = [...new Set(enTab.flatMap(artistasDe))].sort((a, b) => a.localeCompare(b, "es"));
   const tonosUsados = C.TONOS.filter(t => enTab.some(c => c.tono === t));
   const tags = [...new Set(todas.flatMap(c => c.etiquetas || []))].sort((a, b) => a.localeCompare(b, "es"));
   const q = norm(st.q);
   let lista = enTab.filter(c => !q || norm(c.titulo + " " + c.autor + " " + (c.etiquetas || []).join(" ")).includes(q) || (q.length > 3 && norm(c.contenido.replace(/\[[^\]]*\]/g, "")).includes(q)));
-  if (st.fArtista) lista = lista.filter(c => c.autor === st.fArtista);
+  if (st.fArtista) lista = lista.filter(c => artistasDe(c).includes(st.fArtista));
   if (st.fTono) lista = lista.filter(c => c.tono === st.fTono);
   if (st.fTags.length) lista = lista.filter(c => (c.etiquetas || []).some(t => st.fTags.includes(t)));
   if (st.fMio) lista = lista.filter(c => conMio.has(c.id));
@@ -1002,7 +1034,7 @@ function vLibreria() {
   const hayFiltro = st.fArtista || st.fTono || st.fTags.length || st.fMio || st.fPista || st.fPriv;
   const fila = c => {
     const mt = miTono(c.id);
-    return `<li><a class="srow" href="#cancion/${c.id}"><div><b>${esc(c.titulo)}</b><small>${esc(c.autor || "—")}${(c.etiquetas || []).length ? " · " + esc(c.etiquetas.join(", ")) : ""}</small></div><span class="chips">
+    return `<li><a class="srow" href="#cancion/${c.id}"><div><b>${esc(c.titulo)}</b><small>${artistasHTML(c, false) || "—"}${(c.etiquetas || []).length ? `<span class="etq"> · ${esc(c.etiquetas.join(", "))}</span>` : ""}</small></div><span class="chips">
       ${chipPrivacidad(c)}${c.tono ? `<span class="chip tono">${esc(c.tono)}</span>` : ""}${mt ? `<span class="chip mio" title="Tu tono">★ ${esc(mt.tono)}</span>` : ""}${conPista.has(c.id) ? `<span class="chip pista">♫ pista</span>` : ""}${c.bpm ? `<span class="chip tono">${c.bpm} bpm</span>` : ""}</span></a></li>`;
   };
   let filas = "";
@@ -1098,7 +1130,7 @@ function vCancion(p) {
       ${D.modo !== "local" ? `<button class="navbtn ${st.dirigir ? "on" : ""}" id="dirigir" title="Los demás ven la canción y sección que tú marques">📡 Dirigir</button><button class="navbtn ${st.seguir ? "on" : ""}" id="seguir" title="Abrir lo que marque quien dirige">${st.seguir ? '<span class="vivoind"><i></i>Siguiendo</span>' : "Seguir"}</button>` : ""}
       <button class="navbtn" id="prev" ${ctxSet.i <= 0 ? "disabled" : ""}>‹</button><button class="navbtn" id="next" ${ctxSet.i >= n - 1 ? "disabled" : ""}>›</button></div>`;
   }
-  const sub = [c.autor && `<span>${esc(c.autor)}</span>`, `<span>Original <b>${esc(original)}</b></span>`, c.bpm && `<span><b>${c.bpm}</b> bpm</span>`, c.compas && `<span><b>${esc(c.compas)}</b></span>`, capo ? `<span>Capo <b>${capo}</b> · formas de <b>${esc(forma)}</b></span>` : "",
+  const sub = [c.autor && `<span class="subarts">${artistasHTML(c)}</span>`, `<span>Original <b>${esc(original)}</b></span>`, c.bpm && `<span><b>${c.bpm}</b> bpm</span>`, c.compas && `<span><b>${esc(c.compas)}</b></span>`, capo ? `<span>Capo <b>${capo}</b> · formas de <b>${esc(forma)}</b></span>` : "",
     esPrivada(c) && `<span>🔒 Solo <b>${esc(nombreMin(c.ministerio_id))}</b>${(c.compartida_con || []).length ? " · compartida con " + esc(c.compartida_con.map(nombreMin).join(", ")) : ""}</span>`].filter(Boolean).join("");
   const opTonos = C.TONOS.filter(t => t.endsWith("m") === original.endsWith("m")).map(t => `<option ${t === tono ? "selected" : ""}>${t}</option>`).join("");
 
@@ -1529,19 +1561,19 @@ function vEditor(id) {
   const base = id ? D.uno("cif_canciones", id) : null;
   if (id && !base) return { band: bandHTML({ titulo: "No encontré esa canción" }), main: "" };
   if (!esMusico()) return { band: bandHTML({ titulo: "Sin permiso" }), main: `<p>Solo músicos y admins editan la librería.</p>` };
-  if (!ed || ed.id !== (id || "nueva")) ed = { id: id || "nueva", c: base ? { compartida_con: [], visibilidad: "todos", ...base } : { titulo: "", autor: "", tono: "G", bpm: null, compas: "4/4", contenido: "", orden: [], etiquetas: [], liga: "", notas: "", ministerio_id: minActual() ? minActual().id : null, visibilidad: D.nube && minActual() ? "ministerio" : "todos", compartida_con: [] }, paso: base ? "acordes" : "letra", sel: null };
+  if (!ed || ed.id !== (id || "nueva")) ed = { id: id || "nueva", c: base ? { compartida_con: [], visibilidad: "todos", ...base } : { titulo: "", autor: minActual() ? minActual().nombre : "", tono: "G", bpm: null, compas: "4/4", contenido: "", orden: [], etiquetas: [], liga: "", notas: "", ministerio_id: minActual() ? minActual().id : null, visibilidad: D.nube && minActual() ? "ministerio" : "todos", compartida_con: [] }, paso: base ? "acordes" : "letra", sel: null };
   st.editando = true;
   const c = ed.c;
   const main = `
     <div class="grid2">
       <label class="lb">Título<input class="field" id="etit" value="${esc(c.titulo)}" placeholder="Nombre de la canción"></label>
-      <label class="lb">Autor / artista<input class="field" id="eaut" value="${esc(c.autor)}"></label>
       <label class="lb">Tono en que la escribes<select class="field" id="eton">${C.TONOS.map(t => `<option ${t === c.tono ? "selected" : ""}>${t}</option>`).join("")}</select></label>
       <label class="lb">BPM<input class="field" id="ebpm" type="number" min="30" max="260" value="${c.bpm || ""}"></label>
       <label class="lb">Compás<input class="field" id="ecom" value="${esc(c.compas || "")}" placeholder="4/4"></label>
       <label class="lb">Liga de referencia<input class="field" id="elig" value="${esc(c.liga || "")}" placeholder="Spotify o YouTube"></label>
     </div>
-    <div class="lb">Etiquetas <small>una canción puede estar en varias; «Litúrgica» la manda a esa pestaña. Para Tiempo de Dios escribe «Tiempo de Dios» en Autor.</small><div id="etags">${etiquetasHTML()}</div></div>
+    <div class="lb">Artistas <small>Puede tener varios (p. ej. Tiempo de Dios × Surgit Iglessia). Si la escribió un ministerio, agrégalo: sale con su logo y su perfil.</small><div id="earts">${artistasEdHTML()}</div></div>
+    <div class="lb">Etiquetas <small>una canción puede estar en varias; «Litúrgica» la manda a esa pestaña. Si un artista es «Tiempo de Dios», va a esa pestaña.</small><div id="etags">${etiquetasHTML()}</div></div>
     <div class="lb">¿Quién la ve? <small>Las canciones nuevas pueden quedarse en tu ministerio y compartirse con los que tú elijas.</small><div id="evis">${visibilidadHTML()}</div></div>
     <div class="ed-pasos">${[["letra", "1 · Letra"], ["acordes", "2 · Acordes"], ["orden", "3 · Orden"], ["texto", "Texto ChordPro"]].map(([k, l]) => `<button class="tchip ${ed.paso === k ? "on" : ""}" data-paso="${k}">${l}</button>`).join("")}</div>
     <div class="ed-cols">
@@ -1555,6 +1587,17 @@ function vEditor(id) {
     main,
     after() { enlazarEditor(base); },
   };
+}
+function artistasEdHTML() {
+  const sel = artistasDe(ed.c), ya = new Set(sel.map(norm));
+  const mins = D.lista("cif_ministerios").map(m => m.nombre).concat("Tiempo de Dios");
+  const actual = minActual() ? [minActual().nombre] : [];
+  const sug = [...new Set(actual.concat("Tiempo de Dios", mins.sort((a, b) => a.localeCompare(b, "es"))))].filter(n => !ya.has(norm(n))).slice(0, 8);
+  const conocidos = [...new Set(mins.concat(canciones().flatMap(artistasDe)))].sort((a, b) => a.localeCompare(b, "es"));
+  return `<div class="row" style="gap:6px">${sel.map((a, i) => { const m = minDeArtista(a); return `<button type="button" class="tchip on" data-qart="${i}" style="--c:${m ? esc(m.color) : "var(--baby-ink)"}" title="Quitar">${m ? (m.logo ? `<img class="tico" src="${esc(m.logo)}" alt="">` : "") : ""}${esc(a)} ✕</button>`; }).join("")}
+    <input class="fsel" id="eartin" list="eartlist" placeholder="＋ Artista o ministerio y Enter" style="width:240px" autocomplete="off" data-1p-ignore data-lpignore="true">
+    <datalist id="eartlist">${conocidos.map(n => `<option value="${esc(n)}">`).join("")}</datalist></div>
+    ${sug.length ? `<div class="row" style="gap:6px;margin-top:6px">${sug.map(n => { const m = minDeArtista(n); return `<button type="button" class="tchip" data-part="${esc(n)}" style="--c:${esc(m ? m.color : "var(--flame)")}">${m && m.logo ? `<img class="tico" src="${esc(m.logo)}" alt="">` : "＋ "}${esc(n)}</button>`; }).join("")}</div>` : ""}`;
 }
 function etiquetasHTML() {
   const sel = ed.c.etiquetas || [], todas = [...new Set(ETIQUETAS_SUG.concat(canciones().flatMap(x => x.etiquetas || [])))];
@@ -1672,6 +1715,17 @@ function enlazarEditor(base) {
   const prev = () => { const p = $("#eprev"); if (p) p.innerHTML = C.aHTML(c.contenido, { tonoFinal: c.tono, orden: c.orden }); };
   const repintar = () => { $("#edpanel").innerHTML = panelEditor(); enlazarPanel(); prev(); };
   const campo = (sel, k, f = v => v) => { const el = $(sel); el.oninput = () => { c[k] = f(el.value); if (k === "tono") repintar(); }; };
+  const enlazarArts = () => {
+    const box = $("#earts"), lista = () => artistasDe(c);
+    const poner = arr => { c.autor = arr.join(SEP_ART); box.innerHTML = artistasEdHTML(); enlazarArts(); };
+    const agrega = v => { v = v.trim().replace(/\s*×\s*/g, " "); if (!v) return; const l = lista(); const m = minDeArtista(v); if (m) v = m.nombre; if (!l.some(a => norm(a) === norm(v))) poner(l.concat(v)); else poner(l); };
+    $$("[data-qart]", box).forEach(b => b.onclick = () => poner(lista().filter((x, i) => i !== +b.dataset.qart)));
+    $$("[data-part]", box).forEach(b => b.onclick = () => agrega(b.dataset.part));
+    const inp = $("#eartin", box);
+    inp.onkeydown = ev => { if (ev.key === "Enter" || ev.key === ",") { ev.preventDefault(); agrega(inp.value); $("#eartin").focus(); } };
+    inp.onchange = () => { if (inp.value.trim()) { agrega(inp.value); $("#eartin").focus(); } };
+  };
+  enlazarArts();
   const enlazarTags = () => {
     $$("[data-qtag]").forEach(b => b.onclick = () => { c.etiquetas = c.etiquetas.filter(t => t !== b.dataset.qtag); $("#etags").innerHTML = etiquetasHTML(); enlazarTags(); });
     $$("[data-ptag]").forEach(b => b.onclick = () => { c.etiquetas = c.etiquetas.concat(b.dataset.ptag); $("#etags").innerHTML = etiquetasHTML(); enlazarTags(); });
@@ -1685,7 +1739,7 @@ function enlazarEditor(base) {
     $$("[data-comp]", box).forEach(b => b.onclick = () => { const id = b.dataset.comp; c.compartida_con = (c.compartida_con || []).includes(id) ? c.compartida_con.filter(x => x !== id) : (c.compartida_con || []).concat(id); pinta(); });
   };
   enlazarVis();
-  campo("#etit", "titulo"); campo("#eaut", "autor"); campo("#ebpm", "bpm", v => +v || null); campo("#ecom", "compas"); campo("#elig", "liga"); campo("#enot", "notas");
+  campo("#etit", "titulo"); campo("#ebpm", "bpm", v => +v || null); campo("#ecom", "compas"); campo("#elig", "liga"); campo("#enot", "notas");
   // Cambiar el tono pasa los acordes al tono nuevo (o, si se elige, solo corrige la etiqueta)
   $("#eton").onchange = async e => {
     const antes = c.tono, nuevo = e.target.value, semis = antes ? C.distancia(antes, nuevo) : 0;
@@ -1802,7 +1856,7 @@ async function marcaDe(minId) {
 async function abrirExportar(conf) {
   const pr = ls.get("cifrados-pdf", { cols: 1, portada: true, indice: true });
   const marcas = [["", "Tiempo de Dios"], ...(esSuper() ? D.lista("cif_ministerios") : misMins()).sort((a, b) => a.nombre.localeCompare(b.nombre)).map(m => [m.id, m.nombre])];
-  const autores = conf.filtros ? [...new Set(canciones().map(c => c.autor).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es")) : [];
+  const autores = conf.filtros ? [...new Set(canciones().flatMap(artistasDe))].sort((a, b) => a.localeCompare(b, "es")) : [];
   const mins = conf.filtros ? D.lista("cif_ministerios").sort((a, b) => a.nombre.localeCompare(b.nombre)) : [];
   const d = await dialogo(`<h2>Exportar PDF</h2>
     <p>${conf.multiple ? `${conf.items.length} canciones${conf.filtros ? " de la lista actual (con tus filtros)" : ""}.` : `«${esc(conf.titulo)}» en el tono que estás viendo.`} Acordes sobre su sílaba, con el formato de Tiempo de Dios.</p>
@@ -1819,7 +1873,7 @@ async function abrirExportar(conf) {
   let items = conf.items;
   if (conf.filtros) {
     const aSel = autores.filter((a, i) => d["a_" + i]), mSel = mins.filter(m => d["m_" + m.id]).map(m => m.id);
-    if (aSel.length || mSel.length) items = canciones().filter(c => aSel.includes(c.autor) || mSel.includes(c.ministerio_id)).map(c => ({ c }));
+    if (aSel.length || mSel.length) items = canciones().filter(c => artistasDe(c).some(a => aSel.includes(a)) || mSel.includes(c.ministerio_id)).map(c => ({ c }));
     if (aSel.length || mSel.length) d.titulo = d.titulo && d.titulo !== (conf.titulo || "Cancionero") ? d.titulo : "Cancionero · " + aSel.concat(mSel.map(nombreMin)).join(", ");
   }
   if (!items.length) return toast("No hay canciones para exportar.");
