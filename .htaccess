@@ -3,7 +3,13 @@ RewriteEngine On
 RewriteCond %{REQUEST_URI} !^/app/
 RewriteRule ^(.*)$ app/$1 [L]
 Header set X-Robots-Tag "noindex, nofollow"
-<FilesMatch "sw\.js$">
-  Header set Cache-Control "no-cache"
+# La app cambia seguido: el navegador siempre pregunta si hay versión nueva (Hostinger ponía 7 días de caché).
+# Las imágenes sí pueden quedarse en caché.
+<FilesMatch "\.(html|js|css|json|webmanifest)$">
+  Header set Cache-Control "no-cache, must-revalidate"
+  Header unset Expires
+</FilesMatch>
+<FilesMatch "\.(png|jpg|svg|ico)$">
+  Header set Cache-Control "public, max-age=604800"
 </FilesMatch>
 AddType application/manifest+json .webmanifest

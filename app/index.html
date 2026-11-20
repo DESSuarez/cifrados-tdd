@@ -427,10 +427,10 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js"></script>
-<script src="cifrado.js"></script>
-<script src="senas.js"></script>
-<script src="datos.js"></script>
+<script src="config.publico.js?v=5"></script>
+<script src="cifrado.js?v=5"></script>
+<script src="senas.js?v=5"></script>
+<script src="datos.js?v=5"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -455,6 +455,7 @@ const IC = {
   lado: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg>',
   nota: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
   amigos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M19 8v6M16 11h6"/></svg>',
+  salir: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>',
 };
 
 // ---------- Estado de la interfaz ----------
@@ -571,7 +572,8 @@ function shell(band, main) {
     </nav>
     <button class="sync" id="syncb" title="Sincronizar ahora"><i></i><span id="synct">…</span></button>
     <div class="userbar"><a class="acct" href="#ajustes"><span class="av">${esc(iniciales(nm))}</span><span><b>${esc(nm)}</b><small>${esc(m ? m.nombre + " · " + (rolEn(m.id) || "") : D.nube ? "Sin ministerio" : "Modo local")}</small></span></a>
-      <button class="temabtn" id="temab" title="Día / Noche / Retro / Auto">${document.documentElement.dataset.theme === "dark" || document.documentElement.dataset.theme === "retro" ? IC.luna : IC.sol}</button></div>
+      <button class="temabtn" id="temab" title="Día / Noche / Retro / Auto">${document.documentElement.dataset.theme === "dark" || document.documentElement.dataset.theme === "retro" ? IC.luna : IC.sol}</button>
+      ${D.nube ? `<button class="temabtn" id="salirb" title="Cerrar sesión" aria-label="Cerrar sesión">${IC.salir}</button>` : ""}</div>
   </aside>
   <div class="sideborde" id="sideborde"></div>
   <div class="maincol">
@@ -620,6 +622,7 @@ function enlazarShell() {
   $("#ocultarLat").onclick = alternarLateral;
   const sb = $("#sideborde"); if (sb) sb.onmouseenter = () => document.documentElement.classList.add("asoma");
   $("#side").onmouseleave = () => document.documentElement.classList.remove("asoma");
+  const sb = $("#salirb"); if (sb) sb.onclick = async () => { if (await confirmar("¿Cerrar sesión?", "Se borra la copia de este dispositivo; tus datos siguen en la nube.")) D.salir(); };
   $("#temab").onclick = () => {
     const orden = ["auto", "dia", "noche", "retro"], act = ls.get("cifrados-tema-v", "auto");
     const sig = orden[(orden.indexOf(act) + 1) % orden.length]; aplicarTema(sig);
@@ -1870,6 +1873,7 @@ function enlazarLogin() {
   if (/error_description=/.test(h0)) st.avisoLogin = /expired|invalid/i.test(decodeURIComponent(h0)) ? "La liga ya venció o ya se usó. Pide que te la reenvíen o usa «Olvidé mi contraseña»." : "No se pudo abrir la liga del correo.";
   await D.iniciar();
   if (tipo === "signup" && yo()) setTimeout(() => toast("¡Correo confirmado! Ya puedes usar Cifrados."), 400);
+  if (D.estado.limpiado) setTimeout(() => toast("Se borró lo que tenías en modo local; ahora todo vive en la nube."), 600);
   if (tipo || st.avisoLogin) history.replaceState(null, "", location.pathname + "#libreria");
   // modo local: crea mi perfil la primera vez
   if (!D.nube && !miPerfil()) await D.guardar("cif_perfiles", { id: yo().id, nombre: "Yo", artista: true, estilo: st.estilo });

@@ -190,6 +190,15 @@
 
   // ---------- Sesión ----------
   async function iniciar() {
+    // Si este navegador estuvo en modo local (o en otro proyecto de Supabase), esos datos no se suben:
+    // sus ids no existen en la nube. Se borran y se empieza limpio con lo de la nube.
+    const modo = nube ? "nube:" + cfg.supabaseUrl : "local";
+    const antes = (await meta.get("modo")) || ((await meta.get("yo")) ? "local" : null);
+    if (antes && antes !== modo) {
+      for (const t of TABLAS.concat(["_salida", "_meta"])) await tx(t, "readwrite", s => s.clear());
+      estado.limpiado = antes; // la app avisa una vez
+    }
+    await meta.set("modo", modo);
     await cargarLocal();
     if (nube) {
       const { data } = await sb.auth.getSession();
