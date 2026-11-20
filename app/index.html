@@ -521,6 +521,14 @@ input[type=date].fsel::-webkit-calendar-picker-indicator{opacity:.6;cursor:point
 .interrow.entra{border-color:var(--flame);background:var(--flame-soft)}
 .interform{display:grid;grid-template-columns:minmax(180px,1fr) auto minmax(160px,1fr) auto;gap:8px;align-items:center;margin-top:12px}
 .interform .status{grid-column:1/-1}
+.segradio{display:flex;height:48px;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
+.segradio label{display:flex;flex:1;cursor:pointer;min-width:0}
+.segradio input{position:absolute;opacity:0;pointer-events:none}
+.segradio span{display:flex;align-items:center;justify-content:center;width:100%;padding:0 16px;font-weight:700;font-size:14px;white-space:nowrap;color:var(--fg);transition:background .15s}
+.segradio label+label span{border-left:1.5px solid var(--line)}
+.segradio label:hover span{background:var(--surface)}
+.segradio input:checked+span{background:var(--area);color:var(--on-area)}
+.segradio input:focus-visible+span{outline:3px solid var(--baby);outline-offset:-3px}
 @media (max-width:760px){.interform{grid-template-columns:1fr}}
 .interhist{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:4px}
 .interhist li{display:flex;gap:10px;flex-wrap:wrap;font-size:13.5px}
@@ -640,11 +648,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=22"></script>
-<script src="cifrado.js?v=22"></script>
-<script src="senas.js?v=22"></script>
-<script src="datos.js?v=22"></script>
-<script src="pdf.js?v=22"></script>
+<script src="config.publico.js?v=23"></script>
+<script src="cifrado.js?v=23"></script>
+<script src="senas.js?v=23"></script>
+<script src="datos.js?v=23"></script>
+<script src="pdf.js?v=23"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -2316,13 +2324,13 @@ function intercambiosHTML(min) {
   const tipoTxt = x => x.tipo === "intercambio" ? "intercambio" : "envío";
   const n = (o, d) => faltanEn(o, d).length;
   return `<section class="caja" id="inter"><h3>Pasar canciones</h3>
-    <p>Los ministerios del colectivo ya comparten su librería. Con quien no la comparte puedes <b>enviarle</b> tus canciones que no tenga, o hacer un <b>intercambio</b>: cada quien recibe las que le faltan. Se copian (cada quien puede editar las suyas) y el admin del otro ministerio acepta.</p>
+    <p>Puedes <b>enviarle</b> a otro ministerio tus canciones que no tenga, o hacer un <b>intercambio</b>: cada quien recibe las que le faltan. Se copian (cada quien edita las suyas) y el admin del otro ministerio acepta. Las de Tiempo de Dios ya las tienen todos.</p>
     ${entran.map(x => `<div class="interrow entra"><span><b>${esc(nombreMin(x.de))}</b> ${x.tipo === "intercambio" ? "propone un <b>intercambio</b>" : "te quiere <b>enviar</b> sus canciones"}${x.tipo === "intercambio" ? "" : ` (≈ ${n(x.de, min.id)} que no tienes)`}${x.mensaje ? ` · «${esc(x.mensaje)}»` : ""}</span>
       ${admin ? `<button class="btn xs" data-xacepta="${x.id}">Aceptar</button><button class="btn xs ghost" data-xrechaza="${x.id}">Rechazar</button>` : `<span class="status">Esperando a un admin</span>`}</div>`).join("")}
     ${salen.map(x => `<div class="interrow"><span>Propusiste un ${tipoTxt(x)} a <b>${esc(nombreMin(x.para))}</b> · esperando que acepte</span>${admin ? `<button class="btn xs ghost" data-xcancela="${x.id}">Cancelar</button>` : ""}</div>`).join("")}
     ${admin ? `<form class="interform" id="xform">
-      <select class="field" name="para" required><option value="">¿Con qué ministerio?</option>${otros.map(m => `<option value="${m.id}">${esc(m.nombre)}${m.colectivo && esColectivo(min.id) ? " (comparten librería)" : ""}</option>`).join("")}</select>
-      <div class="seg" role="radiogroup"><label><input type="radio" name="tipo" value="envio" checked><span>Enviar las mías</span></label><label><input type="radio" name="tipo" value="intercambio"><span>Intercambiar</span></label></div>
+      <select class="field" name="para" required><option value="">¿Con qué ministerio?</option>${otros.map(m => `<option value="${m.id}">${esc(m.nombre)}${m.colectivo ? " · colectivo" : ""}</option>`).join("")}</select>
+      <div class="segradio" role="radiogroup" aria-label="Tipo"><label><input type="radio" name="tipo" value="envio" checked><span>Enviar las mías</span></label><label><input type="radio" name="tipo" value="intercambio"><span>Intercambiar</span></label></div>
       <input class="field" name="mensaje" placeholder="Mensaje (opcional)" autocomplete="off" data-1p-ignore data-lpignore="true">
       <button class="btn">Proponer</button><span class="status" id="xcuenta"></span></form>` : ""}
     ${hechos.length ? `<ul class="interhist">${hechos.map(x => `<li><span>${x.estado === "aceptado" ? "✓" : "✕"} ${tipoTxt(x)} ${esc(nombreMin(x.de))} → ${esc(nombreMin(x.para))}</span><small class="status">${x.estado === "aceptado" && x.resultado ? `${x.resultado.a_para || 0} a ${esc(nombreMin(x.para))}${x.tipo === "intercambio" ? ` · ${x.resultado.a_de || 0} a ${esc(nombreMin(x.de))}` : ""}` : x.estado}</small></li>`).join("")}</ul>` : ""}
@@ -2334,7 +2342,6 @@ function enlazarIntercambios() {
     const de = f.closest("[data-min]") ? f.closest("[data-min]").dataset.min : (ruta().p[0]);
     const cuenta = () => {
       const para = f.para.value, el = $("#xcuenta"); if (!para) return (el.textContent = "");
-      if (esColectivo(de) && esColectivo(para)) return (el.textContent = "Los dos son del colectivo: ya comparten la librería.");
       const a = faltanEn(de, para).length, b = faltanEn(para, de).length;
       el.textContent = f.tipo.value === "intercambio" ? `≈ ${a} pasarían a ${nombreMin(para)} y ≈ ${b} a ${nombreMin(de)}` : `≈ ${a} canciones que ${nombreMin(para)} no tiene`;
     };
