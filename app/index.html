@@ -622,11 +622,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=18"></script>
-<script src="cifrado.js?v=18"></script>
-<script src="senas.js?v=18"></script>
-<script src="datos.js?v=18"></script>
-<script src="pdf.js?v=18"></script>
+<script src="config.publico.js?v=19"></script>
+<script src="cifrado.js?v=19"></script>
+<script src="senas.js?v=19"></script>
+<script src="datos.js?v=19"></script>
+<script src="pdf.js?v=19"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -890,7 +890,14 @@ function ruta() {
   return { v: v || "libreria", p };
 }
 let vengoDeApp = false; // ya se navegó dentro de la app: «← Atrás» puede usar el historial
-window.addEventListener("hashchange", () => { vengoDeApp = true; cerrarMenu(); st.editando = false; favEd = null; marcaEd = null; render(); window.scrollTo(0, 0); });
+// La librería recuerda hasta dónde bajaste: al volver (menú, «Atrás» o el navegador) queda en el mismo lugar.
+let scrollLib = 0;
+window.addEventListener("scroll", () => { if (ruta().v === "libreria") scrollLib = window.scrollY; }, { passive: true });
+window.addEventListener("hashchange", () => {
+  vengoDeApp = true; cerrarMenu(); st.editando = false; favEd = null; marcaEd = null; render();
+  if (ruta().v === "libreria") { const y = scrollLib; window.scrollTo(0, y); requestAnimationFrame(() => window.scrollTo(0, y)); }
+  else window.scrollTo(0, 0);
+});
 
 let renderPend = false;
 D.alCambiar(() => {
