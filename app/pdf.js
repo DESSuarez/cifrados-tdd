@@ -35,6 +35,7 @@
     const LH = T * 1.28, CH = T * 1.12;          // alto de renglón de letra y de acordes
     const notac = op.notacion || "americano";
     let logoOk = null;
+    const kLogo = Math.min(1.5, Math.max(0.6, (+mk.tam || 100) / 100)); // tamaño del logo elegido en el perfil del ministerio
     if (mk.logo) { try { logoOk = { data: mk.logo, fmt: /^data:image\/png/.test(mk.logo) ? "PNG" : "JPEG" }; } catch (e) { logoOk = null; } }
 
     const fuente = (estilo, tam, color) => { doc.setFont("helvetica", estilo); doc.setFontSize(tam); doc.setTextColor(...(color || C_TXT)); };
@@ -45,7 +46,7 @@
     function banda(etiqueta, titulo, subtitulo, alto) {
       doc.setFillColor(...C_OSC); doc.rect(0, 0, W, alto, "F");
       let x = M;
-      if (logoOk) { try { doc.addImage(logoOk.data, logoOk.fmt, M, 20, 30, 30, undefined, "FAST"); x = M + 40; } catch (e) { logoOk = null; } }
+      if (logoOk) { const t = Math.round(30 * kLogo); try { doc.addImage(logoOk.data, logoOk.fmt, M, 33 - t / 2, t, t, undefined, "FAST"); x = M + t + 10; } catch (e) { logoOk = null; } }
       if (!logoOk) puntos(M + 4, 33);
       fuente("normal", 8.5, [201, 210, 209]); doc.text(san(etiqueta).toUpperCase(), logoOk ? x : M + 44, 36.5);
       fuente("bold", titulo.length > 34 ? 19 : 23, [255, 255, 255]);
@@ -131,9 +132,10 @@
       nuevaPagina();
       doc.setFillColor(...C_OSC); doc.rect(0, 0, W, H * 0.46, "F");
       doc.setFillColor(...C_PRI); doc.rect(0, H * 0.46, W, 7, "F");
-      if (logoOk) { try { doc.addImage(logoOk.data, logoOk.fmt, M, 70, 74, 74, undefined, "FAST"); } catch (e) { /* sin logo */ } } else puntos(M + 6, 96);
-      fuente("normal", 10, [201, 210, 209]); doc.text(san(mk.nombre).toUpperCase() + " · " + san(mk.etiqueta).toUpperCase(), M, logoOk ? 172 : 128);
-      fuente("bold", 34, [255, 255, 255]); doc.text(doc.splitTextToSize(san(op.titulo || "Cancionero"), W - 2 * M).slice(0, 2), M, (logoOk ? 172 : 128) + 44);
+      const tp = Math.round(74 * kLogo), yp = logoOk ? 70 + tp + 28 : 128;
+      if (logoOk) { try { doc.addImage(logoOk.data, logoOk.fmt, M, 70, tp, tp, undefined, "FAST"); } catch (e) { /* sin logo */ } } else puntos(M + 6, 96);
+      fuente("normal", 10, [201, 210, 209]); doc.text(san(mk.nombre).toUpperCase() + " · " + san(mk.etiqueta).toUpperCase(), M, yp);
+      fuente("bold", 34, [255, 255, 255]); doc.text(doc.splitTextToSize(san(op.titulo || "Cancionero"), W - 2 * M).slice(0, 2), M, yp + 44);
       if (op.subtitulo) { fuente("normal", 13, C_SEC); doc.text(doc.splitTextToSize(san(op.subtitulo), W - 2 * M).slice(0, 2), M, H * 0.46 - 40); }
       fuente("normal", 11, C_TXT); doc.text(`${op.canciones.length} canci${op.canciones.length === 1 ? "ón" : "ones"} · ${cols === 2 ? "dos columnas" : "una columna"}`, M, H * 0.46 + 46);
       if (op.indice) { paginasIndice = Math.max(1, Math.ceil(op.canciones.length / 18)); for (let i = 0; i < paginasIndice; i++) doc.addPage(); }

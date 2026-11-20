@@ -144,7 +144,11 @@ img.av{object-fit:cover;background:var(--surface)}
 /* Perfil del ministerio: muestra del PDF */
 .pdfmuestra{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;color:#1B1C1A;max-width:560px}
 .pmband{background:var(--o);border-bottom:4px solid var(--p);padding:16px 18px;display:flex;gap:12px;align-items:center}
-.pmband img{width:38px;height:38px;object-fit:contain}
+.pmband img{width:38px;height:38px;object-fit:cover;border-radius:50%;flex:none}
+.recorte{display:grid;place-items:center}
+.recorte canvas{width:240px;height:240px;border-radius:14px;touch-action:none;cursor:grab;background:repeating-conic-gradient(#C9D2D1 0 25%,#fff 0 50%) 0 0/16px 16px}
+.recorte canvas.mov{cursor:grabbing}
+.mctl input[type=range]{flex:1;min-width:0;accent-color:var(--flame)}
 .pmdots{display:flex;gap:4px}.pmdots i{width:8px;height:8px;border-radius:50%;background:var(--p)}.pmdots i:nth-child(2){background:var(--s)}.pmdots i:nth-child(3){background:#8a9493}
 .pmband small{display:block;font:500 10px var(--mono);letter-spacing:.08em;color:#C9D2D1}
 .pmband b{display:block;font:800 20px var(--body);color:#fff}
@@ -160,8 +164,8 @@ img.av{object-fit:cover;background:var(--surface)}
 .mctl input[type=color]{width:30px;height:30px;border:0;background:none;padding:0;cursor:pointer;flex:none}
 .mctl code{font:500 13px var(--mono);text-transform:uppercase}
 .mctl .sp{flex:1}
-.mlogo{height:32px;max-width:90px;object-fit:contain;border-radius:6px;flex:none}
-.mlogo.vacio{display:flex;align-items:center;font:500 12px var(--mono);color:var(--muted)}
+.mlogo{width:34px;height:34px;object-fit:cover;border-radius:50%;flex:none}
+.mlogo.vacio{width:auto;border-radius:0;display:flex;align-items:center;font:500 12px var(--mono);color:var(--muted)}
 .mdesc{height:auto;padding:12px 14px;resize:vertical;line-height:1.45}
 .acct>span:not(.av){flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
 .acct b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.acct small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -199,6 +203,9 @@ img.av{object-fit:cover;background:var(--surface)}
 .band{background:var(--band);color:#fff;border-bottom:8px solid var(--area)}
 .band .wrap{padding-block:44px 0;display:flex;flex-direction:column;gap:18px}
 .brandrow{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#C9D2D1}
+.bandnav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.atras{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:99px;border:1.5px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06);color:#fff;font:800 13px var(--body);cursor:pointer}
+.atras:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.5)}
 .areatag{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:var(--area);color:var(--on-area);font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px 4px 8px;border-radius:6px;line-height:1.2}
 .areatag svg{width:14px;height:14px}
 .titleblock{display:flex;flex-direction:column;gap:10px}
@@ -260,8 +267,10 @@ dialog::backdrop{background:rgba(0,0,0,.5)}
 .dlg p{margin:0;color:var(--muted)}
 
 /* ---------- Librería ---------- */
-.buscador{display:grid;grid-template-columns:1fr auto auto;gap:8px}
-@media (max-width:640px){.buscador{grid-template-columns:1fr 1fr}.buscador .field{grid-column:1/-1}}
+.buscador{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.buscador #q{flex:1 1 280px;max-width:480px}
+.buscador #lpdf{margin-left:auto}
+@media (max-width:640px){.buscador #q{flex-basis:100%;max-width:none}.buscador .btn{flex:1;padding-inline:10px}.buscador #lpdf{margin-left:0}}
 .letra-h{font:500 12px var(--mono);letter-spacing:.12em;color:var(--muted);padding:14px 4px 6px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:2}
 .songs{list-style:none;margin:0;padding:0}
 .srow{display:flex;align-items:center;gap:12px;padding:12px 6px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}
@@ -541,11 +550,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=14"></script>
-<script src="cifrado.js?v=14"></script>
-<script src="senas.js?v=14"></script>
-<script src="datos.js?v=14"></script>
-<script src="pdf.js?v=14"></script>
+<script src="config.publico.js?v=15"></script>
+<script src="cifrado.js?v=15"></script>
+<script src="senas.js?v=15"></script>
+<script src="datos.js?v=15"></script>
+<script src="pdf.js?v=15"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -743,8 +752,17 @@ function shell(band, main) {
     <main><div class="wrap">${main}</div></main>
   </div></div>`;
 }
+/** A dónde lleva «← Atrás» si se entró directo a la pantalla (sin historial dentro de la app). */
+function rutaPadre() {
+  const r = ruta();
+  if (r.v === "cancion" && r.p[1] === "set") return "#set/" + r.p[2];
+  if (r.v === "editar") return "#cancion/" + r.p[0];
+  return { set: "#sets", ministerio: "#ministerios", persona: "#amigos" }[r.v] || "#libreria";
+}
+function irAtras() { if (vengoDeApp) history.back(); else location.hash = rutaPadre(); }
 function bandHTML({ tag = "Música", titulo, sub = "", tabs = "", extra = "" }) {
-  return `<span class="areatag">${IC.nota} ${esc(tag)}</span><div class="titleblock"><h1>${titulo}</h1>${sub ? `<div class="sub">${sub}</div>` : ""}${extra}</div><nav class="tabs">${tabs}</nav>`;
+  const atras = ruta().v !== "libreria" ? `<button class="atras" type="button" data-atras aria-label="Regresar a la pantalla anterior">← Atrás</button>` : "";
+  return `<div class="bandnav">${atras}<span class="areatag">${IC.nota} ${esc(tag)}</span></div><div class="titleblock"><h1>${titulo}</h1>${sub ? `<div class="sub">${sub}</div>` : ""}${extra}</div><nav class="tabs">${tabs}</nav>`;
 }
 function tabsHTML(lista, actual, attr = "data-tab") {
   return lista.map(([k, l, n]) => `<button class="tab" ${attr}="${k}" aria-selected="${k === actual}">${esc(l)}${n !== undefined ? `<span class="count">${n}</span>` : ""}</button>`).join("");
@@ -775,6 +793,7 @@ function render() {
 // ---------- Menú, tema, sincronización ----------
 function cerrarMenu() { document.body.classList.remove("menu-abierto"); $$(".sideback").forEach(x => x.remove()); }
 function enlazarShell() {
+  $$("[data-atras]").forEach(b => (b.onclick = irAtras));
   $("#abrirMenu").onclick = () => {
     if (matchMedia("(min-width:901px)").matches) { document.documentElement.classList.toggle("asoma"); return; }
     document.body.classList.add("menu-abierto"); const b = document.createElement("div"); b.className = "sideback"; b.onclick = cerrarMenu; document.body.appendChild(b);
@@ -1633,7 +1652,7 @@ async function marcaDe(minId) {
   const m = minId && D.uno("cif_ministerios", minId);
   if (!m) return { ...MARCA_TDD, logo: await logoPorDefecto() };
   return { nombre: m.nombre, etiqueta: m.tipo === "solista" ? "Cifrados · Solista" : "Cifrados", oscuro: m.color_oscuro || MARCA_TDD.oscuro,
-    primario: m.color_primario || MARCA_TDD.primario, secundario: m.color_secundario || MARCA_TDD.secundario, logo: m.logo || null };
+    primario: m.color_primario || MARCA_TDD.primario, secundario: m.color_secundario || MARCA_TDD.secundario, logo: logoSrc(m.logo), tam: logoTam(m.logo) };
 }
 /** Ventana «Exportar PDF». conf: {items:[{c,tono,capo,orden,nota,momento,persona}], titulo, subtitulo, multiple, minId, filtros, tonoMio} */
 async function abrirExportar(conf) {
@@ -1672,17 +1691,56 @@ async function abrirExportar(conf) {
 }
 
 // ================= PERFIL DEL MINISTERIO (logo y colores) =================
-/** Achica el logo (máx. 320 px, conserva transparencia en PNG). */
-function logoChico(archivo) {
+// El logo se guarda ya recortado en círculo (PNG 320×320, transparente fuera del círculo).
+// El tamaño con que sale en la banda y la portada va en la misma cadena como «#t=60…150» (por ciento; sin él, 100).
+const logoSrc = l => (l ? String(l).split("#")[0] : null);
+const logoTam = l => { const x = /#t=(\d+)/.exec(l || ""); return x ? Math.min(150, Math.max(60, +x[1])) : 100; };
+/** Ventana para acomodar el logo dentro del círculo: arrastrar para mover y barra para acercar. Devuelve el PNG circular o null. */
+function editarLogo(src) {
   return new Promise((ok, mal) => {
-    const img = new Image(), url = URL.createObjectURL(archivo);
+    const img = new Image();
+    img.onerror = () => mal(new Error("No pude leer esa imagen."));
     img.onload = () => {
-      const k = Math.min(1, 320 / Math.max(img.width, img.height)), c = document.createElement("canvas");
-      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); ok(c.toDataURL("image/png"));
+      const V = 240, base = V / Math.max(img.width, img.height); // de inicio cabe completo
+      let z = 1, ox = 0, oy = 0;
+      const dl = document.createElement("dialog");
+      dl.innerHTML = `<form class="dlg" method="dialog"><h2>Ajustar logo</h2><p>Arrastra la imagen para acomodarla dentro del círculo.</p>
+        <div class="recorte"><canvas width="${V * 2}" height="${V * 2}"></canvas></div>
+        <label class="mcampo"><b>Acercar</b><span class="mctl"><input type="range" name="z" min="50" max="400" step="1" value="100"><code>100 %</code></span></label>
+        <div class="row"><button type="button" class="btn ghost" data-centrar>Centrar</button><span class="sp"></span><button type="button" class="btn ghost" data-no>Cancelar</button><button class="btn">Listo</button></div></form>`;
+      document.body.appendChild(dl);
+      const cv = dl.querySelector("canvas"), cx = cv.getContext("2d"), rz = dl.querySelector("[name=z]");
+      const medidas = () => ({ w: img.width * base * z, h: img.height * base * z });
+      const limitar = () => { const { w, h } = medidas(), mx = Math.abs(w - V) / 2, my = Math.abs(h - V) / 2; ox = Math.max(-mx, Math.min(mx, ox)); oy = Math.max(-my, Math.min(my, oy)); };
+      const dibujar = (ctx, k, recortar) => {
+        const { w, h } = medidas();
+        ctx.clearRect(0, 0, V * k, V * k); ctx.save();
+        if (recortar) { ctx.beginPath(); ctx.arc(V * k / 2, V * k / 2, V * k / 2, 0, Math.PI * 2); ctx.clip(); }
+        ctx.drawImage(img, (V / 2 + ox - w / 2) * k, (V / 2 + oy - h / 2) * k, w * k, h * k); ctx.restore();
+        if (!recortar) { // sombra fuera del círculo y su orilla
+          ctx.save(); ctx.fillStyle = "rgba(27,28,26,.6)"; ctx.beginPath(); ctx.rect(0, 0, V * k, V * k); ctx.arc(V * k / 2, V * k / 2, V * k / 2 - 1, 0, Math.PI * 2, true); ctx.fill("evenodd");
+          ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(V * k / 2, V * k / 2, V * k / 2 - 2, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+        }
+      };
+      const pinta = () => { limitar(); dibujar(cx, 2, false); rz.nextElementSibling.textContent = Math.round(z * 100) + " %"; };
+      rz.oninput = () => { z = rz.value / 100; pinta(); };
+      cv.addEventListener("wheel", e => { e.preventDefault(); z = Math.max(0.5, Math.min(4, z * (e.deltaY < 0 ? 1.06 : 1 / 1.06))); rz.value = Math.round(z * 100); pinta(); }, { passive: false });
+      let arr = null;
+      cv.onpointerdown = e => { cv.setPointerCapture(e.pointerId); arr = { x: e.clientX, y: e.clientY }; cv.classList.add("mov"); };
+      cv.onpointermove = e => { if (!arr) return; ox += e.clientX - arr.x; oy += e.clientY - arr.y; arr = { x: e.clientX, y: e.clientY }; pinta(); };
+      cv.onpointerup = cv.onpointercancel = () => { arr = null; cv.classList.remove("mov"); };
+      dl.querySelector("[data-centrar]").onclick = () => { ox = oy = 0; pinta(); };
+      const fin = v => { dl.close(); dl.remove(); ok(v); };
+      dl.querySelector("[data-no]").onclick = () => fin(null);
+      dl.addEventListener("cancel", () => fin(null));
+      dl.querySelector("form").onsubmit = e => {
+        e.preventDefault();
+        const out = document.createElement("canvas"); out.width = out.height = 320;
+        dibujar(out.getContext("2d"), 320 / V, true); fin(out.toDataURL("image/png"));
+      };
+      pinta(); dl.showModal();
     };
-    img.onerror = () => { URL.revokeObjectURL(url); mal(new Error("No pude leer esa imagen.")); };
-    img.src = url;
+    img.src = src;
   });
 }
 let marcaEd = null; // cambios sin guardar
@@ -1690,49 +1748,52 @@ function vMinisterio(id) {
   const m = D.uno("cif_ministerios", id);
   if (!m) return { band: bandHTML({ titulo: "No encontré ese ministerio" }), main: `<a class="btn ghost" href="#ministerios">← Ministerios</a>` };
   const puede = esSuper() || rolEn(id) === "admin";
-  if (!marcaEd || marcaEd.id !== id) marcaEd = { id, logo: m.logo || null, color_oscuro: m.color_oscuro || MARCA_TDD.oscuro, color_primario: m.color_primario || MARCA_TDD.primario, color_secundario: m.color_secundario || MARCA_TDD.secundario, descripcion: m.descripcion || "" };
+  if (!marcaEd || marcaEd.id !== id) marcaEd = { id, logo: logoSrc(m.logo), tam: logoTam(m.logo), orig: null, color_oscuro: m.color_oscuro || MARCA_TDD.oscuro, color_primario: m.color_primario || MARCA_TDD.primario, color_secundario: m.color_secundario || MARCA_TDD.secundario, descripcion: m.descripcion || "" };
   const e = marcaEd, miem = D.lista("cif_miembros").filter(x => x.ministerio_id === id);
   const nSets = D.lista("cif_sets").filter(s => !s.borrada && s.ministerio_id === id).length;
   return {
     band: bandHTML({ tag: m.tipo === "solista" ? "Solista" : "Ministerio", titulo: esc(m.nombre), sub: `<span>${miem.length} integrante${miem.length === 1 ? "" : "s"}</span><span>${nSets} sets</span>${puede ? "<span>Puedes editar su perfil</span>" : ""}`,
-      extra: `<div class="row"><button class="navbtn" id="matras" type="button">← Atrás</button><a class="navbtn" href="#ministerios">Ministerios</a></div>` }),
+      extra: `<div class="row"><a class="navbtn" href="#ministerios">Ministerios</a></div>` }),
     main: `
       <section class="caja"><h3>Así se ven sus PDF</h3>
         <div class="pdfmuestra" style="--o:${esc(e.color_oscuro)};--p:${esc(e.color_primario)};--s:${esc(e.color_secundario)}">
-          <div class="pmband">${e.logo ? `<img src="${esc(e.logo)}" alt="">` : `<span class="pmdots"><i></i><i></i><i></i></span>`}<div><small>${esc(m.nombre.toUpperCase())} · CIFRADOS</small><b>Aquí Estoy</b><em>Hillsong United · Tono A · 142 bpm</em></div></div>
+          <div class="pmband">${e.logo ? `<img src="${esc(e.logo)}" alt="" style="width:${Math.round(38 * e.tam / 100)}px;height:${Math.round(38 * e.tam / 100)}px">` : `<span class="pmdots"><i></i><i></i><i></i></span>`}<div><small>${esc(m.nombre.toUpperCase())} · CIFRADOS</small><b>Aquí Estoy</b><em>Hillsong United · Tono A · 142 bpm</em></div></div>
           <div class="pmcuerpo"><span class="pmsec">VERSO 1</span><div class="pmlin"><span><i>A</i>Tú eres el </span><span><i>D</i>principio</span></div><span class="pmsec" style="background:var(--p)">CORO</span><div class="pmlin"><span><i>F#m</i>Aquí es</span><span><i>E</i>toy</span></div></div>
         </div>
         <div class="row" style="margin-top:12px"><button class="btn sm ghost" id="mprueba">⎙ Descargar PDF de prueba</button></div></section>
       ${puede ? `<form class="caja" id="fmarca"><h3>Perfil y marca</h3>
         <div class="marcagrid">
           <div class="mcampo"><b>Logo</b><small>PNG con fondo transparente</small>
-            <div class="mctl">${e.logo ? `<img class="mlogo" src="${esc(e.logo)}" alt="">` : `<span class="mlogo vacio">Sin logo</span>`}<span class="sp"></span><label class="btn xs ghost" style="cursor:pointer">${e.logo ? "Cambiar" : "Subir"}<input type="file" id="mlogo" accept="image/*" hidden></label>${e.logo ? `<button type="button" class="btn xs ghost" id="mlogoq">Quitar</button>` : ""}</div></div>
+            <div class="mctl">${e.logo ? `<img class="mlogo" src="${esc(e.logo)}" alt="">` : `<span class="mlogo vacio">Sin logo</span>`}<span class="sp"></span><label class="btn xs ghost" style="cursor:pointer">${e.logo ? "Cambiar" : "Subir"}<input type="file" id="mlogo" accept="image/*" hidden></label>${e.logo ? `<button type="button" class="btn xs ghost" id="mlogoaj">Ajustar</button><button type="button" class="btn xs ghost" id="mlogoq" title="Quitar logo" aria-label="Quitar logo">✕</button>` : ""}</div></div>
           <label class="mcampo"><b>Fondo de la banda</b><small>encabezado de cada página</small><span class="mctl"><input type="color" name="color_oscuro" value="${esc(e.color_oscuro)}"><code>${esc(e.color_oscuro)}</code></span></label>
           <label class="mcampo"><b>Color principal</b><small>acordes y barras</small><span class="mctl"><input type="color" name="color_primario" value="${esc(e.color_primario)}"><code>${esc(e.color_primario)}</code></span></label>
           <label class="mcampo"><b>Color secundario</b><small>subtítulos</small><span class="mctl"><input type="color" name="color_secundario" value="${esc(e.color_secundario)}"><code>${esc(e.color_secundario)}</code></span></label>
+          ${e.logo ? `<label class="mcampo"><b>Tamaño del logo</b><small>en la banda y la portada del PDF</small><span class="mctl"><input type="range" id="mtam" min="60" max="150" step="5" value="${e.tam}"><code>${e.tam} %</code></span></label>` : ""}
         </div>
         <label class="mcampo" style="margin-top:18px"><b>Descripción</b><small>aparece en el perfil del ministerio</small><textarea class="field mdesc" name="descripcion" rows="3" maxlength="400" placeholder="Ministerio de alabanza de…">${esc(e.descripcion)}</textarea></label>
         <div class="row" style="margin-top:12px"><button class="btn">Guardar</button><button type="button" class="btn ghost" id="mreset">Colores de Tiempo de Dios</button><span class="status" id="mmsg"></span></div></form>`
         : m.descripcion ? `<section class="caja"><h3>Sobre ${esc(m.nombre)}</h3><p class="bio">${esc(m.descripcion)}</p></section>` : ""}`,
     after() {
-      $("#matras").onclick = () => (vengoDeApp ? history.back() : (location.hash = "#ministerios"));
       $("#mprueba").onclick = async () => {
         const c = canciones().find(x => x.titulo === "Aquí Estoy") || canciones()[0];
         if (!c) return toast("No hay canciones en la librería.");
         toast("Armando el PDF de prueba…");
-        try { await PDF.exportar({ canciones: [{ c }], titulo: c.titulo, marca: { nombre: m.nombre, etiqueta: m.tipo === "solista" ? "Cifrados · Solista" : "Cifrados", oscuro: e.color_oscuro, primario: e.color_primario, secundario: e.color_secundario, logo: e.logo }, cols: ls.get("cifrados-pdf", {}).cols || 1, notacion: st.estilo.notacion, archivo: "prueba-" + m.nombre }); }
+        try { await PDF.exportar({ canciones: [{ c }], titulo: c.titulo, marca: { nombre: m.nombre, etiqueta: m.tipo === "solista" ? "Cifrados · Solista" : "Cifrados", oscuro: e.color_oscuro, primario: e.color_primario, secundario: e.color_secundario, logo: e.logo, tam: e.tam }, cols: ls.get("cifrados-pdf", {}).cols || 1, notacion: st.estilo.notacion, archivo: "prueba-" + m.nombre }); }
         catch (er) { toast(er.message); }
       };
       if (!puede) return;
       const f = $("#fmarca");
       $$("input[type=color]", f).forEach(i => i.oninput = () => { marcaEd[i.name] = i.value; i.nextElementSibling.textContent = i.value; const pm = $(".pdfmuestra"); pm.style.setProperty({ color_oscuro: "--o", color_primario: "--p", color_secundario: "--s" }[i.name], i.value); });
       f.descripcion.oninput = () => (marcaEd.descripcion = f.descripcion.value);
-      $("#mlogo").onchange = async ev => { const a = ev.target.files[0]; if (!a) return; try { marcaEd.logo = await logoChico(a); render(); toast("Logo listo: toca Guardar."); } catch (er) { toast(er.message); } };
-      const lq = $("#mlogoq"); if (lq) lq.onclick = () => { marcaEd.logo = null; render(); };
+      const ajustar = async src => { try { const l = await editarLogo(src); if (l) { marcaEd.logo = l; render(); toast("Logo listo: toca Guardar."); } } catch (er) { toast(er.message); } };
+      $("#mlogo").onchange = ev => { const a = ev.target.files[0]; if (!a) return; if (marcaEd.orig) URL.revokeObjectURL(marcaEd.orig); marcaEd.orig = URL.createObjectURL(a); ajustar(marcaEd.orig); };
+      const la = $("#mlogoaj"); if (la) la.onclick = () => ajustar(marcaEd.orig || marcaEd.logo);
+      const lq = $("#mlogoq"); if (lq) lq.onclick = () => { marcaEd.logo = null; marcaEd.orig = null; render(); };
+      const mt = $("#mtam"); if (mt) mt.oninput = () => { marcaEd.tam = +mt.value; mt.nextElementSibling.textContent = mt.value + " %"; const im = $(".pmband img"); if (im) im.style.width = im.style.height = Math.round(38 * marcaEd.tam / 100) + "px"; };
       $("#mreset").onclick = () => { Object.assign(marcaEd, { color_oscuro: MARCA_TDD.oscuro, color_primario: MARCA_TDD.primario, color_secundario: MARCA_TDD.secundario }); render(); };
       f.onsubmit = async ev => {
         ev.preventDefault();
-        await D.guardar("cif_ministerios", { ...D.uno("cif_ministerios", id), logo: marcaEd.logo, color_oscuro: marcaEd.color_oscuro, color_primario: marcaEd.color_primario, color_secundario: marcaEd.color_secundario, descripcion: (marcaEd.descripcion || "").trim() || null });
+        await D.guardar("cif_ministerios", { ...D.uno("cif_ministerios", id), logo: marcaEd.logo ? marcaEd.logo + (marcaEd.tam !== 100 ? "#t=" + marcaEd.tam : "") : null, color_oscuro: marcaEd.color_oscuro, color_primario: marcaEd.color_primario, color_secundario: marcaEd.color_secundario, descripcion: (marcaEd.descripcion || "").trim() || null });
         marcaEd = null; toast("Perfil del ministerio guardado."); render();
       };
     },
