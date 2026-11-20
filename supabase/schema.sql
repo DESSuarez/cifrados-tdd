@@ -814,5 +814,27 @@ language sql stable security definer set search_path = public as $$
 grant execute on function cif_subidas(uuid) to authenticated;
 revoke execute on function cif_subidas(uuid) from anon;
 
+-- =====================================================================
+-- Versión 16: añadir a mi librería desde un set compartido (= migraciones/015)
+-- =====================================================================
+
+create or replace function cif_agregar_de_set(c uuid, destino uuid) returns int
+language plpgsql security definer set search_path = public as $$
+declare n int;
+begin
+  if not (cif_super() or cif_rol(destino) in ('admin', 'musico')) then raise exception 'Solo los músicos y admins de ese ministerio pueden añadir canciones.'; end if;
+  if not (cif_super() or cif_cancion_en_mis_sets(c) or exists (
+      select 1 from cif_canciones s where s.id = c and coalesce(s.visibilidad, 'todos') = 'todos')) then
+    raise exception 'Esa canción no está en un set tuyo ni en el banco.';
+  end if;
+  update cif_canciones s set compartida_con = array_append(coalesce(s.compartida_con, '{}'), destino)
+  where s.id = c and not s.borrada and s.ministerio_id is distinct from destino
+    and not (destino = any(coalesce(s.compartida_con, '{}')));
+  get diagnostics n = row_count;
+  return n;
+end $$;
+grant execute on function cif_agregar_de_set(uuid, uuid) to authenticated;
+revoke execute on function cif_agregar_de_set(uuid, uuid) from anon;
+
 -- Primer superadmin (cambia el correo y corre esta línea):
 -- update cif_perfiles set superadmin = true where id = (select id from auth.users where email = 'tu-correo@tiempodedios.mx');

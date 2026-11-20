@@ -428,10 +428,14 @@ input[type=range]{width:100%;accent-color:var(--area)}
 .blqv{font:700 11px var(--body);opacity:.85;margin-left:4px;white-space:nowrap}
 .vozsecs{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0 2px}
 .vozsecs>b{font-size:13px;width:100%}
-.vozsec{display:inline-flex;align-items:center;gap:6px;padding:3px 4px 3px 10px;border-radius:99px;border:1.5px solid var(--line);border-left:4px solid var(--sc)}
+.vozsec{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 10px;border-radius:99px;border:1.5px solid var(--line);border-left:4px solid var(--sc);background:var(--bg);color:var(--fg);cursor:pointer;font:inherit}
 .vozsec span{font-weight:800;font-size:12.5px;white-space:nowrap}
-.vozsec select{height:28px!important;border-radius:99px!important;font-size:12.5px!important;max-width:150px}
-.vozsec select.on{border-color:var(--flame)!important;font-weight:800}
+.vozsec em{font-style:normal;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.vozsec.on em{color:var(--fg);font-weight:800}
+.vozsec:hover{border-color:var(--sc)}
+.csvozadd{margin-left:8px;padding:2px 10px;border-radius:99px;border:1.5px dashed var(--line);background:none;color:var(--muted);font:800 12px var(--body);cursor:pointer;vertical-align:middle;letter-spacing:0;text-transform:none}
+.csvozadd:hover{border-color:var(--sc);color:var(--fg)}
+button.csvoz{cursor:pointer}
 .vozres{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
 .vozres .chip{border-left:4px solid var(--sc);font-size:12px}
 .csvoz{display:inline-flex;align-items:center;margin-left:8px;padding:2px 10px;border-radius:99px;background:#1B1C1A;color:#fff;border:2px solid var(--sc);font:800 12px var(--body);letter-spacing:0;text-transform:none;vertical-align:middle}
@@ -709,11 +713,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=33"></script>
-<script src="cifrado.js?v=33"></script>
-<script src="senas.js?v=33"></script>
-<script src="datos.js?v=33"></script>
-<script src="pdf.js?v=33"></script>
+<script src="config.publico.js?v=34"></script>
+<script src="cifrado.js?v=34"></script>
+<script src="senas.js?v=34"></script>
+<script src="datos.js?v=34"></script>
+<script src="pdf.js?v=34"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1018,6 +1022,12 @@ window.addEventListener("cif-rechazo", e => toast(`No se pudo guardar ${TABLA_TX
 // La librería recuerda hasta dónde bajaste: al volver (menú, «Atrás» o el navegador) queda en el mismo lugar.
 let scrollLib = 0;
 window.addEventListener("scroll", () => { if (ruta().v === "libreria") scrollLib = window.scrollY; }, { passive: true });
+// Acentos y ñ (´ + a en Mac, teclados del celular): mientras se compone la letra no se avisa a los buscadores,
+// porque redibujar a media tecla rompía el acento. Al terminar de componer, se avisa una sola vez.
+let componiendo = false;
+document.addEventListener("compositionstart", () => { componiendo = true; }, true);
+document.addEventListener("compositionend", e => { componiendo = false; const t = e.target; if (t && /^(INPUT|TEXTAREA)$/.test(t.tagName)) setTimeout(() => t.dispatchEvent(new Event("input", { bubbles: true })), 0); }, true);
+document.addEventListener("input", e => { if (e.isComposing || componiendo) e.stopImmediatePropagation(); }, true);
 window.addEventListener("hashchange", () => {
   vengoDeApp = true; cerrarMenu(); st.editando = false; favEd = null; marcaEd = null; render();
   if (ruta().v === "libreria") { const y = scrollLib; window.scrollTo(0, y); requestAnimationFrame(() => window.scrollTo(0, y)); }
@@ -1317,6 +1327,7 @@ function vCancion(p) {
     <button class="ctl escx" id="tescx">Salir</button>
     <span class="sp" style="flex:1"></span>
     ${D.nube && comparteCancion(c) ? `<button class="ctl noesc" id="tcomp" title="Elegir qué ministerios ven esta canción">↔ Compartir</button>` : ""}
+    ${!veCancion(c) && minActual() && ["admin", "musico"].includes(rolEn(minActual().id)) ? `<button class="ctl noesc" id="cadd" title="Esta canción la trajo otro ministerio al set">＋ Añadir a mi librería</button>` : ""}
     ${esMusico() && puedeEditarCancion(c) ? `<a class="ctl noesc" href="#editar/${c.id}">✎ Editar</a>` : ""}
     <button class="ctl noesc" id="tprint" title="Exportar PDF (1 o 2 columnas)">⎙ PDF</button>
   </div>
@@ -1375,9 +1386,25 @@ function vCancion(p) {
       };
       const q = $("#qmio"); if (q) q.onclick = () => { D.borrar("cif_tonos", { cancion_id: c.id, persona_id: yo().id }); toast("Se quitó tu tono."); };
       const gp = $("#gpara"); if (gp) gp.onchange = async () => { if (!gp.value) return; const id = gp.value; gp.blur(); await D.guardar("cif_tonos", { cancion_id: c.id, persona_id: id, tono, capo }); toast(`Guardado ${tono} para ${nombreDe(id)}.`); };
-      if (ctxSet && ctxSet.item && ctxSet.item.voces) {
-        $$(".csec[data-sec]").forEach(sec => { const id = ctxSet.item.voces[sec.dataset.sec], h = sec.querySelector(".csn"); if (id && h && !h.querySelector(".csvoz")) h.insertAdjacentHTML("beforeend", ` <span class="csvoz">🎤 ${esc(nombreCorto(id))}</span>`); });
+      if (ctxSet && ctxSet.item) {
+        const puedeV = editaSet(ctxSet.s);
+        $$(".csec[data-sec]").forEach(sec => {
+          const h = sec.querySelector(".csn"); if (!h || h.querySelector(".csvoz,.csvozadd")) return;
+          const ids = vocesSec(ctxSet.item, sec.dataset.sec);
+          if (ids.length) h.insertAdjacentHTML("beforeend", ` <${puedeV ? "button type=\"button\"" : "span"} class="csvoz" data-cvoz="${esc(sec.dataset.sec)}" title="${puedeV ? "Cambiar quién canta" : ""}">🎤 ${esc(vocesTxt(ids))}</${puedeV ? "button" : "span"}>`);
+          else if (puedeV) h.insertAdjacentHTML("beforeend", ` <button type="button" class="csvozadd" data-cvoz="${esc(sec.dataset.sec)}" title="¿Quién canta esta parte?">🎤 ＋</button>`);
+        });
+        $$("[data-cvoz]").forEach(b => b.onclick = ev => { ev.stopPropagation(); elegirVoces(ctxSet.s.id, ctxSet.i, b.dataset.cvoz); });
       }
+      // canción que trajo otro ministerio (p. ej. a un set compartido): enlazarla a mi librería
+      const ca = $("#cadd"); if (ca) ca.onclick = async () => {
+        const m = minActual(); ca.disabled = true;
+        try {
+          if (D.nube) await D.rpc("cif_agregar_de_set", { c: c.id, destino: m.id });
+          else await D.guardar("cif_canciones", { ...c, compartida_con: [...new Set((c.compartida_con || []).concat(m.id))] });
+          toast(`«${c.titulo}» ya está en la librería de ${m.nombre}.`); render();
+        } catch (e) { ca.disabled = false; toast(/cif_agregar_de_set|function/i.test(e.message || "") ? "Falta correr la migración 015 en Supabase." : e.message || String(e)); }
+      };
       const gs = $("#gset"); if (gs) gs.onclick = () => { const s = ctxSet.s; const items = s.items.map((x, k) => k === ctxSet.i ? { ...x, tono } : x); D.guardar("cif_sets", { ...s, items }); toast("Tono actualizado en el set para todos."); };
       $$("[data-pista]").forEach(b => b.onclick = () => { const t = D.uno("cif_tracks", b.dataset.pista); if (rep.track && rep.track.id === t.id) { alternarPlay(); } else abrirPista(t, c, tono); });
       $$("[data-bpista]").forEach(b => b.onclick = async () => { const t = D.uno("cif_tracks", b.dataset.bpista); if (!(await confirmar(`¿Quitar la pista «${t.nombre}»?`, "Se borra para todo el equipo."))) return; if (rep.track && rep.track.id === t.id) cerrarPista(); D.borrar("cif_tracks", t); D.borrarAudio(t.ruta).catch(() => {}); });
@@ -1594,17 +1621,35 @@ function traerCancionesDelSet(s) {
 const bloquesDe = (it, c) => (it.estructura && it.estructura.length ? it.estructura : c.orden && c.orden.length ? c.orden : C.secciones(c.contenido));
 /** Quién canta cada parte de una canción en un set: it.voces = {«Verso 1»: persona_id | "__todos"} */
 const nombreCorto = id => (id === "__todos" ? "Todos" : (nombreDe(id) || "").split(" ")[0]);
+// it.voces = {«Verso 1»: [persona_id, …] | ["__todos"]} (antes era un solo id: se acepta igual)
+const vocesSec = (it, sec) => { const v = (it && it.voces || {})[sec]; return !v ? [] : Array.isArray(v) ? v : [v]; };
+const vocesTxt = ids => ids.map(nombreCorto).join(" + ");
+/** Ventana para elegir quién canta una sección (una, dos o tres voces…). Guarda en el set para todos sus ministerios. */
+async function elegirVoces(setId, i, sec) {
+  const s = D.uno("cif_sets", setId); if (!s) return;
+  const it = s.items[i], ya = new Set(vocesSec(it, sec)), gente = cantantesDe(personasSet(s));
+  const d = await dialogo(`<h2>¿Quién canta «${esc(sec)}»?</h2><p>Marca a una persona o a varias (a dos o tres voces). Lo ven todos los ministerios del set.</p>
+    <div class="compchk"><label><input type="checkbox" name="v___todos" ${ya.has("__todos") ? "checked" : ""}> <b>Todos</b></label>
+    ${gente.map(p => `<label><input type="checkbox" name="v_${p.id}" ${ya.has(p.id) ? "checked" : ""}> ${esc(p.nombre)}${p.voz ? ` <small class="status">${esc(p.voz)}</small>` : ""}</label>`).join("")}</div>`, "Guardar");
+  if (!d) return;
+  const ids = d.v___todos ? ["__todos"] : gente.filter(p => d["v_" + p.id]).map(p => p.id);
+  const act = D.uno("cif_sets", setId), items = act.items.map(x => ({ ...x })), voces = { ...(items[i].voces || {}) };
+  if (ids.length) voces[sec] = ids; else delete voces[sec];
+  items[i] = { ...items[i], voces };
+  await D.guardar("cif_sets", { ...act, items });
+  toast(ids.length ? `${sec}: ${vocesTxt(ids)}` : `${sec}: sin asignar`);
+}
 function cantantesDe(gente) { const c = gente.filter(p => p.artista || p.voz); return c.length ? c : gente; }
 function estructuraHTML(it, i, c, puede, gente = []) {
   const bl = bloquesDe(it, c), secs = [...new Set(C.secciones(c.contenido))], voces = it.voces || {};
   const usadas = [...new Set(bl)], cant = cantantesDe(gente);
   return `<div class="estr" data-estr="${i}">
 
-    ${bl.map((b, k) => `<span class="blq" data-k="${k}" style="--sc:var(${C.colorSeccion(b)})">${puede ? `<span class="blqa" title="Arrastra para mover">⋮⋮</span>` : ""}<span class="blqn">${esc(b)}</span>${voces[b] ? `<small class="blqv">🎤 ${esc(nombreCorto(voces[b]))}</small>` : ""}${puede ? `<button data-dup="${k}" title="Duplicar">⧉</button><button data-del="${k}" title="Quitar">✕</button>` : ""}</span>`).join("") || `<span class="status">La canción no tiene secciones marcadas.</span>`}
+    ${bl.map((b, k) => `<span class="blq" data-k="${k}" style="--sc:var(${C.colorSeccion(b)})">${puede ? `<span class="blqa" title="Arrastra para mover">⋮⋮</span>` : ""}<span class="blqn">${esc(b)}</span>${vocesSec(it, b).length ? `<small class="blqv">🎤 ${esc(vocesTxt(vocesSec(it, b)))}</small>` : ""}${puede ? `<button data-dup="${k}" title="Duplicar">⧉</button><button data-del="${k}" title="Quitar">✕</button>` : ""}</span>`).join("") || `<span class="status">La canción no tiene secciones marcadas.</span>`}
     ${puede && secs.length ? `<select class="fsel" data-addblq="${i}" aria-label="Agregar sección"><option value="">＋ Sección</option>${secs.map(s => `<option>${esc(s)}</option>`).join("")}</select>` : ""}
     ${puede && it.estructura ? `<button class="btn xs ghost" data-reset="${i}">Como la canción</button>` : ""}
   </div>
-  ${puede && usadas.length ? `<div class="vozsecs"><b>🎤 ¿Quién canta cada parte?</b>${usadas.map(sec => `<label class="vozsec" style="--sc:var(${C.colorSeccion(sec)})"><span>${esc(sec)}</span><select data-vsec="${i}" data-sec="${esc(sec)}" class="${voces[sec] ? "on" : ""}"><option value="">—</option><option value="__todos" ${voces[sec] === "__todos" ? "selected" : ""}>Todos</option>${cant.map(p => `<option value="${p.id}" ${voces[sec] === p.id ? "selected" : ""}>${esc(p.nombre)}</option>`).join("")}</select></label>`).join("")}</div>` : ""}`;
+  ${puede && usadas.length ? `<div class="vozsecs"><b>🎤 ¿Quién canta cada parte?</b>${usadas.map(sec => `<button type="button" class="vozsec ${vocesSec(it, sec).length ? "on" : ""}" data-vsec="${i}" data-sec="${esc(sec)}" style="--sc:var(${C.colorSeccion(sec)})"><span>${esc(sec)}</span><em>${vocesSec(it, sec).length ? esc(vocesTxt(vocesSec(it, sec))) : "＋ Asignar"}</em></button>`).join("")}</div>` : ""}`;
 }
 function itemHTML(s, it, i, puede, gente) {
   const c = D.uno("cif_canciones", it.cancion_id) || { titulo: "(canción borrada)", tono: "", contenido: "" };
@@ -1623,7 +1668,7 @@ function itemHTML(s, it, i, puede, gente) {
       <button class="btn xs ${abierto ? "on" : "ghost"}" data-abre="${it.id}" title="Estructura en bloques">▦ Estructura</button>
       ${puede ? `<button class="btn xs ghost" data-quita="${i}" aria-label="Quitar">✕</button>` : ""}</div>
     ${abierto ? estructuraHTML(it, i, c, puede, gente) : ""}
-    ${!abierto && it.voces && Object.keys(it.voces).length ? `<div class="vozres">${Object.entries(it.voces).map(([sec, id]) => `<span class="chip" style="--sc:var(${C.colorSeccion(sec)})">${esc(sec)} · 🎤 ${esc(nombreCorto(id))}</span>`).join("")}</div>` : ""}</li>`;
+    ${!abierto && it.voces && Object.keys(it.voces).length ? `<div class="vozres">${Object.keys(it.voces).filter(sec => vocesSec(it, sec).length).map(sec => `<span class="chip" style="--sc:var(${C.colorSeccion(sec)})">${esc(sec)} · 🎤 ${esc(vocesTxt(vocesSec(it, sec)))}</span>`).join("")}</div>` : ""}</li>`;
 }
 function vSet(id) {
   const s = D.uno("cif_sets", id);
@@ -1652,7 +1697,7 @@ function vSet(id) {
     main: `
       ${puede ? `<div class="grid2"><label class="lb">Nombre<input class="field" id="snombre" value="${esc(s.nombre)}"></label><label class="lb">Fecha<input class="field" type="date" id="sfecha" value="${esc(s.fecha || "")}"></label></div>` : ""}
       ${cuerpo}
-      ${puede && !lit ? `<div class="caja"><h3>Agregar canción</h3><input class="field" id="sbus" placeholder="Buscar en la librería…" autocomplete="off"><ul class="resultados" id="sres" hidden></ul></div>` : ""}
+      ${puede && !lit ? `<div class="caja"><h3>Agregar canción</h3><input class="field" id="sbus" placeholder="Buscar en tu librería…" autocomplete="off"><ul class="resultados" id="sres" hidden></ul></div>` : ""}
       ${puede ? `<label class="lb">Notas del set<textarea class="field" id="snotas" rows="3" placeholder="Ensayo, vestimenta, dinámica…">${esc(s.notas || "")}</textarea></label>` : s.notas ? `<div class="caja"><h3>Notas</h3><p class="notas">${esc(s.notas)}</p></div>` : ""}
       ${puede ? `<div class="row"><span class="sp"></span><button class="btn sm ghost" id="sborrar">Borrar set</button></div>` : ""}`,
     after() {
@@ -1667,11 +1712,7 @@ function vSet(id) {
       const itemsAct = () => (D.uno("cif_sets", id) || s).items.map(x => ({ ...x }));
       const ponItem = (i, cambios) => { const it = itemsAct(); it[i] = { ...it[i], ...cambios }; guarda({ items: it }); };
       // quién canta cada parte (solo en este set; no toca la canción)
-      $$("[data-vsec]").forEach(x => x.onchange = () => {
-        const i = +x.dataset.vsec, voces = { ...(itemsAct()[i].voces || {}) };
-        if (x.value) voces[x.dataset.sec] = x.value; else delete voces[x.dataset.sec];
-        x.blur(); ponItem(i, { voces });
-      });
+      $$("[data-vsec]").forEach(x => x.onclick = () => elegirVoces(id, +x.dataset.vsec, x.dataset.sec));
       $("#snombre").onchange = e => guarda({ nombre: e.target.value.trim() || s.nombre });
       $("#sfecha").onchange = e => guarda({ fecha: e.target.value || null });
       $("#snotas").onchange = e => guarda({ notas: e.target.value });
