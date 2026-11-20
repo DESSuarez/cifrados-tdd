@@ -152,10 +152,17 @@ img.av{object-fit:cover;background:var(--surface)}
 .pmcuerpo{padding:14px 18px;display:grid;gap:6px}
 .pmsec{display:block;background:#457A7F;color:#fff;font:800 10px var(--body);letter-spacing:.06em;padding:4px 8px;border-radius:5px}
 .pmlin{display:flex;font-size:14px}.pmlin span{display:inline-flex;flex-direction:column;white-space:pre}.pmlin i{font-style:normal;font-weight:800;color:var(--p);font-size:12.5px;min-height:1.1em}
-.marcagrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
-.colorin{display:flex;align-items:center;gap:10px;height:46px;border:1.5px solid var(--line);border-radius:10px;padding:0 10px;background:var(--bg)}
-.colorin input{width:34px;height:30px;border:0;background:none;padding:0;cursor:pointer}
-.colorin code{font:500 13px var(--mono)}
+.marcagrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.mcampo{display:flex;flex-direction:column;min-width:0}
+.mcampo>b{font-weight:800;font-size:14px;line-height:1.3}
+.mcampo>small{font-size:12.5px;font-weight:500;color:var(--muted);line-height:1.3;margin:2px 0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mctl{display:flex;align-items:center;gap:10px;height:48px;border:1.5px solid var(--line);border-radius:10px;padding:0 8px 0 10px;background:var(--bg);min-width:0}
+.mctl input[type=color]{width:30px;height:30px;border:0;background:none;padding:0;cursor:pointer;flex:none}
+.mctl code{font:500 13px var(--mono);text-transform:uppercase}
+.mctl .sp{flex:1}
+.mlogo{height:32px;max-width:90px;object-fit:contain;border-radius:6px;flex:none}
+.mlogo.vacio{display:flex;align-items:center;font:500 12px var(--mono);color:var(--muted)}
+.mdesc{height:auto;padding:12px 14px;resize:vertical;line-height:1.45}
 .acct>span:not(.av){flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
 .acct b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.acct small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .temabtn{width:48px;height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);display:grid;place-items:center;padding:0}
@@ -534,11 +541,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=13"></script>
-<script src="cifrado.js?v=13"></script>
-<script src="senas.js?v=13"></script>
-<script src="datos.js?v=13"></script>
-<script src="pdf.js?v=13"></script>
+<script src="config.publico.js?v=14"></script>
+<script src="cifrado.js?v=14"></script>
+<script src="senas.js?v=14"></script>
+<script src="datos.js?v=14"></script>
+<script src="pdf.js?v=14"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -561,6 +568,7 @@ const IC = {
   luna: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
   menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
   x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  marca: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7.5" r="1"/><circle cx="15" cy="7.5" r="1"/></svg>',
   lado: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg>',
   nota: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
   amigos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M19 8v6M16 11h6"/></svg>',
@@ -679,7 +687,8 @@ function ruta() {
   const [v, ...p] = h.split("/").map(decodeURIComponent);
   return { v: v || "libreria", p };
 }
-window.addEventListener("hashchange", () => { cerrarMenu(); st.editando = false; favEd = null; marcaEd = null; render(); window.scrollTo(0, 0); });
+let vengoDeApp = false; // ya se navegó dentro de la app: «← Atrás» puede usar el historial
+window.addEventListener("hashchange", () => { vengoDeApp = true; cerrarMenu(); st.editando = false; favEd = null; marcaEd = null; render(); window.scrollTo(0, 0); });
 
 let renderPend = false;
 D.alCambiar(() => {
@@ -708,6 +717,7 @@ function shell(band, main) {
       ${esMusico() ? nav("nueva", "nueva", "Nueva canción", IC.mas, "--sol") : ""}
       <div class="sidesec">Equipo</div>
       ${nav("senas", "senas", "Señas para dirigir", IC.mano, "--lav")}
+      ${m ? nav("ministerio/" + m.id, "ministerio", m.tipo === "solista" ? "Mi perfil de solista" : "Perfil del ministerio", IC.marca, "--flame") : ""}
       ${nav("ministerios", "ministerios", "Ministerios", IC.gente, "--rosa", pendMin().length || "")}
       ${nav("amigos", "amigos", "Amigos y sus tonos", IC.amigos, "--sea", pendAmigos().length || "")}
       ${esSuper() ? nav("usuarios", "usuarios", "Usuarios", IC.gente, "--sol", D.nube ? "" : D.lista("cif_perfiles").length) : ""}
@@ -1685,7 +1695,7 @@ function vMinisterio(id) {
   const nSets = D.lista("cif_sets").filter(s => !s.borrada && s.ministerio_id === id).length;
   return {
     band: bandHTML({ tag: m.tipo === "solista" ? "Solista" : "Ministerio", titulo: esc(m.nombre), sub: `<span>${miem.length} integrante${miem.length === 1 ? "" : "s"}</span><span>${nSets} sets</span>${puede ? "<span>Puedes editar su perfil</span>" : ""}`,
-      extra: `<div class="row"><a class="navbtn" href="#ministerios">← Ministerios</a></div>` }),
+      extra: `<div class="row"><button class="navbtn" id="matras" type="button">← Atrás</button><a class="navbtn" href="#ministerios">Ministerios</a></div>` }),
     main: `
       <section class="caja"><h3>Así se ven sus PDF</h3>
         <div class="pdfmuestra" style="--o:${esc(e.color_oscuro)};--p:${esc(e.color_primario)};--s:${esc(e.color_secundario)}">
@@ -1695,16 +1705,17 @@ function vMinisterio(id) {
         <div class="row" style="margin-top:12px"><button class="btn sm ghost" id="mprueba">⎙ Descargar PDF de prueba</button></div></section>
       ${puede ? `<form class="caja" id="fmarca"><h3>Perfil y marca</h3>
         <div class="marcagrid">
-          <div class="lb">Logo <small>PNG con fondo transparente se ve mejor</small>
-            <div class="row"><label class="btn sm ghost" style="cursor:pointer">${e.logo ? "Cambiar logo" : "Subir logo"}<input type="file" id="mlogo" accept="image/*" hidden></label>${e.logo ? `<button type="button" class="btn sm ghost" id="mlogoq">Quitar</button>` : ""}</div></div>
-          <label class="lb">Fondo de la banda<span class="colorin"><input type="color" name="color_oscuro" value="${esc(e.color_oscuro)}"><code>${esc(e.color_oscuro)}</code></span></label>
-          <label class="lb">Color principal <small>acordes y barras</small><span class="colorin"><input type="color" name="color_primario" value="${esc(e.color_primario)}"><code>${esc(e.color_primario)}</code></span></label>
-          <label class="lb">Color secundario <small>subtítulos</small><span class="colorin"><input type="color" name="color_secundario" value="${esc(e.color_secundario)}"><code>${esc(e.color_secundario)}</code></span></label>
+          <div class="mcampo"><b>Logo</b><small>PNG con fondo transparente</small>
+            <div class="mctl">${e.logo ? `<img class="mlogo" src="${esc(e.logo)}" alt="">` : `<span class="mlogo vacio">Sin logo</span>`}<span class="sp"></span><label class="btn xs ghost" style="cursor:pointer">${e.logo ? "Cambiar" : "Subir"}<input type="file" id="mlogo" accept="image/*" hidden></label>${e.logo ? `<button type="button" class="btn xs ghost" id="mlogoq">Quitar</button>` : ""}</div></div>
+          <label class="mcampo"><b>Fondo de la banda</b><small>encabezado de cada página</small><span class="mctl"><input type="color" name="color_oscuro" value="${esc(e.color_oscuro)}"><code>${esc(e.color_oscuro)}</code></span></label>
+          <label class="mcampo"><b>Color principal</b><small>acordes y barras</small><span class="mctl"><input type="color" name="color_primario" value="${esc(e.color_primario)}"><code>${esc(e.color_primario)}</code></span></label>
+          <label class="mcampo"><b>Color secundario</b><small>subtítulos</small><span class="mctl"><input type="color" name="color_secundario" value="${esc(e.color_secundario)}"><code>${esc(e.color_secundario)}</code></span></label>
         </div>
-        <label class="lb" style="margin-top:12px">Descripción<textarea class="field" name="descripcion" rows="2" maxlength="400" placeholder="Ministerio de alabanza de…">${esc(e.descripcion)}</textarea></label>
+        <label class="mcampo" style="margin-top:18px"><b>Descripción</b><small>aparece en el perfil del ministerio</small><textarea class="field mdesc" name="descripcion" rows="3" maxlength="400" placeholder="Ministerio de alabanza de…">${esc(e.descripcion)}</textarea></label>
         <div class="row" style="margin-top:12px"><button class="btn">Guardar</button><button type="button" class="btn ghost" id="mreset">Colores de Tiempo de Dios</button><span class="status" id="mmsg"></span></div></form>`
         : m.descripcion ? `<section class="caja"><h3>Sobre ${esc(m.nombre)}</h3><p class="bio">${esc(m.descripcion)}</p></section>` : ""}`,
     after() {
+      $("#matras").onclick = () => (vengoDeApp ? history.back() : (location.hash = "#ministerios"));
       $("#mprueba").onclick = async () => {
         const c = canciones().find(x => x.titulo === "Aquí Estoy") || canciones()[0];
         if (!c) return toast("No hay canciones en la librería.");
