@@ -493,10 +493,10 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=10"></script>
-<script src="cifrado.js?v=10"></script>
-<script src="senas.js?v=10"></script>
-<script src="datos.js?v=10"></script>
+<script src="config.publico.js?v=11"></script>
+<script src="cifrado.js?v=11"></script>
+<script src="senas.js?v=11"></script>
+<script src="datos.js?v=11"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1701,7 +1701,7 @@ function vUsuarios() {
     .filter(x => !q || norm((x.p.nombre || "") + " " + (x.p.usuario || "") + " " + (x.u.email || "")).includes(q))
     .sort((a, b) => (a.p.nombre || a.u.email || "").localeCompare(b.p.nombre || b.u.email || "", "es"));
   const mins = D.lista("cif_ministerios").sort((a, b) => a.nombre.localeCompare(b.nombre));
-  const estado = u => !D.nube ? "" : u.ultimo ? `<span class="chip pista">Activo · ${fechaCorta(u.ultimo)}</span>` : u.invitado ? `<span class="chip mio">Invitado · sin entrar</span>` : u.confirmado ? `<span class="chip">Nunca ha entrado</span>` : `<span class="chip mio">Sin confirmar correo</span>`;
+  const estado = u => !D.nube || !u.id ? "" : u.ultimo ? `<span class="chip pista">Activo · ${fechaCorta(u.ultimo)}</span>` : u.invitado ? `<span class="chip mio">Invitado · sin entrar</span>` : u.confirmado ? `<span class="chip">Nunca ha entrado</span>` : `<span class="chip mio">Sin confirmar correo</span>`;
   const fila = ({ id, p, u }) => {
     const ms = D.lista("cif_miembros").filter(m => m.persona_id === id);
     return `<li class="ucard"><span class="av">${esc(iniciales(p.nombre || u.email))}</span>

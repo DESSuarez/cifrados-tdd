@@ -40,7 +40,9 @@ Deno.serve(async (req) => {
   const { data: { user } } = await admin.auth.getUser(jwt);
   if (!user) return json({ error: "Tu sesión expiró. Vuelve a entrar." }, 401);
 
-  const { data: yo } = await admin.from("cif_perfiles").select("superadmin,nombre").eq("id", user.id).single();
+  const { data: yo, error: eYo } = await admin.from("cif_perfiles").select("superadmin,nombre").eq("id", user.id).maybeSingle();
+  if (eYo) return json({ error: /permission denied/i.test(eYo.message) ? "La función no tiene permiso para leer las tablas: corre supabase/migraciones/004_permisos_service_role.sql en SQL Editor." : "No pude leer tu perfil: " + eYo.message }, 500);
+  if (!yo) return json({ error: "Tu cuenta no tiene perfil en Cifrados todavía." }, 403);
   const soyDev = !!yo?.superadmin;
   const soyAdminDe = async (m?: string) => {
     if (!m) return false;

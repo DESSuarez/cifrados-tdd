@@ -341,5 +341,13 @@ do $$ begin
   alter publication supabase_realtime add table cif_anuncios;
 exception when duplicate_object then null; end $$;
 
+-- =====================================================================
+-- Versión 5: permisos de service_role para la función usuarios (= migraciones/004)
+-- =====================================================================
+
+grant usage on schema public to service_role;
+grant select, insert, update, delete on cif_perfiles, cif_ministerios, cif_miembros, cif_canciones, cif_tonos, cif_sets, cif_tracks, cif_solicitudes, cif_amistades, cif_anuncios to service_role;
+grant execute on all functions in schema public to service_role;
+
 -- Primer superadmin (cambia el correo y corre esta línea):
 -- update cif_perfiles set superadmin = true where id = (select id from auth.users where email = 'tu-correo@tiempodedios.mx');
