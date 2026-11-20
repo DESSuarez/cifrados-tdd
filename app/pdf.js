@@ -37,6 +37,12 @@
     let logoOk = null;
     const kLogo = Math.min(1.5, Math.max(0.6, (+mk.tam || 100) / 100)); // tamaño del logo elegido en el perfil del ministerio
     if (mk.logo) { try { logoOk = { data: mk.logo, fmt: /^data:image\/png/.test(mk.logo) ? "PNG" : "JPEG" }; } catch (e) { logoOk = null; } }
+    // El logo se dibuja dentro de un cuadro de t×t sin deformarse (si no es cuadrado, se ajusta y se centra)
+    function dibujaLogo(x, y, t) {
+      let w = t, h = t;
+      try { const pr = doc.getImageProperties(logoOk.data); if (pr.width && pr.height) { const k = Math.min(t / pr.width, t / pr.height); w = pr.width * k; h = pr.height * k; } } catch (e) { /* tamaño desconocido */ }
+      doc.addImage(logoOk.data, logoOk.fmt, x + (t - w) / 2, y + (t - h) / 2, w, h, undefined, "FAST");
+    }
 
     const fuente = (estilo, tam, color) => { doc.setFont("helvetica", estilo); doc.setFontSize(tam); doc.setTextColor(...(color || C_TXT)); };
     const ancho = (s, estilo, tam) => { doc.setFont("helvetica", estilo); doc.setFontSize(tam); return doc.getTextWidth(san(s)); };
@@ -46,7 +52,7 @@
     function banda(etiqueta, titulo, subtitulo, alto) {
       doc.setFillColor(...C_OSC); doc.rect(0, 0, W, alto, "F");
       let x = M;
-      if (logoOk) { const t = Math.round(30 * kLogo); try { doc.addImage(logoOk.data, logoOk.fmt, M, 33 - t / 2, t, t, undefined, "FAST"); x = M + t + 10; } catch (e) { logoOk = null; } }
+      if (logoOk) { const t = Math.round(30 * kLogo); try { dibujaLogo(M, 33 - t / 2, t); x = M + t + 10; } catch (e) { logoOk = null; } }
       if (!logoOk) puntos(M + 4, 33);
       fuente("normal", 8.5, [201, 210, 209]); doc.text(san(etiqueta).toUpperCase(), logoOk ? x : M + 44, 36.5);
       fuente("bold", titulo.length > 34 ? 19 : 23, [255, 255, 255]);
@@ -148,7 +154,7 @@
       const ySub = finT + 38, altoP = Math.max(H * 0.46, (sl.length ? ySub + (sl.length - 1) * 17 : finT) + 40);
       doc.setFillColor(...C_OSC); doc.rect(0, 0, W, altoP, "F");
       doc.setFillColor(...C_PRI); doc.rect(0, altoP, W, 7, "F");
-      if (logoOk) { try { doc.addImage(logoOk.data, logoOk.fmt, M, 70, tp, tp, undefined, "FAST"); } catch (e) { /* sin logo */ } } else puntos(M + 6, 96);
+      if (logoOk) { try { dibujaLogo(M, 70, tp); } catch (e) { /* sin logo */ } } else puntos(M + 6, 96);
       fuente("normal", 10, [201, 210, 209]); doc.text(san(mk.nombre).toUpperCase() + " · " + san(mk.etiqueta).toUpperCase(), M, yp);
       fuente("bold", 68, [255, 255, 255]); doc.text(tl, M, yT, { lineHeightFactor: 70 / 68 });
       if (sl.length) { fuente("normal", 13, C_SEC); doc.text(sl, M, ySub); }

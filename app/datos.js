@@ -174,7 +174,11 @@
     try {
       // «ultima» es la hora más nueva que mandó el servidor (no la del reloj de este dispositivo) menos 2 min de traslape:
       // así no se pierde ningún cambio aunque los relojes de celular y compu no coincidan.
-      const ult = (await meta.get("ultima")) || "1970-01-01T00:00:00Z";
+      // Una vez (al subir RESYNC) cada dispositivo vuelve a bajar todo: antes la hora la ponía cada dispositivo y algunos
+      // cambios (p. ej. canciones de otros) se quedaron sin bajar para siempre.
+      const RESYNC = "2";
+      const todoDeNuevo = (await meta.get("resync")) !== RESYNC;
+      const ult = (!todoDeNuevo && (await meta.get("ultima"))) || "1970-01-01T00:00:00Z";
       const desde = new Date(new Date(ult).getTime() - 120000).toISOString();
       let maxima = ult;
       for (const t of TABLAS) {
@@ -192,6 +196,7 @@
         if (!CHICAS.has(t)) for (const r of data || []) if (r.actualizado && r.actualizado > maxima) maxima = r.actualizado;
       }
       await meta.set("ultima", maxima); estado.ultima = ahora(); estado.error = "";
+      if (todoDeNuevo) await meta.set("resync", RESYNC);
     } catch (e) { console.warn("bajar", e); estado.error = "No se pudo bajar de la nube."; }
     estado.sincronizando = false; avisaEstado();
   }
@@ -321,7 +326,12 @@
     const { data, error } = await sb.from("cif_canciones").select("id").in("id", locales.map(r => r.id));
     if (error) { huerfanasRevisadas = false; return; }
     const enNube = new Set((data || []).map(r => r.id));
-    for (const r of locales.filter(x => !enNube.has(x.id))) await guardar("cif_canciones", { ...r, creada_por: estado.usuario.id });
+    // si no es músico o admin del ministerio que tenía, se sube a su nombre sin ministerio (si no, la nube la volvería a rechazar)
+    const rolEn = m => { const x = mem.cif_miembros.get(m + "|" + estado.usuario.id); return x && x.rol; };
+    for (const r of locales.filter(x => !enNube.has(x.id))) {
+      const m = r.ministerio_id && ["admin", "musico"].includes(rolEn(r.ministerio_id)) ? r.ministerio_id : null;
+      await guardar("cif_canciones", { ...r, ministerio_id: m, creada_por: estado.usuario.id });
+    }
   }
   window.addEventListener("online", () => { estado.enLinea = true; avisaEstado(); sincronizar(); });
   window.addEventListener("offline", () => { estado.enLinea = false; avisaEstado(); });

@@ -185,7 +185,7 @@ img.av{object-fit:cover;background:var(--surface)}
 /* Perfil del ministerio: muestra del PDF */
 .pdfmuestra{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;color:#1B1C1A;max-width:560px}
 .pmband{background:var(--o);border-bottom:4px solid var(--p);padding:16px 18px;display:flex;gap:12px;align-items:center}
-.pmband img{width:38px;height:38px;object-fit:cover;border-radius:50%;flex:none}
+.pmband img{width:38px;height:38px;object-fit:contain;border-radius:50%;flex:none}
 .recorte{display:grid;place-items:center}
 .recorte canvas{width:240px;height:240px;border-radius:14px;touch-action:none;cursor:grab;background:repeating-conic-gradient(#C9D2D1 0 25%,#fff 0 50%) 0 0/16px 16px}
 .recorte canvas.mov{cursor:grabbing}
@@ -205,7 +205,7 @@ img.av{object-fit:cover;background:var(--surface)}
 .mctl input[type=color]{width:30px;height:30px;border:0;background:none;padding:0;cursor:pointer;flex:none}
 .mctl code{font:500 13px var(--mono);text-transform:uppercase}
 .mctl .sp{flex:1}
-.mlogo{width:34px;height:34px;object-fit:cover;border-radius:50%;flex:none}
+.mlogo{width:34px;height:34px;object-fit:contain;border-radius:50%;flex:none}
 .mlogo.vacio{width:auto;border-radius:0;display:flex;align-items:center;font:500 12px var(--mono);color:var(--muted)}
 .mdesc{height:auto;padding:12px 14px;resize:vertical;line-height:1.45}
 .acct>span:not(.av){flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
@@ -268,6 +268,14 @@ h1 em{font-style:normal;color:var(--area)}
 .tab .count{font-family:var(--mono);font-weight:500;font-size:12px;margin-left:6px;color:var(--baby)}
 .setbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--mono);font-size:13px;color:#C9D2D1}
 .setbar .sp{flex:1}
+.setflechas{display:inline-flex;gap:8px}
+.setflechas .flt{display:none}
+/* celular: las dos flechas juntas abajo, mitad y mitad */
+@media (max-width:640px){
+  .setflechas{order:10;flex-basis:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .setflechas .navbtn{width:100%;justify-content:center;height:44px;font-size:15px}
+  .setflechas .flt{display:inline}
+}
 
 main .wrap{padding-block:32px 120px;display:flex;flex-direction:column;gap:24px}
 .status{font-size:13px;color:var(--muted);font-family:var(--mono)}
@@ -630,7 +638,7 @@ select.ivoz.on{border-color:var(--flame);font-weight:800}
 .mtarj .u,.mtarj .n{font-family:var(--mono);font-size:12.5px}
 .mtarj .bio{margin:0;font-size:12.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4}
 .mtarj .chip{margin-top:2px}
-.mlogoxl{width:84px;height:84px;border-radius:50%;object-fit:cover;display:grid;place-items:center;color:#fff;font:900 30px var(--display);margin-bottom:4px;background:var(--surface)}
+.mlogoxl{width:84px;height:84px;border-radius:50%;object-fit:contain;display:grid;place-items:center;color:#fff;font:900 30px var(--display);margin-bottom:4px;background:var(--surface)}
 .avisomin{display:block;padding:12px 16px;border-radius:12px;background:var(--flame-soft);color:var(--fg);text-decoration:none;border-left:5px solid var(--flame)}
 .avisomin:hover{filter:brightness(.97)}
 .chip.priv{background:var(--lav-soft);color:var(--lav-ink);border-color:transparent}
@@ -736,11 +744,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=38"></script>
-<script src="cifrado.js?v=38"></script>
-<script src="senas.js?v=38"></script>
-<script src="datos.js?v=38"></script>
-<script src="pdf.js?v=38"></script>
+<script src="config.publico.js?v=39"></script>
+<script src="cifrado.js?v=39"></script>
+<script src="senas.js?v=39"></script>
+<script src="datos.js?v=39"></script>
+<script src="pdf.js?v=39"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -909,6 +917,13 @@ function rolEn(minId) { if (esSuper()) return "admin"; const m = yo() && D.uno("
 const esMusico = () => esSuper() || membresias().some(m => m.rol !== "lector");
 // Sets compartidos (migración 012): el ministerio dueño invita a otros (s.invitados) y todos lo ven y editan en tiempo real.
 const setEnMin = (s, minId) => s.ministerio_id === minId || (s.invitados || []).includes(minId);
+/** Para agregar canciones a un set: las librerías de todos mis ministerios que participan en él (no solo el elegido arriba). */
+function cancionesParaSet(s) {
+  const mis = esSuper() ? [s.ministerio_id, ...(s.invitados || [])] : membresias().map(m => m.ministerio_id).filter(id => setEnMin(s, id));
+  if (!hayColectivo() || !mis.length) return canciones();
+  return D.lista("cif_canciones").filter(c => !c.borrada && (mis.some(id => minVe(id, c)) || (yo() && c.creada_por === yo().id && !c.ministerio_id)))
+    .sort((a, b) => a.titulo.localeCompare(b.titulo, "es", { sensitivity: "base" }));
+}
 const editaSet = s => s && [s.ministerio_id, ...(s.invitados || [])].some(id => ["admin", "musico"].includes(rolEn(id)));
 function minActual() {
   const ms = misMins();
@@ -938,6 +953,8 @@ const veCancion = c => {
   if (!hayColectivo()) return D.modo === "local" || (c.visibilidad || "todos") === "todos" || esSuper() || (yo() && c.creada_por === yo().id)
     || membresias().some(m => m.ministerio_id === c.ministerio_id || (c.compartida_con || []).includes(m.ministerio_id));
   const m = minActual();
+  // las canciones que subí sin ministerio también están en mi librería
+  if (yo() && c.creada_por === yo().id && !c.ministerio_id) return true;
   if (m) return minVe(m.id, c);
   return esSuper() || esTDD(c) || !!(yo() && c.creada_por === yo().id);
 };
@@ -1111,7 +1128,7 @@ function shell(band, main) {
     <main><div class="wrap">${main}</div></main>
     <nav class="barramovil" aria-label="Menú rápido">
       ${[["libreria", "Librería", IC.lib, ["libreria", "cancion"]], ["sets", "Sets", IC.set, ["sets", "set"]], esMusico() ? ["nueva", "Nueva", IC.mas, ["nueva", "editar"]] : null, ["banco", "Banco", IC.buscar, ["banco"]]].filter(Boolean)
-        .map(([h, l, ic, vs]) => `<a href="#${h}" ${vs.includes(r.v) ? 'aria-current="page"' : ""}><span class="ic">${ic}</span><span>${l}</span>${h === "sets" && nSets ? `<i>${nSets}</i>` : ""}</a>`).join("")}
+        .map(([h, l, ic, vs]) => `<a href="#${h}" ${(r.v === "cancion" ? (r.p[1] === "set" ? h === "sets" : h === "libreria") : vs.includes(r.v)) ? 'aria-current="page"' : ""}><span class="ic">${ic}</span><span>${l}</span>${h === "sets" && nSets ? `<i>${nSets}</i>` : ""}</a>`).join("")}
       <button type="button" id="barraMenu" aria-label="Abrir menú"><span class="ic">${IC.menu}</span><span>Menú</span>${pendMin().length + pendInter().length + pendAmigos().length ? `<i>${pendMin().length + pendInter().length + pendAmigos().length}</i>` : ""}</button>
     </nav>
   </div></div>`;
@@ -1157,6 +1174,7 @@ function render() {
 // ---------- Menú, tema, sincronización ----------
 function cerrarMenu() { document.body.classList.remove("menu-abierto"); $$(".sideback").forEach(x => x.remove()); }
 function enlazarShell() {
+  setTimeout(normalizarLogos, 1500);
   $$("[data-atras]").forEach(b => (b.onclick = irAtras));
   $("#abrirMenu").onclick = () => {
     if (matchMedia("(min-width:901px)").matches) { document.documentElement.classList.toggle("asoma"); return; }
@@ -1331,7 +1349,7 @@ function vCancion(p) {
     const n = ctxSet.s.items.length, it = ctxSet.item || {};
     setbar = `<div class="setbar"><a class="navbtn" href="#set/${ctxSet.s.id}">← ${esc(ctxSet.s.nombre)}</a><span>${ctxSet.i + 1} de ${n}${it.momento ? " · " + esc(nombreMomento(it.momento)) : ""}${it.persona_id ? " · voz principal: " + esc(nombreDe(it.persona_id)) : ""}</span><span class="sp"></span>
       ${D.modo !== "local" ? `<button class="navbtn ${st.dirigir ? "on" : ""}" id="dirigir" title="Los demás ven la canción y sección que tú marques">📡 Dirigir</button><button class="navbtn ${st.seguir ? "on" : ""}" id="seguir" title="Abrir lo que marque quien dirige">${st.seguir ? '<span class="vivoind"><i></i>Siguiendo</span>' : "Seguir"}</button>` : ""}
-      <button class="navbtn" id="prev" ${ctxSet.i <= 0 ? "disabled" : ""}>‹</button><button class="navbtn" id="next" ${ctxSet.i >= n - 1 ? "disabled" : ""}>›</button></div>`;
+      <span class="setflechas"><button class="navbtn" id="prev" ${ctxSet.i <= 0 ? "disabled" : ""} aria-label="Canción anterior">‹<span class="flt"> Anterior</span></button><button class="navbtn" id="next" ${ctxSet.i >= n - 1 ? "disabled" : ""} aria-label="Siguiente canción"><span class="flt">Siguiente </span>›</button></span></div>`;
   }
   const sub = [c.autor && `<span class="subarts">${artistasHTML(c)}</span>`, `<span>Original <b>${esc(original)}</b></span>`, c.bpm && `<span><b>${c.bpm}</b> bpm</span>`, c.compas && `<span><b>${esc(c.compas)}</b></span>`, capo ? `<span>Capo <b>${capo}</b> · formas de <b>${esc(forma)}</b></span>` : "",
     esPrivada(c) && `<span>🔒 Solo <b>${esc(nombreMin(c.ministerio_id))}</b>${(c.compartida_con || []).length ? " · compartida con " + esc(c.compartida_con.map(nombreMin).join(", ")) : ""}</span>`].filter(Boolean).join("");
@@ -1761,7 +1779,7 @@ function vSet(id) {
     main: `
       ${puede ? `<div class="grid2"><label class="lb">Nombre<input class="field" id="snombre" value="${esc(s.nombre)}"></label><label class="lb">Fecha<input class="field" type="date" id="sfecha" value="${esc(s.fecha || "")}"></label></div>` : ""}
       ${cuerpo}
-      ${puede && !lit ? `<div class="caja"><h3>Agregar canción</h3><input class="field" id="sbus" placeholder="Buscar en tu librería…" autocomplete="off"><ul class="resultados" id="sres" hidden></ul></div>` : ""}
+      ${puede && !lit ? `<div class="caja"><h3>Agregar canción</h3><input class="field" id="sbus" placeholder="Buscar en tus librerías…" autocomplete="off"><ul class="resultados" id="sres" hidden></ul></div>` : ""}
       ${puede ? `<label class="lb">Notas del set<textarea class="field" id="snotas" rows="3" placeholder="Ensayo, vestimenta, dinámica…">${esc(s.notas || "")}</textarea></label>` : s.notas ? `<div class="caja"><h3>Notas</h3><p class="notas">${esc(s.notas)}</p></div>` : ""}
       ${puede ? `<div class="row"><span class="sp"></span><button class="btn sm ghost" id="sborrar">Borrar set</button></div>` : ""}`,
     after() {
@@ -1821,9 +1839,9 @@ function vSet(id) {
       if (bus) bus.oninput = () => {
         const q = norm(bus.value);
         if (!q) { res.hidden = true; return; }
-        const r = canciones().filter(c => norm(c.titulo + " " + c.autor).includes(q)).slice(0, 12);
+        const r = cancionesParaSet(s).filter(c => norm(c.titulo + " " + c.autor).includes(q)).slice(0, 12);
         res.hidden = false;
-        res.innerHTML = r.length ? r.map(c => `<li><button data-add="${c.id}"><span><b>${esc(c.titulo)}</b> <small class="status">${esc(c.autor || "")}</small></span><span class="chip tono">${esc(c.tono || "")}</span></button></li>`).join("") : `<li class="status" style="padding:10px 12px">Sin resultados</li>`;
+        res.innerHTML = r.length ? r.map(c => `<li><button data-add="${c.id}"><span><b>${esc(c.titulo)}</b> <small class="status">${esc(c.autor || "")}${c.ministerio_id && minActual() && c.ministerio_id !== minActual().id ? " · de " + esc(nombreMin(c.ministerio_id)) : ""}</small></span><span class="chip tono">${esc(c.tono || "")}</span></button></li>`).join("") : `<li class="status" style="padding:10px 12px">Sin resultados</li>`;
         $$("[data-add]", res).forEach(b => b.onclick = () => {
           const c = D.uno("cif_canciones", b.dataset.add);
           guarda({ items: itemsAct().concat([nuevoItem(c)]) });
@@ -1875,7 +1893,7 @@ function elegirCancion(momento) {
     const pinta = () => {
       const q = norm($("#ecq", dl).value);
       const pts = c => (momento && momentoDe(c) === momento ? 0 : 2) + (esLiturgica(c) ? 0 : 1);
-      const r = canciones().filter(c => !q || norm(c.titulo + " " + c.autor).includes(q)).sort((a, b) => pts(a) - pts(b) || a.titulo.localeCompare(b.titulo, "es")).slice(0, 40);
+      const r = cancionesParaSet(s).filter(c => !q || norm(c.titulo + " " + c.autor).includes(q)).sort((a, b) => pts(a) - pts(b) || a.titulo.localeCompare(b.titulo, "es")).slice(0, 40);
       $("#ecr", dl).innerHTML = r.map(c => `<li><button data-c="${c.id}"><span><b>${esc(c.titulo)}</b> <small class="status">${esc(c.autor || "")}</small></span>${momento && momentoDe(c) === momento ? '<span class="chip mio">sugerida</span>' : ""}<span class="chip tono">${esc(c.tono || "")}</span></button></li>`).join("") || `<li class="status" style="padding:10px 12px">Sin resultados</li>`;
       $$("[data-c]", dl).forEach(b => b.onclick = () => fin(D.uno("cif_canciones", b.dataset.c)));
     };
@@ -2280,10 +2298,28 @@ async function abrirExportar(conf) {
 }
 
 // ================= PERFIL DEL MINISTERIO (logo y colores) =================
-// El logo se guarda ya recortado en círculo (PNG 320×320, transparente fuera del círculo).
+// El logo se guarda ya recortado en círculo (PNG 300×300, transparente fuera del círculo).
 // El tamaño con que sale en la banda y la portada va en la misma cadena como «#t=60…150» (por ciento; sin él, 100).
 const logoSrc = l => (l ? String(l).split("#")[0] : null);
 const logoTam = l => { const x = /#t=(\d+)/.exec(l || ""); return x ? Math.min(150, Math.max(60, +x[1])) : 100; };
+/** Todos los logos a 300×300: los que se subieron antes con otra proporción se acomodan dentro del cuadro (sin deformar)
+ *  y se vuelven a guardar. Lo hace una vez por sesión quien puede editar ese ministerio (admin o desarrollador). */
+let _logosRevisados = false;
+function normalizarLogos() {
+  if (_logosRevisados || !D.lista("cif_ministerios").length || (D.nube && !miPerfil())) return; _logosRevisados = true;
+  D.lista("cif_ministerios").filter(m => m.logo && (esSuper() || rolEn(m.id) === "admin")).forEach(m => {
+    const img = new Image();
+    img.onload = async () => {
+      if (img.width === 300 && img.height === 300) return;
+      const cv = document.createElement("canvas"); cv.width = cv.height = 300;
+      const k = Math.min(300 / img.width, 300 / img.height), w = img.width * k, h = img.height * k;
+      cv.getContext("2d").drawImage(img, (300 - w) / 2, (300 - h) / 2, w, h);
+      const tam = logoTam(m.logo), nuevo = cv.toDataURL("image/png") + (tam !== 100 ? "#t=" + tam : "");
+      const act = D.uno("cif_ministerios", m.id); if (act && act.logo === m.logo) await D.guardar("cif_ministerios", { ...act, logo: nuevo });
+    };
+    img.src = logoSrc(m.logo);
+  });
+}
 /** Ventana para acomodar el logo dentro del círculo: arrastrar para mover y barra para acercar. Devuelve el PNG circular o null. */
 function editarLogo(src) {
   return new Promise((ok, mal) => {
@@ -2324,8 +2360,8 @@ function editarLogo(src) {
       dl.addEventListener("cancel", () => fin(null));
       dl.querySelector("form").onsubmit = e => {
         e.preventDefault();
-        const out = document.createElement("canvas"); out.width = out.height = 320;
-        dibujar(out.getContext("2d"), 320 / V, true); fin(out.toDataURL("image/png"));
+        const out = document.createElement("canvas"); out.width = out.height = 300;
+        dibujar(out.getContext("2d"), 300 / V, true); fin(out.toDataURL("image/png"));
       };
       pinta(); dl.showModal();
     };
