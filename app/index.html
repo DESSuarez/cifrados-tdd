@@ -450,6 +450,11 @@ input[type=range]{width:100%;accent-color:var(--area)}
 .sil .a{font:800 .8em var(--display);color:var(--acorde);min-height:1.25em;line-height:1.25}
 .sil .s{border-bottom:2px dotted color-mix(in srgb,var(--muted) 50%,transparent);white-space:pre}
 .sil.con .s{border-bottom-color:var(--acorde)}
+.sil.hueco{padding:0;min-width:.55em}
+.sil.hueco .s{border-bottom-color:transparent;text-align:center}
+.sil.hueco .a{text-align:center}
+.sil.hueco:hover .s{border-bottom:2px dashed var(--acorde)}
+.sil.hueco:hover .a::before{content:"+";font-weight:700;color:var(--muted)}
 .gap{white-space:pre;display:inline-flex;flex-direction:column}
 .gap .a{min-height:1.25em;font:800 .8em var(--display);color:var(--acorde);line-height:1.25}
 .addend{border:1.5px dashed var(--line);background:none;border-radius:6px;font-size:12px;height:24px;padding:0 6px;color:var(--muted);margin-left:6px;align-self:flex-end}
@@ -648,11 +653,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=24"></script>
-<script src="cifrado.js?v=24"></script>
-<script src="senas.js?v=24"></script>
-<script src="datos.js?v=24"></script>
-<script src="pdf.js?v=24"></script>
+<script src="config.publico.js?v=25"></script>
+<script src="cifrado.js?v=25"></script>
+<script src="senas.js?v=25"></script>
+<script src="datos.js?v=25"></script>
+<script src="pdf.js?v=25"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1792,10 +1797,13 @@ function lineasEditor() {
           const ac = marcas[p]; h += `<button class="sil ${ac ? "con" : ""}" data-l="${li}" data-p="${p}"><span class="a">${ac ? esc(ac.join(" ")) : ""}</span><span class="s">${esc(s)}</span></button>`; p += s.length;
         }
       } else {
-        // acordes que caen en espacios o signos
-        let k = 0;
-        for (let j = 0; j < w.length; j++) { const ac = marcas[p0 + j]; if (ac && j > k) { h += `<span class="gap"><span class="a"></span><span>${esc(w.slice(k, j))}</span></span>`; k = j; } if (ac) { h += `<span class="gap" data-l="${li}" data-p="${p0 + j}"><span class="a"><button class="chipac" data-l="${li}" data-p="${p0 + j}">${esc(ac.join(" "))}</button></span><span>${esc(w.slice(j, j + 1))}</span></span>`; k = j + 1; } }
-        if (k < w.length) h += `<span class="gap"><span class="a"></span><span>${esc(w.slice(k))}</span></span>`;
+        // espacios y signos: cada uno se puede tocar para poner un acorde ahí (p. ej. entre «alegría» y «de»)
+        for (let j = 0; j < w.length; j++) {
+          const ac = marcas[p0 + j], ch = w[j];
+          h += ac
+            ? `<span class="gap" data-l="${li}" data-p="${p0 + j}"><span class="a"><button class="chipac" data-l="${li}" data-p="${p0 + j}">${esc(ac.join(" "))}</button></span><span>${esc(ch)}</span></span>`
+            : `<button class="sil hueco" data-l="${li}" data-p="${p0 + j}" title="Poner el acorde en este espacio"><span class="a"></span><span class="s">${esc(ch)}</span></button>`;
+        }
       }
     }
     const fin = marcas[letra.length];
