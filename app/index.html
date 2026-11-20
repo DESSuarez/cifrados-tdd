@@ -324,6 +324,8 @@ dialog::backdrop{background:rgba(0,0,0,.5)}
 .buscador #q{flex:1 1 280px}
 .buscador .btn{flex:0 0 132px;justify-content:center;padding-inline:10px}
 .brow{cursor:default}
+.brow .chips{align-items:center}
+.btn.badd{white-space:nowrap}
 .bandlink{color:var(--baby);font-weight:700;text-decoration:none}.bandlink:hover{text-decoration:underline}
 @media (max-width:640px){.buscador #q{flex-basis:100%}.buscador .btn{flex:1 1 0;min-width:0}}
 .letra-h{font:500 12px var(--mono);letter-spacing:.12em;color:var(--muted);padding:14px 4px 6px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:2}
@@ -513,6 +515,7 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 input[type=date].fsel{padding:0 12px;color:var(--fg);font-family:var(--mono);font-weight:500;color-scheme:light dark}
 input[type=date].fsel::-webkit-calendar-picker-indicator{opacity:.6;cursor:pointer}
 .mincard{display:flex;flex-direction:column}
+.chip.compart{background:var(--sea-soft,rgba(69,122,127,.15));color:var(--fg);border-color:var(--sea)}
 .interrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;margin-top:8px}
 .interrow>span{flex:1;min-width:220px}
 .interrow.entra{border-color:var(--flame);background:var(--flame-soft)}
@@ -597,7 +600,20 @@ select.fsel{padding:0 34px 0 14px;
 .blq.arrastra{opacity:.5;cursor:grabbing}
 .blq.sobre{outline:2px dashed var(--area);outline-offset:2px}
 .solic{margin-top:12px;padding:10px;border-radius:12px;background:var(--flame-soft)}
-.solic b{display:block;margin-bottom:6px}
+.solic h3{margin:4px 4px 10px}
+.solrow{display:grid!important;grid-template-columns:auto 1fr auto;gap:14px!important;align-items:center!important;padding:14px 16px!important;border-radius:14px!important}
+.solav{line-height:0}
+.av.solfoto{width:52px;height:52px;font-size:19px}
+.solinfo{display:flex;flex-direction:column;gap:4px;min-width:0}
+.solquien{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px}
+.solquien b{font-size:16px}
+.solrow .u{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.solque{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.solmin{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px 0 4px;border-radius:99px;background:var(--c);color:#fff!important;font-weight:800;font-size:13px;text-decoration:none!important}
+.solmin img,.solmin i{width:20px;height:20px;border-radius:50%;object-fit:cover;background:#fff;display:inline-grid;place-items:center;font:800 9px var(--body);font-style:normal;color:var(--c)}
+.solmsg{margin:4px 0 0;padding:8px 12px;border-radius:10px;background:var(--surface);border-left:3px solid var(--c,var(--flame));font-size:14px;color:var(--fg);max-width:60ch}
+.solacc{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:760px){.solrow{grid-template-columns:auto 1fr}.solacc{grid-column:1/-1;justify-content:flex-start}}
 .ulista{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .ucard{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
 .uinfo{min-width:0;display:flex;flex-direction:column;align-items:flex-start}
@@ -624,11 +640,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=21"></script>
-<script src="cifrado.js?v=21"></script>
-<script src="senas.js?v=21"></script>
-<script src="datos.js?v=21"></script>
-<script src="pdf.js?v=21"></script>
+<script src="config.publico.js?v=22"></script>
+<script src="cifrado.js?v=22"></script>
+<script src="senas.js?v=22"></script>
+<script src="datos.js?v=22"></script>
+<script src="pdf.js?v=22"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -795,7 +811,9 @@ function misMins() {
 }
 function rolEn(minId) { if (esSuper()) return "admin"; const m = yo() && D.uno("cif_miembros", minId + "|" + yo().id); return m ? m.rol : null; }
 const esMusico = () => esSuper() || membresias().some(m => m.rol !== "lector");
-const editaSet = s => s && ["admin", "musico"].includes(rolEn(s.ministerio_id));
+// Sets compartidos (migración 012): el ministerio dueño invita a otros (s.invitados) y todos lo ven y editan en tiempo real.
+const setEnMin = (s, minId) => s.ministerio_id === minId || (s.invitados || []).includes(minId);
+const editaSet = s => s && [s.ministerio_id, ...(s.invitados || [])].some(id => ["admin", "musico"].includes(rolEn(id)));
 function minActual() {
   const ms = misMins();
   if (!ms.length) return null;
@@ -846,6 +864,12 @@ const tonosDe = cid => D.lista("cif_tonos").filter(t => t.cancion_id === cid);
 const miTono = cid => yo() && D.uno("cif_tonos", cid + "|" + yo().id);
 const tracksDe = cid => D.lista("cif_tracks").filter(t => t.cancion_id === cid).sort((a, b) => a.nombre.localeCompare(b.nombre));
 const artistas = () => D.lista("cif_perfiles").filter(p => p.artista || (yo() && p.id === yo().id)).sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+/** Gente de un set: la del ministerio dueño y la de los invitados (para «quién dirige»). */
+function personasSet(s) {
+  const mins = new Set([s.ministerio_id, ...(s.invitados || [])]);
+  const ids = new Set(D.lista("cif_miembros").filter(m => mins.has(m.ministerio_id)).map(m => m.persona_id));
+  return D.lista("cif_perfiles").filter(p => ids.has(p.id)).sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+}
 function personasMin(minId) {
   const ids = new Set(D.lista("cif_miembros").filter(m => m.ministerio_id === minId).map(m => m.persona_id));
   return D.lista("cif_perfiles").filter(p => ids.has(p.id)).sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
@@ -921,7 +945,7 @@ document.addEventListener("focusout", () => setTimeout(() => { if (renderPend &&
 
 // ---------- Armazón ----------
 function shell(band, main) {
-  const r = ruta(), ms = misMins(), m = minActual(), nSets = m ? D.lista("cif_sets").filter(s => !s.borrada && s.ministerio_id === m.id).length : "";
+  const r = ruta(), ms = misMins(), m = minActual(), nSets = m ? D.lista("cif_sets").filter(s => !s.borrada && setEnMin(s, m.id)).length : "";
   const nav = (href, v, label, ic, c, cnt) => `<a href="#${href}" style="--c:var(${c})" ${r.v === v || (v === "libreria" && r.v === "cancion" && r.p[1] !== "set") || (v === "sets" && (r.v === "set" || (r.v === "cancion" && r.p[1] === "set"))) || (v === "nueva" && r.v === "editar") ?'aria-current="page"' : ""}><span class="ic">${ic}</span><span class="lb">${label}</span><span class="cnt">${cnt ?? ""}</span></a>`;
   const p = miPerfil(), nm = p ? p.nombre : (yo() && yo().email) || "";
   return `<div class="shell">
@@ -1418,13 +1442,13 @@ async function subirPista(f, c, original) {
 function vSets() {
   const m = minActual();
   if (!m) return { band: bandHTML({ titulo: "Sets" }), main: `<div class="empty"><strong>Aún no estás en un ministerio</strong><p>Los sets son de cada ministerio. Pide entrar al tuyo en Ministerios y espera a que un admin te acepte.</p><a class="btn" href="#ministerios">Ir a Ministerios</a></div>` };
-  const sets = D.lista("cif_sets").filter(s => !s.borrada && s.ministerio_id === m.id).sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
+  const sets = D.lista("cif_sets").filter(s => !s.borrada && setEnMin(s, m.id)).sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
   const hoy = hoyISO();
   const prox = sets.filter(s => (s.fecha || "") >= hoy).reverse(), pas = sets.filter(s => (s.fecha || "") < hoy);
-  const card = s => { const f = s.fecha ? new Date(s.fecha + "T12:00") : null; return `<li><a class="setcard" href="#set/${s.id}"><time>${f ? `<b>${f.getDate()}</b>${f.toLocaleDateString("es-MX", { month: "short", weekday: "short" })}` : "—"}</time><div><h3>${esc(s.nombre)}${s.tipo === "liturgico" ? ' <span class="chip mio">⛪ Misa</span>' : ""}</h3><p>${s.items.length} canciones · ${esc(s.items.map(i => (D.uno("cif_canciones", i.cancion_id) || {}).titulo).filter(Boolean).join(" · ") || "vacío")}</p></div><span class="chip">${s.items.length}</span></a></li>`; };
+  const card = s => { const f = s.fecha ? new Date(s.fecha + "T12:00") : null; return `<li><a class="setcard" href="#set/${s.id}"><time>${f ? `<b>${f.getDate()}</b>${f.toLocaleDateString("es-MX", { month: "short", weekday: "short" })}` : "—"}</time><div><h3>${esc(s.nombre)}${s.tipo === "liturgico" ? ' <span class="chip mio">⛪ Misa</span>' : ""}${s.ministerio_id !== m.id ? ` <span class="chip compart">Invitado por ${esc(nombreMin(s.ministerio_id))}</span>` : (s.invitados || []).length ? ` <span class="chip compart">Con ${esc(s.invitados.map(nombreMin).join(", "))}</span>` : ""}</h3><p>${s.items.length} canciones · ${esc(s.items.map(i => (D.uno("cif_canciones", i.cancion_id) || {}).titulo).filter(Boolean).join(" · ") || "vacío")}</p></div><span class="chip">${s.items.length}</span></a></li>`; };
   const puede = ["admin", "musico"].includes(rolEn(m.id));
   return {
-    band: bandHTML({ tag: m.nombre, titulo: "Sets de <em>" + esc(m.nombre) + "</em>", sub: `<span>Se actualizan en tiempo real para todo el ministerio</span>` }),
+    band: bandHTML({ tag: m.nombre, titulo: "Sets de <em>" + esc(m.nombre) + "</em>", sub: `<span>Se actualizan en tiempo real para todo el ministerio y los ministerios invitados</span>` }),
     main: `${puede ? `<div class="row"><button class="btn" id="nset">${IC.mas} Nuevo set</button><button class="btn ghost" id="nmisa">⛪ Nueva misa</button></div>` : ""}
       ${sets.length ? `${prox.length ? `<h2 class="status">PRÓXIMOS</h2><ul class="sets">${prox.map(card).join("")}</ul>` : ""}${pas.length ? `<h2 class="status">ANTERIORES</h2><ul class="sets">${pas.map(card).join("")}</ul>` : ""}`
         : `<div class="empty"><strong>Sin sets todavía</strong><p>Arma el set del domingo o la misa por momentos: canciones, tono de cada una y quién dirige. Todo el equipo lo ve al momento.</p></div>`}`,
@@ -1442,6 +1466,31 @@ function vSets() {
   };
 }
 
+/** Ventana para invitar ministerios a un set (los del colectivo primero). */
+async function invitarAlSet(s) {
+  const ya = new Set(s.invitados || []);
+  const otros = D.lista("cif_ministerios").filter(m => m.id !== s.ministerio_id)
+    .sort((a, b) => (b.colectivo ? 1 : 0) - (a.colectivo ? 1 : 0) || a.nombre.localeCompare(b.nombre));
+  const d = await dialogo(`<h2>Invitar a «${esc(s.nombre)}»</h2>
+    <p>Los ministerios que marques ven este set en sus Sets, con los mismos cambios al momento. Sus músicos y admins también lo pueden editar, y ven las canciones aunque no estén en su librería.</p>
+    <div class="compchk">${otros.map(m => `<label><input type="checkbox" name="m_${m.id}" ${ya.has(m.id) ? "checked" : ""}> ${esc(m.nombre)}${m.colectivo ? ' <small class="status">colectivo</small>' : ""}${m.tipo === "solista" ? ' <small class="status">solista</small>' : ""}</label>`).join("") || `<span class="status">No hay otros ministerios.</span>`}</div>`, "Guardar");
+  if (!d) return;
+  const invitados = otros.filter(m => d["m_" + m.id]).map(m => m.id);
+  try {
+    await D.guardar("cif_sets", { ...D.uno("cif_sets", s.id), invitados });
+    toast(invitados.length ? `Ahora lo ven también ${invitados.map(nombreMin).join(", ")}.` : "Ya no está compartido con otros ministerios.");
+  } catch (e) { toast(/invitados|column/i.test(e.message || "") ? "Falta correr la migración 012 en Supabase." : e.message); }
+}
+/** Si un set compartido trae canciones que no están en este dispositivo, las baja una vez. */
+const _setsTraidos = new Set();
+function traerCancionesDelSet(s) {
+  if (!D.nube) return;
+  const faltan = s.items.map(i => i.cancion_id).filter(id => id && !D.uno("cif_canciones", id));
+  const k = s.id + ":" + faltan.join(",");
+  if (!faltan.length || _setsTraidos.has(k)) return;
+  _setsTraidos.add(k);
+  D.traer("cif_canciones", faltan).then(n => { if (n) render(); }).catch(e => console.warn("traer canciones del set", e));
+}
 /** Bloques de estructura de una canción en un set. */
 const bloquesDe = (it, c) => (it.estructura && it.estructura.length ? it.estructura : c.orden && c.orden.length ? c.orden : C.secciones(c.contenido));
 function estructuraHTML(it, i, c, puede) {
@@ -1473,7 +1522,8 @@ function vSet(id) {
   const s = D.uno("cif_sets", id);
   if (!s || s.borrada) return { band: bandHTML({ titulo: "No encontré ese set" }), main: `<a class="btn ghost" href="#sets">← Sets</a>` };
   const m = D.uno("cif_ministerios", s.ministerio_id), puede = editaSet(s), lit = s.tipo === "liturgico";
-  const gente = personasMin(s.ministerio_id);
+  const gente = personasSet(s);
+  traerCancionesDelSet(s);
   let cuerpo;
   if (lit) {
     // un bloque por momento; las canciones sin momento van en "Otros"
@@ -1490,8 +1540,8 @@ function vSet(id) {
   }
   const quien = s.actualizado_por ? nombreDe(s.actualizado_por) : "";
   return {
-    band: bandHTML({ tag: lit ? "Misa · " + (m ? m.nombre : "") : m ? m.nombre : "Set", titulo: esc(s.nombre), sub: `<span>${s.fecha ? new Date(s.fecha + "T12:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" }) : "Sin fecha"}</span><span>${s.items.length} canciones</span>${quien ? `<span>Último cambio: ${esc(quien)}</span>` : ""}`,
-      extra: `<div class="row">${s.items.length ? `<a class="navbtn on" href="#cancion/${s.items[0].cancion_id}/set/${s.id}/0">▶ Tocar ${lit ? "la misa" : "el set"}</a>` : ""}<button class="navbtn" id="spdf" title="Exportar el set a PDF con su tono y estructura">⎙ PDF</button><a class="navbtn" href="#sets">← Sets</a></div>` }),
+    band: bandHTML({ tag: lit ? "Misa · " + (m ? m.nombre : "") : m ? m.nombre : "Set", titulo: esc(s.nombre), sub: `<span>${s.fecha ? new Date(s.fecha + "T12:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" }) : "Sin fecha"}</span><span>${s.items.length} canciones</span>${(s.invitados || []).length ? `<span>Con <b>${esc(s.invitados.map(nombreMin).join(", "))}</b></span>` : ""}${quien ? `<span>Último cambio: ${esc(quien)}</span>` : ""}`,
+      extra: `<div class="row">${s.items.length ? `<a class="navbtn on" href="#cancion/${s.items[0].cancion_id}/set/${s.id}/0">▶ Tocar ${lit ? "la misa" : "el set"}</a>` : ""}${puede && (rolEn(s.ministerio_id) === "admin" || rolEn(s.ministerio_id) === "musico") ? `<button class="navbtn" id="sinvita" title="Invitar a otros ministerios a este set">👥 Invitar ministerios${(s.invitados || []).length ? " · " + s.invitados.length : ""}</button>` : ""}<button class="navbtn" id="spdf" title="Exportar el set a PDF con su tono y estructura">⎙ PDF</button><a class="navbtn" href="#sets">← Sets</a></div>` }),
     main: `
       ${puede ? `<div class="grid2"><label class="lb">Nombre<input class="field" id="snombre" value="${esc(s.nombre)}"></label><label class="lb">Fecha<input class="field" type="date" id="sfecha" value="${esc(s.fecha || "")}"></label></div>` : ""}
       ${cuerpo}
@@ -1499,6 +1549,7 @@ function vSet(id) {
       ${puede ? `<label class="lb">Notas del set<textarea class="field" id="snotas" rows="3" placeholder="Ensayo, vestimenta, dinámica…">${esc(s.notas || "")}</textarea></label>` : s.notas ? `<div class="caja"><h3>Notas</h3><p class="notas">${esc(s.notas)}</p></div>` : ""}
       ${puede ? `<div class="row"><span class="sp"></span><button class="btn sm ghost" id="sborrar">Borrar set</button></div>` : ""}`,
     after() {
+      const bi = $("#sinvita"); if (bi) bi.onclick = () => invitarAlSet(s);
       $$("[data-abre]").forEach(b => b.onclick = () => { const k = b.dataset.abre; st.abiertos.has(k) ? st.abiertos.delete(k) : st.abiertos.add(k); render(); });
       // PDF del set: cada canción en su tono, con su estructura en bloques, momento y quién dirige
       $("#spdf").onclick = () => abrirExportar({ multiple: true, minId: s.ministerio_id, titulo: s.nombre,
@@ -2002,7 +2053,7 @@ function vMinisterio(id) {
   const puede = esSuper() || rolEn(id) === "admin";
   if (!marcaEd || marcaEd.id !== id) marcaEd = { id, logo: logoSrc(m.logo), tam: logoTam(m.logo), orig: null, color_oscuro: m.color_oscuro || MARCA_TDD.oscuro, color_primario: m.color_primario || MARCA_TDD.primario, color_secundario: m.color_secundario || MARCA_TDD.secundario, descripcion: m.descripcion || "" };
   const e = marcaEd, miem = D.lista("cif_miembros").filter(x => x.ministerio_id === id);
-  const nSets = D.lista("cif_sets").filter(s => !s.borrada && s.ministerio_id === id).length;
+  const nSets = D.lista("cif_sets").filter(s => !s.borrada && setEnMin(s, id)).length;
   return {
     band: bandHTML({ tag: m.tipo === "solista" ? "Solista" : "Ministerio", titulo: esc(m.nombre), sub: `<span>${miem.length} integrante${miem.length === 1 ? "" : "s"}</span><span>${nSets} sets</span>${puede ? "<span>Puedes editar su perfil</span>" : ""}`,
       extra: `<div class="row"><a class="navbtn" href="#ministerios">Ministerios</a></div>` }),
@@ -2059,6 +2110,23 @@ function vMinisterio(id) {
 // Flujo: el desarrollador da de alta el ministerio (y puede nombrar a su admin) → cada persona crea su cuenta
 // → pide entrar a su ministerio → un admin de ese ministerio o el desarrollador acepta o rechaza.
 const ROL_TXT = { admin: "Admin", musico: "Músico", lector: "Solo ver" };
+/** Tarjeta de una solicitud para entrar a un ministerio: quién es, a dónde quiere entrar, su mensaje y los botones. */
+function filaSolicitud(x) {
+  const p = D.uno("cif_perfiles", x.persona_id) || {}, m = D.uno("cif_ministerios", x.ministerio_id) || {};
+  const c = m.color_primario || "#FF3D1A", lg = logoSrc(m.logo);
+  const cuando = x.creado || x.actualizado;
+  return `<li class="solrow">
+    <a class="solav" href="#persona/${x.persona_id}" title="Ver su perfil">${avatar(p, nombreDe(x.persona_id), "solfoto")}</a>
+    <div class="solinfo">
+      <div class="solquien"><a href="#persona/${x.persona_id}"><b>${esc(nombreDe(x.persona_id))}</b></a>${p.usuario ? `<span class="u">@${esc(p.usuario)}</span>` : ""}${p.voz ? `<span class="u">· ${esc(p.voz)}</span>` : ""}</div>
+      <div class="solque">quiere entrar a <a class="solmin" href="#ministerio/${m.id}" style="--c:${esc(c)}">${lg ? `<img src="${esc(lg)}" alt="">` : `<i>${esc(iniciales(m.nombre || "?"))}</i>`}${esc(m.nombre || "?")}</a>${cuando ? `<span class="u">· ${esc(fechaCorta(cuando))}</span>` : ""}</div>
+      ${x.mensaje ? `<p class="solmsg">«${esc(x.mensaje)}»</p>` : ""}
+    </div>
+    <div class="solacc">
+      <select class="fsel" data-solrol="${x.id}" aria-label="Entra como"><option value="musico">Como músico</option><option value="lector">Solo ver</option><option value="admin">Como admin</option></select>
+      <button class="btn sm" data-acepta="${x.id}">Aceptar</button><button class="btn sm ghost" data-rechaza="${x.id}">Rechazar</button>
+    </div></li>`;
+}
 /** Integrantes y administración de un ministerio (va en su página #ministerio/<id>). */
 function gestionMin(m) {
   const mios = new Set(membresias().map(m => m.ministerio_id));
@@ -2068,9 +2136,7 @@ function gestionMin(m) {
   const optPersonas = (excluir = new Set()) => personas.filter(p => !excluir.has(p.id)).map(p => `<option value="${p.id}">${esc(p.nombre || "Sin nombre")}${p.usuario ? " · @" + esc(p.usuario) : ""}</option>`).join("");
   // solicitudes que yo puedo resolver (admin de ese ministerio o desarrollador)
   const porRevisar = D.lista("cif_solicitudes").filter(s => s.estado === "pendiente" && rolEn(s.ministerio_id) === "admin" && (!yo() || s.persona_id !== yo().id));
-  const filaSol = x => `<li>${avatar(x.persona_id)}<span><b>${esc(nombreDe(x.persona_id))}</b> <small class="status">quiere entrar a</small> <b>${esc((D.uno("cif_ministerios", x.ministerio_id) || {}).nombre || "?")}</b>${x.mensaje ? `<br><small class="status">«${esc(x.mensaje)}»</small>` : ""}</span>
-    <select class="fsel" data-solrol="${x.id}" aria-label="Entra como"><option value="musico">Como músico</option><option value="lector">Solo ver</option><option value="admin">Como admin</option></select>
-    <button class="btn xs" data-acepta="${x.id}">Aceptar</button><button class="btn xs ghost" data-rechaza="${x.id}">Rechazar</button></li>`;
+  const filaSol = filaSolicitud;
 
 
     const rol = rolEn(m.id), admin = rol === "admin", soy = mios.has(m.id);
@@ -2108,9 +2174,7 @@ function vMinisterios() {
   const optPersonas = (excluir = new Set()) => personas.filter(p => !excluir.has(p.id)).map(p => `<option value="${p.id}">${esc(p.nombre || "Sin nombre")}${p.usuario ? " · @" + esc(p.usuario) : ""}</option>`).join("");
   // solicitudes que yo puedo resolver (admin de ese ministerio o desarrollador)
   const porRevisar = D.lista("cif_solicitudes").filter(s => s.estado === "pendiente" && rolEn(s.ministerio_id) === "admin" && (!yo() || s.persona_id !== yo().id));
-  const filaSol = x => `<li>${avatar(x.persona_id)}<span><b>${esc(nombreDe(x.persona_id))}</b> <small class="status">quiere entrar a</small> <b>${esc((D.uno("cif_ministerios", x.ministerio_id) || {}).nombre || "?")}</b>${x.mensaje ? `<br><small class="status">«${esc(x.mensaje)}»</small>` : ""}</span>
-    <select class="fsel" data-solrol="${x.id}" aria-label="Entra como"><option value="musico">Como músico</option><option value="lector">Solo ver</option><option value="admin">Como admin</option></select>
-    <button class="btn xs" data-acepta="${x.id}">Aceptar</button><button class="btn xs ghost" data-rechaza="${x.id}">Rechazar</button></li>`;
+  const filaSol = filaSolicitud;
 
   const card = m => {
     const miem = D.lista("cif_miembros").filter(x => x.ministerio_id === m.id), sol = m.tipo === "solista";
@@ -2129,7 +2193,7 @@ function vMinisterios() {
   const propios = todos.filter(m => mios.has(m.id)), otros = todos.filter(m => !mios.has(m.id));
   const sinMinisterio = !dev && !propios.length;
   return {
-    band: bandHTML({ tag: "Equipo", titulo: "Ministerios", sub: `<span>Cada ministerio tiene sus sets e integrantes; la librería es de todos</span>${dev ? "<span>Tú: desarrollador</span>" : ""}` }),
+    band: bandHTML({ tag: "Equipo", titulo: "Ministerios", sub: `<span>Cada ministerio tiene su librería, sus sets e integrantes; las canciones de Tiempo de Dios son de todos</span>${dev ? "<span>Tú: desarrollador</span>" : ""}` }),
     main: `
       ${sinMinisterio ? `<section class="caja pasos"><h3>¿Cómo entro a mi ministerio?</h3><ol>
         <li class="ok">Ya tienes tu cuenta.</li>
@@ -2199,15 +2263,18 @@ function vBanco() {
       <p class="status" style="margin:0">${banco.cargando ? "Buscando…" : banco.error ? "" : `${res.length}${res.length >= 300 ? "+" : ""} canciones${banco.q ? " para «" + esc(banco.q) + "»" : ""} · ${res.length - faltan.length} ya están en tu librería`}${!puede && m ? " · Solo músicos y admins de " + esc(m.nombre) + " pueden añadir" : ""}</p>
       ${banco.error ? `<div class="empty"><strong>No se pudo leer el banco</strong><p>${esc(banco.error)}</p><p>Revisa que esté corrida la migración 011 en Supabase.</p></div>` : ""}
       <ul class="songs">${res.map(r => `<li><div class="srow brow"><div><b>${esc(r.titulo)}</b><small>${artistasHTML(r, false) || "—"}${r.ministerio ? `<span class="etq"> · subida por ${esc(r.ministerio)}</span>` : ""}${r.copias > 1 ? `<span class="etq"> · en ${r.copias} librerías</span>` : ""}</small></div>
-        <span class="chips">${r.tono ? `<span class="chip tono">${esc(r.tono)}</span>` : ""}${mias.has(tituloN(r.titulo)) ? `<span class="chip pista">✓ En tu librería</span>` : puede ? `<button class="btn xs" data-badd="${r.id}">＋ Añadir</button>` : ""}</span></div></li>`).join("")}</ul>
+        <span class="chips">${r.tono ? `<span class="chip tono">${esc(r.tono)}</span>` : ""}${mias.has(tituloN(r.titulo)) ? `<span class="chip pista">✓ En tu librería</span>` : puede ? `<button class="btn xs badd" data-badd="${r.id}">＋ Añadir a la librería</button>` : ""}</span></div></li>`).join("")}</ul>
       ${!banco.cargando && banco.res && !res.length ? `<div class="empty"><strong>Sin resultados</strong><p>Prueba con otra parte del título o con el nombre del artista.</p></div>` : ""}`,
     after() {
       const bq = $("#bq"); let t;
       bq.oninput = () => { banco.q = bq.value; clearTimeout(t); t = setTimeout(async () => { await buscarBanco(); const n = $("#bq"); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } }, 300); };
       $$("[data-badd]").forEach(b => b.onclick = async () => {
         b.disabled = true; b.textContent = "Añadiendo…";
-        try { const n = await agregarDelBanco([b.dataset.badd]); toast(n ? `Añadida a la librería de ${minActual().nombre}.` : "Ya estaba en tu librería."); render(); }
-        catch (e) { b.disabled = false; b.textContent = "＋ Añadir"; toast(e.message || String(e)); }
+        try {
+          const n = await agregarDelBanco([b.dataset.badd]);
+          b.outerHTML = `<span class="chip pista">✓ En tu librería</span>`;
+          toast(n ? `Añadida a la librería de ${minActual().nombre}.` : "Ya estaba en tu librería."); render();
+        } catch (e) { b.disabled = false; b.textContent = "＋ Añadir a la librería"; toast(e.message || String(e)); }
       });
       const ba = $("#baddall"); if (ba) ba.onclick = async () => {
         if (!(await confirmar(`¿Añadir ${faltan.length} canciones a la librería de ${minActual().nombre}?`, "Se copian: cada quien puede editar las suyas sin tocar las de los demás."))) return;

@@ -353,6 +353,13 @@
     const { error } = await sb.auth.updateUser({ password, ...(nombre ? { data: { nombre } } : {}) });
     if (error) throw error;
   }
+  /** Baja filas sueltas por id (p. ej. canciones de un set compartido que la sincronización por fecha no trae). */
+  async function traer(tabla, ids) {
+    if (!nube || !ids.length) return 0;
+    const { data, error } = await sb.from(tabla).select("*").in("id", ids);
+    if (error) throw error;
+    await aplicar(tabla, data || []); return (data || []).length;
+  }
   async function consulta(nombre, args) { if (!nube) throw new Error("Sin nube"); const { data, error } = await sb.rpc(nombre, args); if (error) throw error; return data; }
   async function rpc(nombre, args) { if (!nube) throw new Error("Sin nube"); const { data, error } = await sb.rpc(nombre, args); if (error) throw error; await bajar(); return data; }
 
@@ -383,7 +390,7 @@
     uno: (t, id) => mem[t].get(id),
     alCambiar: f => oyentes.add(f),
     alEstado: f => (oyEstado.add(f), f({ ...estado })),
-    entrar, registrarse, recuperar, salir, rpc, consulta, fn, nuevaClave, canalVivo,
+    entrar, registrarse, recuperar, salir, rpc, consulta, traer, fn, nuevaClave, canalVivo,
     subirAudio, audio, borrarAudio, audioLocal,
     nube, sb, modo: MODO, red,
     entrarRed, elegirYo, pinRed, enviarARed, traerDeRed,
