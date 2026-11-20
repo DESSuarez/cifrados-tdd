@@ -603,9 +603,10 @@ end $$;
 
 create or replace function cif_copiar_canciones(origen uuid, destino uuid) returns int
 language sql security definer set search_path = public as $$
+  -- $1 = origen, $2 = destino (por número: «origen» también es una columna de cif_canciones)
   select cif_copiar_lista(array(
-    select id from cif_canciones s where not s.borrada
-      and cif_lib_ve(origen, s.ministerio_id, s.compartida_con, s.autor, s.etiquetas, s.titulo)), destino, 'intercambio') $$;
+    select s.id from cif_canciones s where not s.borrada
+      and cif_lib_ve($1, s.ministerio_id, s.compartida_con, s.autor, s.etiquetas, s.titulo)), $2, 'intercambio') $$;
 revoke execute on function cif_copiar_lista(uuid[], uuid, text), cif_copiar_canciones(uuid, uuid) from public, anon, authenticated;
 
 -- 4) Banco: buscar en todas las canciones abiertas (solo título, artistas y datos; la letra se copia al añadir)
