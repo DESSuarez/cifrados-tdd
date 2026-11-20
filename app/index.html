@@ -386,6 +386,11 @@ input[type=date].fsel::-webkit-calendar-picker-indicator{opacity:.6;cursor:point
 .mincard{display:flex;flex-direction:column}
 .avisomin{display:block;padding:12px 16px;border-radius:12px;background:var(--flame-soft);color:var(--fg);text-decoration:none;border-left:5px solid var(--flame)}
 .avisomin:hover{filter:brightness(.97)}
+.chip.priv{background:var(--lav-soft);color:var(--lav-ink);border-color:transparent}
+.chip.comp{background:var(--sea-soft);color:var(--sea-text);border-color:transparent}
+.chip.solista{background:var(--sol-soft);color:var(--sol-ink);border-color:transparent}
+.compchk{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;padding:4px 0 0 26px}
+.compchk label{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
 .minnombre{height:40px;max-width:320px;font:900 18px var(--display);border-color:transparent;background:transparent;padding:0 8px;margin-left:-8px}
 .minnombre:hover{border-color:var(--line)}.minnombre:focus{background:var(--bg)}
 .minadmin{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding:10px 12px;border:1px dashed var(--line);border-radius:12px}
@@ -464,10 +469,10 @@ select.fsel{-webkit-appearance:none;appearance:none;padding:0 34px 0 14px;cursor
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=7"></script>
-<script src="cifrado.js?v=7"></script>
-<script src="senas.js?v=7"></script>
-<script src="datos.js?v=7"></script>
+<script src="config.publico.js?v=8"></script>
+<script src="cifrado.js?v=8"></script>
+<script src="senas.js?v=8"></script>
+<script src="datos.js?v=8"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -500,7 +505,7 @@ const IC = {
 const st = {
   min: ls.get("cifrados-min", null),
   estilo: Object.assign({ tam: 20, color: "flame", inter: 1.35, cols: 1, latina: false, nashville: false, sinAcordes: false }, ls.get("cifrados-estilo", {})),
-  q: "", tab: ls.get("cifrados-tab", "tdd"), fArtista: "", fTono: "", fTags: [], fMio: false, fPista: false,
+  q: "", tab: ls.get("cifrados-tab", "tdd"), fArtista: "", fTono: "", fTags: [], fMio: false, fPista: false, fPriv: false,
   tonoVista: {},  // por canción en esta sesión
   capo: {},
   editando: false, arrastrando: false, abiertos: new Set(),
@@ -542,7 +547,22 @@ function minActual() {
   if (!ms.length) return null;
   return ms.find(m => m.id === st.min) || ms[0];
 }
-const canciones = () => D.lista("cif_canciones").filter(c => !c.borrada).sort((a, b) => a.titulo.localeCompare(b.titulo, "es", { sensitivity: "base" }));
+// Quién ve una canción (mismo criterio que cif_ve_cancion en SQL): toda la librería, o su ministerio y con quien se compartió
+const veCancion = c => !D.nube || (c.visibilidad || "todos") === "todos" || esSuper() || (yo() && c.creada_por === yo().id)
+  || membresias().some(m => m.ministerio_id === c.ministerio_id || (c.compartida_con || []).includes(m.ministerio_id));
+const nombreMin = id => (D.uno("cif_ministerios", id) || {}).nombre || "otro ministerio";
+const esPrivada = c => (c.visibilidad || "todos") === "ministerio";
+/** ¿Puedo cambiar con quién se comparte? (músico/admin de su ministerio, quien la creó, o desarrollador) */
+const comparteCancion = c => esSuper() || (yo() && c.creada_por === yo().id) || ["admin", "musico"].includes(rolEn(c.ministerio_id));
+/** Etiqueta corta de privacidad para listas */
+function chipPrivacidad(c) {
+  if (!esPrivada(c)) return "";
+  const mio = membresias().some(m => m.ministerio_id === c.ministerio_id) || !D.nube;
+  const n = (c.compartida_con || []).length;
+  return mio ? `<span class="chip priv" title="Solo la ve ${esc(nombreMin(c.ministerio_id))}${n ? " y " + n + " ministerio(s) más" : ""}">🔒 ${esc(nombreMin(c.ministerio_id))}${n ? " +" + n : ""}</span>`
+    : `<span class="chip comp" title="Te la compartió ${esc(nombreMin(c.ministerio_id))}">↔ de ${esc(nombreMin(c.ministerio_id))}</span>`;
+}
+const canciones = () => D.lista("cif_canciones").filter(c => !c.borrada && veCancion(c)).sort((a, b) => a.titulo.localeCompare(b.titulo, "es", { sensitivity: "base" }));
 const tonosDe = cid => D.lista("cif_tonos").filter(t => t.cancion_id === cid);
 const miTono = cid => yo() && D.uno("cif_tonos", cid + "|" + yo().id);
 const tracksDe = cid => D.lista("cif_tracks").filter(t => t.cancion_id === cid).sort((a, b) => a.nombre.localeCompare(b.nombre));
@@ -595,7 +615,7 @@ function shell(band, main) {
     <div class="sidetop"><a class="sbrand" href="#libreria"><img src="favicon.png" width="34" height="34" alt=""><span><b>Cifrados</b><small>Tiempo de Dios</small></span></a>
       <button class="sidetoggle" id="ocultarLat" title="Ocultar menú (⌘\\)" aria-label="Ocultar menú">${IC.lado}</button>
       <button class="sideclose" id="cerrarMenu" aria-label="Cerrar menú">${IC.x}</button></div>
-    ${ms.length > 1 ? `<select class="minsel" id="minsel" aria-label="Ministerio">${ms.map(x => `<option value="${x.id}" ${m && x.id === m.id ? "selected" : ""}>${esc(x.nombre)}</option>`).join("")}</select>` : ""}
+    ${ms.length > 1 ? `<select class="minsel" id="minsel" aria-label="Ministerio">${ms.map(x => `<option value="${x.id}" ${m && x.id === m.id ? "selected" : ""}>${x.tipo === "solista" ? "🎤 " : ""}${esc(x.nombre)}</option>`).join("")}</select>` : ""}
     <nav class="areanav">
       <div class="sidesec">Música</div>
       ${nav("libreria", "libreria", "Librería", IC.lib, "--flame", canciones().length)}
@@ -728,11 +748,12 @@ function vLibreria() {
   if (st.fTags.length) lista = lista.filter(c => (c.etiquetas || []).some(t => st.fTags.includes(t)));
   if (st.fMio) lista = lista.filter(c => conMio.has(c.id));
   if (st.fPista) lista = lista.filter(c => conPista.has(c.id));
-  const hayFiltro = st.fArtista || st.fTono || st.fTags.length || st.fMio || st.fPista;
+  if (st.fPriv) lista = lista.filter(esPrivada);
+  const hayFiltro = st.fArtista || st.fTono || st.fTags.length || st.fMio || st.fPista || st.fPriv;
   const fila = c => {
     const mt = miTono(c.id);
     return `<li><a class="srow" href="#cancion/${c.id}"><div><b>${esc(c.titulo)}</b><small>${esc(c.autor || "—")}${(c.etiquetas || []).length ? " · " + esc(c.etiquetas.join(", ")) : ""}</small></div><span class="chips">
-      ${c.tono ? `<span class="chip tono">${esc(c.tono)}</span>` : ""}${mt ? `<span class="chip mio" title="Tu tono">★ ${esc(mt.tono)}</span>` : ""}${conPista.has(c.id) ? `<span class="chip pista">♫ pista</span>` : ""}${c.bpm ? `<span class="chip tono">${c.bpm} bpm</span>` : ""}</span></a></li>`;
+      ${chipPrivacidad(c)}${c.tono ? `<span class="chip tono">${esc(c.tono)}</span>` : ""}${mt ? `<span class="chip mio" title="Tu tono">★ ${esc(mt.tono)}</span>` : ""}${conPista.has(c.id) ? `<span class="chip pista">♫ pista</span>` : ""}${c.bpm ? `<span class="chip tono">${c.bpm} bpm</span>` : ""}</span></a></li>`;
   };
   let filas = "";
   if (st.tab === "liturgicas" && !q) {
@@ -760,6 +781,7 @@ function vLibreria() {
       <select class="fsel ${st.fTono ? "on" : ""}" id="fton" aria-label="Tono"><option value="">Cualquier tono</option>${tonosUsados.map(t => `<option ${t === st.fTono ? "selected" : ""}>${t}</option>`).join("")}</select>
       <button class="tchip ${st.fMio ? "on" : ""}" data-f="fMio">★ Con mi tono</button>
       <button class="tchip ${st.fPista ? "on" : ""}" data-f="fPista">♫ Con pista</button>
+      ${D.nube ? `<button class="tchip ${st.fPriv ? "on" : ""}" data-f="fPriv" title="Canciones de tu ministerio que no están en toda la librería, y las que otros te compartieron">🔒 Privadas y compartidas</button>` : ""}
       ${tags.map(t => `<button class="tchip ${st.fTags.includes(t) ? "on" : ""}" data-tag="${esc(t)}" style="--c:var(--sea)">#${esc(t)}</button>`).join("")}
       ${hayFiltro ? `<button class="tchip" id="flimpia" style="--c:var(--muted)">✕ Quitar filtros</button>` : ""}
     </div>
@@ -780,7 +802,7 @@ function vLibreria() {
       $("#fton").onchange = e => { st.fTono = e.target.value; e.target.blur(); render(); };
       $$("[data-f]").forEach(b => b.onclick = () => { st[b.dataset.f] = !st[b.dataset.f]; render(); });
       $$("[data-tag]").forEach(b => b.onclick = () => { const t = b.dataset.tag; st.fTags = st.fTags.includes(t) ? st.fTags.filter(x => x !== t) : st.fTags.concat(t); render(); });
-      const fl = $("#flimpia"); if (fl) fl.onclick = () => { st.fArtista = st.fTono = ""; st.fTags = []; st.fMio = st.fPista = false; render(); };
+      const fl = $("#flimpia"); if (fl) fl.onclick = () => { st.fArtista = st.fTono = ""; st.fTags = []; st.fMio = st.fPista = st.fPriv = false; render(); };
       [$("#imp"), $("#imp2")].forEach(b => b && (b.onclick = abrirImportar));
     },
   };
@@ -825,7 +847,8 @@ function vCancion(p) {
       ${D.nube ? `<button class="navbtn ${st.dirigir ? "on" : ""}" id="dirigir" title="Los demás ven la canción y sección que tú marques">📡 Dirigir</button><button class="navbtn ${st.seguir ? "on" : ""}" id="seguir" title="Abrir lo que marque quien dirige">${st.seguir ? '<span class="vivoind"><i></i>Siguiendo</span>' : "Seguir"}</button>` : ""}
       <button class="navbtn" id="prev" ${ctxSet.i <= 0 ? "disabled" : ""}>‹</button><button class="navbtn" id="next" ${ctxSet.i >= n - 1 ? "disabled" : ""}>›</button></div>`;
   }
-  const sub = [c.autor && `<span>${esc(c.autor)}</span>`, `<span>Original <b>${esc(original)}</b></span>`, c.bpm && `<span><b>${c.bpm}</b> bpm</span>`, c.compas && `<span><b>${esc(c.compas)}</b></span>`, capo ? `<span>Capo <b>${capo}</b> · formas de <b>${esc(forma)}</b></span>` : ""].filter(Boolean).join("");
+  const sub = [c.autor && `<span>${esc(c.autor)}</span>`, `<span>Original <b>${esc(original)}</b></span>`, c.bpm && `<span><b>${c.bpm}</b> bpm</span>`, c.compas && `<span><b>${esc(c.compas)}</b></span>`, capo ? `<span>Capo <b>${capo}</b> · formas de <b>${esc(forma)}</b></span>` : "",
+    esPrivada(c) && `<span>🔒 Solo <b>${esc(nombreMin(c.ministerio_id))}</b>${(c.compartida_con || []).length ? " · compartida con " + esc(c.compartida_con.map(nombreMin).join(", ")) : ""}</span>`].filter(Boolean).join("");
   const opTonos = C.TONOS.filter(t => t.endsWith("m") === original.endsWith("m")).map(t => `<option ${t === tono ? "selected" : ""}>${t}</option>`).join("");
 
   const main = `
@@ -840,6 +863,7 @@ function vCancion(p) {
     <button class="ctl" id="tesc" title="Modo escenario">⤢</button>
     <button class="ctl escx" id="tescx">Salir</button>
     <span class="sp" style="flex:1"></span>
+    ${D.nube && comparteCancion(c) ? `<button class="ctl noesc" id="tcomp" title="Elegir qué ministerios ven esta canción">↔ Compartir</button>` : ""}
     ${esMusico() ? `<a class="ctl noesc" href="#editar/${c.id}">✎ Editar</a>` : ""}
     <button class="ctl noesc" id="tprint" title="Imprimir o guardar PDF">⎙</button>
   </div>
@@ -887,6 +911,7 @@ function vCancion(p) {
       $("#tesc").onclick = () => { document.body.classList.add("escenario"); document.documentElement.requestFullscreen?.().catch(() => {}); };
       $("#tescx").onclick = () => { document.body.classList.remove("escenario"); if (document.fullscreenElement) document.exitFullscreen(); };
       $("#tprint").onclick = () => window.print();
+      const tc = $("#tcomp"); if (tc) tc.onclick = () => compartirCancion(c);
       $$("[data-ir]").forEach(b => b.onclick = () => { irSeccion(b.dataset.ir); if (st.dirigir && vivo) vivo.enviar({ i: ctxSet.i, sec: b.dataset.ir }); });
       $$("[data-tono]").forEach(b => b.onclick = () => { st.tonoVista[c.id] = b.dataset.tono; st.capo[c.id] = +b.dataset.capo; render(); if (rep.track && rep.auto) ajustarPitch(); });
       const vo = $("#votros"); if (vo) vo.onclick = () => { st.verOtros = true; render(); };
@@ -1249,7 +1274,7 @@ function vEditor(id) {
   const base = id ? D.uno("cif_canciones", id) : null;
   if (id && !base) return { band: bandHTML({ titulo: "No encontré esa canción" }), main: "" };
   if (!esMusico()) return { band: bandHTML({ titulo: "Sin permiso" }), main: `<p>Solo músicos y admins editan la librería.</p>` };
-  if (!ed || ed.id !== (id || "nueva")) ed = { id: id || "nueva", c: base ? { ...base } : { titulo: "", autor: "", tono: "G", bpm: null, compas: "4/4", contenido: "", orden: [], etiquetas: [], liga: "", notas: "" }, paso: base ? "acordes" : "letra", sel: null };
+  if (!ed || ed.id !== (id || "nueva")) ed = { id: id || "nueva", c: base ? { compartida_con: [], visibilidad: "todos", ...base } : { titulo: "", autor: "", tono: "G", bpm: null, compas: "4/4", contenido: "", orden: [], etiquetas: [], liga: "", notas: "", ministerio_id: minActual() ? minActual().id : null, visibilidad: D.nube && minActual() ? "ministerio" : "todos", compartida_con: [] }, paso: base ? "acordes" : "letra", sel: null };
   st.editando = true;
   const c = ed.c;
   const main = `
@@ -1262,6 +1287,7 @@ function vEditor(id) {
       <label class="lb">Liga de referencia<input class="field" id="elig" value="${esc(c.liga || "")}" placeholder="Spotify o YouTube"></label>
     </div>
     <div class="lb">Etiquetas <small>una canción puede estar en varias; «Litúrgica» la manda a esa pestaña. Para Tiempo de Dios escribe «Tiempo de Dios» en Autor.</small><div id="etags">${etiquetasHTML()}</div></div>
+    <div class="lb">¿Quién la ve? <small>Las canciones nuevas pueden quedarse en tu ministerio y compartirse con los que tú elijas.</small><div id="evis">${visibilidadHTML()}</div></div>
     <div class="ed-pasos">${[["letra", "1 · Letra"], ["acordes", "2 · Acordes"], ["orden", "3 · Orden"], ["texto", "Texto ChordPro"]].map(([k, l]) => `<button class="tchip ${ed.paso === k ? "on" : ""}" data-paso="${k}">${l}</button>`).join("")}</div>
     <div class="ed-cols">
       <div id="edpanel">${panelEditor()}</div>
@@ -1280,6 +1306,30 @@ function etiquetasHTML() {
   return `<div class="row" style="gap:6px">${sel.map(t => `<button class="tchip on" data-qtag="${esc(t)}" style="--c:var(--sea)" title="Quitar">#${esc(t)} ✕</button>`).join("")}
     <input class="fsel" id="etagin" placeholder="＋ Etiqueta y Enter" style="width:170px"></div>
     <div class="row" style="gap:6px;margin-top:6px">${todas.filter(t => !sel.some(s => norm(s) === norm(t))).slice(0, 18).map(t => `<button class="tchip" data-ptag="${esc(t)}" style="--c:var(--sea)">＋ ${esc(t)}</button>`).join("")}</div>`;
+}
+/** Ventana para compartir una canción con otros ministerios (o abrirla a toda la librería). */
+async function compartirCancion(c) {
+  const otros = D.lista("cif_ministerios").filter(m => m.id !== c.ministerio_id).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  const comp = new Set(c.compartida_con || []);
+  const d = await dialogo(`<h2>Compartir «${esc(c.titulo)}»</h2>
+    <p>${c.ministerio_id ? `Es de <b>${esc(nombreMin(c.ministerio_id))}</b>.` : "No tiene ministerio de origen."} Elige quién la ve.</p>
+    <label class="row" style="font-weight:700"><input type="radio" name="vis" value="todos" ${!esPrivada(c) ? "checked" : ""}> 🌐 Toda la librería (todos los ministerios)</label>
+    <label class="row" style="font-weight:700"><input type="radio" name="vis" value="ministerio" ${esPrivada(c) ? "checked" : ""} ${c.ministerio_id ? "" : "disabled"}> 🔒 Solo ${esc(c.ministerio_id ? nombreMin(c.ministerio_id) : "su ministerio")} y estos:</label>
+    <div class="compchk">${otros.map(m => `<label><input type="checkbox" name="m_${m.id}" ${comp.has(m.id) ? "checked" : ""}> ${esc(m.nombre)}${m.tipo === "solista" ? ' <small class="status">solista</small>' : ""}</label>`).join("") || `<span class="status">No hay otros ministerios.</span>`}</div>`, "Guardar");
+  if (!d) return;
+  const elegidos = otros.filter(m => d["m_" + m.id]).map(m => m.id);
+  const nueva = { ...c, visibilidad: d.vis || (esPrivada(c) ? "ministerio" : "todos"), compartida_con: elegidos };
+  await D.guardar("cif_canciones", nueva);
+  toast(nueva.visibilidad === "todos" ? "Ahora la ve toda la librería." : elegidos.length ? `Compartida con ${elegidos.map(nombreMin).join(", ")}.` : `Solo la ve ${nombreMin(c.ministerio_id)}.`);
+}
+/** Toda la librería / solo un ministerio + compartir con otros */
+function visibilidadHTML() {
+  const c = ed.c, priv = esPrivada(c), mis = misMins();
+  const otros = D.lista("cif_ministerios").filter(m => m.id !== c.ministerio_id).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  const comp = c.compartida_con || [];
+  return `<div class="seg" role="radiogroup" style="align-self:flex-start"><button type="button" class="${!priv ? "on" : ""}" data-vis="todos">🌐 Toda la librería</button><button type="button" class="${priv ? "on" : ""}" data-vis="ministerio" ${mis.length ? "" : "disabled"}>🔒 Solo un ministerio</button></div>
+    ${priv ? `<div class="row" style="gap:8px;margin-top:8px"><span style="font-weight:700;font-size:13px">De</span><select class="fsel" id="evmin">${mis.map(m => `<option value="${m.id}" ${m.id === c.ministerio_id ? "selected" : ""}>${esc(m.nombre)}${m.tipo === "solista" ? " (solista)" : ""}</option>`).join("")}</select></div>
+      <div class="row" style="gap:6px;margin-top:8px"><span style="font-weight:700;font-size:13px">Compartir con</span>${otros.map(m => `<button type="button" class="tchip ${comp.includes(m.id) ? "on" : ""}" data-comp="${m.id}" style="--c:var(--sea)">${comp.includes(m.id) ? "✓ " : "＋ "}${esc(m.nombre)}</button>`).join("") || `<span class="status">No hay otros ministerios.</span>`}</div>` : ""}`;
 }
 function panelEditor() {
   const c = ed.c;
@@ -1373,6 +1423,13 @@ function enlazarEditor(base) {
     const it = $("#etagin"); it.onkeydown = ev => { if (ev.key === "Enter" || ev.key === ",") { ev.preventDefault(); const v = it.value.trim().replace(/^#/, ""); if (v && !c.etiquetas.some(t => norm(t) === norm(v))) c.etiquetas = c.etiquetas.concat(v); $("#etags").innerHTML = etiquetasHTML(); enlazarTags(); $("#etagin").focus(); } };
   };
   c.etiquetas = c.etiquetas || []; enlazarTags();
+  const enlazarVis = () => {
+    const box = $("#evis"), pinta = () => { box.innerHTML = visibilidadHTML(); enlazarVis(); };
+    $$("[data-vis]", box).forEach(b => b.onclick = () => { c.visibilidad = b.dataset.vis; if (c.visibilidad === "ministerio" && !c.ministerio_id) c.ministerio_id = (minActual() || {}).id || null; pinta(); });
+    const sm = $("#evmin", box); if (sm) sm.onchange = () => { c.ministerio_id = sm.value; c.compartida_con = (c.compartida_con || []).filter(x => x !== sm.value); pinta(); };
+    $$("[data-comp]", box).forEach(b => b.onclick = () => { const id = b.dataset.comp; c.compartida_con = (c.compartida_con || []).includes(id) ? c.compartida_con.filter(x => x !== id) : (c.compartida_con || []).concat(id); pinta(); });
+  };
+  enlazarVis();
   campo("#etit", "titulo"); campo("#eaut", "autor"); campo("#ebpm", "bpm", v => +v || null); campo("#ecom", "compas"); campo("#elig", "liga"); campo("#enot", "notas");
   $("#eton").onchange = e => { c.tono = e.target.value; ed.sel = null; repintar(); $$(".preview .chip").forEach(x => x.textContent = c.tono); };
   $$("[data-paso]").forEach(b => b.onclick = () => { ed.paso = b.dataset.paso; $$("[data-paso]").forEach(x => x.classList.toggle("on", x === b)); repintar(); });
@@ -1419,7 +1476,8 @@ function enlazarEditor(base) {
   $("#eguardar").onclick = async () => {
     if (!c.titulo.trim()) { $("#etit").focus(); return toast("Ponle título a la canción."); }
     const fila = { ...c, titulo: c.titulo.trim(), autor: (c.autor || "").trim(), origen: c.origen || "manual" };
-    if (!base) { fila.ministerio_id = minActual() ? minActual().id : null; }
+    if (!base && !fila.ministerio_id) fila.ministerio_id = minActual() ? minActual().id : null;
+    if (fila.visibilidad === "ministerio" && !fila.ministerio_id) return toast("Elige de qué ministerio es la canción.");
     const r = await D.guardar("cif_canciones", fila);
     st.editando = false; const id = r.id; ed = null; toast("Canción guardada para todos."); location.hash = "#cancion/" + id;
   };
@@ -1483,9 +1541,11 @@ function vMinisterios() {
         ${soy ? `<span class="chip">Tú: ${esc(ROL_TXT[membresias().find(x => x.ministerio_id === m.id).rol] || "")}</span>` : ""}
         <span class="chip ${vigente ? "pista" : ""}">${vigente ? "Suscripción hasta " + esc(m.suscripcion_hasta) : "Sin suscripción"}</span>
         <span class="chip">${miem.length} integrante${miem.length === 1 ? "" : "s"}</span>
+        ${m.tipo === "solista" ? `<span class="chip solista">🎤 Solista</span>` : ""}
       </div>
-      <p class="status" style="margin:8px 0 0">Admin: ${admins.length ? admins.map(a => esc(nombreDe(a.persona_id))).join(", ") : "nadie todavía"}</p>
+      <p class="status" style="margin:8px 0 0">${m.tipo === "solista" ? "Artista" : "Admin"}: ${admins.length ? admins.map(a => esc(nombreDe(a.persona_id))).join(", ") : "nadie todavía"}</p>
       ${dev ? `<div class="minadmin">
+          <select class="fsel" data-mtipo="${m.id}" aria-label="Tipo"><option value="ministerio" ${m.tipo !== "solista" ? "selected" : ""}>Ministerio</option><option value="solista" ${m.tipo === "solista" ? "selected" : ""}>🎤 Solista</option></select>
           <label class="row" style="font-size:13px;font-weight:700;gap:6px">Suscripción hasta <input type="date" class="fsel" data-susc="${m.id}" value="${esc(m.suscripcion_hasta || "")}"></label>
           <select class="fsel" data-nombra="${m.id}" aria-label="Nombrar admin"><option value="">＋ Nombrar admin…</option>${optPersonas(new Set(admins.map(a => a.persona_id)))}</select>
           <span class="sp"></span><button class="btn xs ghost" data-mborrar="${m.id}">Borrar ministerio</button></div>` : ""}
@@ -1507,9 +1567,10 @@ function vMinisterios() {
         <li>Un admin de tu ministerio (o el desarrollador) te acepta y te llega un correo.</li></ol>
         <p>Mientras, ya puedes usar la librería y guardar tus tonos.</p></section>` : ""}
       ${porRevisar.length ? `<section class="caja solic"><h3>Solicitudes por revisar (${porRevisar.length})</h3><ul class="miembros">${porRevisar.map(filaSol).join("")}</ul></section>` : ""}
-      ${dev ? `<form class="caja" id="fmin"><h3>Nuevo ministerio</h3><p>Solo tú das de alta ministerios. Después, sus integrantes crean su cuenta y piden entrar; tú o el admin que nombres los aceptan.</p>
-        <div class="ualta"><input class="field" name="nombre" placeholder="Kairós, Un Corazón…" required>
-          <select class="field" name="admin"><option value="">Admin: lo nombro después</option>${optPersonas()}</select>
+      ${dev ? `<form class="caja" id="fmin"><h3>Nuevo ministerio</h3><p>Solo tú das de alta ministerios. Un <b>solista</b> también es un ministerio (p. ej. ARIA de Ceci): tiene sus sets, sus canciones nuevas y puede sumar a su banda. Después, los integrantes crean su cuenta y piden entrar; tú o el admin los aceptan.</p>
+        <div class="ualta"><input class="field" name="nombre" placeholder="Kairós, ARIA…" required>
+          <select class="field" name="tipo"><option value="ministerio">Ministerio (grupo)</option><option value="solista">🎤 Solista</option></select>
+          <select class="field" name="admin"><option value="">Admin / artista: lo nombro después</option>${optPersonas()}</select>
           <label class="field" style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px">Suscripción hasta <input type="date" name="susc" style="border:0;background:none;flex:1;min-width:0"></label>
           <button class="btn">Crear ministerio</button></div></form>` : ""}
       ${dev ? (todos.length ? `<h2 class="status">TODOS LOS MINISTERIOS (${todos.length})</h2>${todos.map(card).join("")}` : "")
@@ -1518,12 +1579,13 @@ function vMinisterios() {
     after() {
       const fm = $("#fmin"); if (fm) fm.onsubmit = async e => {
         e.preventDefault();
-        const n = fm.nombre.value.trim(); if (!n) return;
-        const m = await D.guardar("cif_ministerios", { nombre: n, codigo: Math.random().toString(36).slice(2, 8).toUpperCase(), color: "flame", creado_por: yo().id, suscripcion_hasta: fm.susc.value || null });
-        if (fm.admin.value) await D.guardar("cif_miembros", { ministerio_id: m.id, persona_id: fm.admin.value, rol: "admin" });
+        const n = fm.nombre.value.trim(), tipo = fm.tipo.value, adminId = fm.admin.value; if (!n) return;
+        const m = await D.guardar("cif_ministerios", { nombre: n, tipo, codigo: Math.random().toString(36).slice(2, 8).toUpperCase(), color: "flame", creado_por: yo().id, suscripcion_hasta: fm.susc.value || null });
+        if (adminId) await D.guardar("cif_miembros", { ministerio_id: m.id, persona_id: adminId, rol: "admin" });
         st.min = m.id; ls.set("cifrados-min", m.id); fm.reset();
-        toast(`Ministerio «${n}» creado${fm.admin.value ? " con su admin" : ""}.`);
+        toast(`${tipo === "solista" ? "Solista" : "Ministerio"} «${n}» creado${adminId ? " con " + nombreDe(adminId) + " como admin" : ""}.`);
       };
+      $$("[data-mtipo]").forEach(x => x.onchange = () => { const m = D.uno("cif_ministerios", x.dataset.mtipo); x.blur(); D.guardar("cif_ministerios", { ...m, tipo: x.value }); });
       $$("[data-mnom]").forEach(x => x.onchange = () => { const m = D.uno("cif_ministerios", x.dataset.mnom), v = x.value.trim(); x.blur(); if (!v) { x.value = m.nombre; return; } D.guardar("cif_ministerios", { ...m, nombre: v }); toast("Nombre actualizado."); });
       $$("[data-susc]").forEach(x => x.onchange = () => { const m = D.uno("cif_ministerios", x.dataset.susc); x.blur(); D.guardar("cif_ministerios", { ...m, suscripcion_hasta: x.value || null }); });
       $$("[data-nombra]").forEach(x => x.onchange = async () => {
@@ -1926,7 +1988,7 @@ function dialogo(html, ok = "Aceptar", conArchivos = false) {
     dl.addEventListener("cancel", () => fin(null));
     f.onsubmit = e => {
       e.preventDefault(); const out = {};
-      $$("input,select,textarea", f).forEach(x => { if (!x.name) return; out[x.name] = x.type === "checkbox" ? x.checked : x.type === "file" ? [...x.files] : x.value.trim(); });
+      $$("input,select,textarea", f).forEach(x => { if (!x.name) return; if (x.type === "radio") { if (x.checked) out[x.name] = x.value; return; } out[x.name] = x.type === "checkbox" ? x.checked : x.type === "file" ? [...x.files] : x.value.trim(); });
       fin(out);
     };
     dl.showModal(); const pri = f.querySelector("input:not([type=checkbox]),select"); if (pri) pri.focus();
