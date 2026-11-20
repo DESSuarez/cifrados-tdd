@@ -265,5 +265,15 @@ do $$ declare t text; begin
   end loop;
 end $$;
 
+-- =====================================================================
+-- Permisos de la API: en proyectos nuevos de Supabase las tablas creadas por SQL no se exponen solas.
+-- Solo las personas con sesión (authenticated) usan las tablas; la RLS decide qué filas.
+-- =====================================================================
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on cif_perfiles, cif_ministerios, cif_miembros, cif_canciones, cif_tonos, cif_sets, cif_tracks, cif_solicitudes, cif_amistades to authenticated;
+grant execute on function cif_super(), cif_rol(uuid), cif_es_musico(), cif_suscrito(), cif_buscar_persona(text) to authenticated;
+revoke all on cif_perfiles, cif_ministerios, cif_miembros, cif_canciones, cif_tonos, cif_sets, cif_tracks, cif_solicitudes, cif_amistades from anon;
+revoke execute on function cif_buscar_persona(text) from anon;
+
 -- Primer superadmin (cambia el correo y corre esta línea):
 -- update cif_perfiles set superadmin = true where id = (select id from auth.users where email = 'tu-correo@tiempodedios.mx');

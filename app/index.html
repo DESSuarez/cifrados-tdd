@@ -419,6 +419,8 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 @media (max-width:700px){.ucard{grid-template-columns:auto 1fr}.uacc{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}}
 .xmini{border:0;background:none;color:var(--muted);padding:0 0 0 4px;font-size:11px;cursor:pointer}
 .xmini:hover{color:var(--flame)}
+.perfilcampos{align-items:start}
+.perfilcampos .lb small{font-size:12.5px;margin-top:-2px}
 .ualta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
 </style>
 </head>
@@ -1639,10 +1641,10 @@ function vAjustes() {
   return {
     band: bandHTML({ tag: "Perfil", titulo: "Mi perfil y <em>estilo</em>", sub: `<span>${esc((yo() && yo().email) || "")}</span>` }),
     main: `
-      <section class="caja"><h3>Perfil</h3><div class="grid2">
-        <label class="lb">Nombre<input class="field" id="pnom" value="${esc(p.nombre || "")}"></label>
-        <label class="lb">@usuario <small>para que tus amigos te encuentren</small><input class="field" id="pusr" value="${esc(p.usuario || "")}" placeholder="ceci.tdd" autocapitalize="off"></label>
-        <label class="lb">Voz o instrumento<input class="field" id="pvoz" value="${esc(p.voz || "")}" placeholder="Tenor, guitarra…"></label></div>
+      <section class="caja"><h3>Perfil</h3><div class="grid2 perfilcampos">
+        <label class="lb">Nombre<input class="field" id="pnom" value="${esc(p.nombre || "")}" autocomplete="name"></label>
+        <label class="lb">@usuario<input class="field" id="pusr" value="${esc(p.usuario || "")}" placeholder="ceci.tdd" autocapitalize="off" autocomplete="off" spellcheck="false" data-1p-ignore data-lpignore="true"><small>Para que tus amigos te encuentren</small></label>
+        <label class="lb">Voz o instrumento<input class="field" id="pvoz" value="${esc(p.voz || "")}" placeholder="Tenor, guitarra…" autocomplete="off" data-1p-ignore data-lpignore="true"></label></div>
         <label class="row" style="margin-top:12px;font-weight:700"><input type="checkbox" id="part" ${p.artista ? "checked" : ""}> Dirijo o canto: quiero guardar mis tonos</label>
         <div class="row" style="margin-top:12px"><a class="btn sm" href="#persona/yo">★ Mis tonos (${nMis})</a><a class="btn sm ghost" href="#amigos">Amigos</a></div></section>
       <section class="caja"><h3>Cómo se ven los cifrados</h3>

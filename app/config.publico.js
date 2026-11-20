@@ -2,5 +2,5 @@
    Vacío = modo local: la app funciona en un solo dispositivo, sin cuentas. */
 window.CIFRADOS_CONFIG = {
   supabaseUrl: "https://sowyyhpjkjfporcieubu.supabase.co",
-  supabaseAnonKey: "",
+  supabaseAnonKey: "sb_publishable_SSUY93NeJrxHIVMF18XZNA_D0geGslI",
 };
