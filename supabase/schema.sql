@@ -398,5 +398,15 @@ do $$ begin
   alter table cif_ministerios add constraint cif_ministerios_logo_tam check (logo is null or length(logo) < 400000);
 exception when duplicate_object then null; end $$;
 
+-- =====================================================================
+-- Versión 9: portada del perfil (= migraciones/008)
+-- =====================================================================
+
+alter table cif_perfiles add column if not exists portada text;  -- data:image/jpeg;base64,…#y=0…100
+
+do $$ begin
+  alter table cif_perfiles add constraint cif_perfiles_portada_tam check (portada is null or length(portada) < 600000);
+exception when duplicate_object then null; end $$;
+
 -- Primer superadmin (cambia el correo y corre esta línea):
 -- update cif_perfiles set superadmin = true where id = (select id from auth.users where email = 'tu-correo@tiempodedios.mx');

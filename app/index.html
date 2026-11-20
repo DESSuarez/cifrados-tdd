@@ -121,8 +121,49 @@ img.av{object-fit:cover;background:var(--surface)}
 .fotobtn{position:relative;cursor:pointer;border-radius:50%}
 .fotobtn>span:last-of-type:not(.av){position:absolute;right:-2px;bottom:-2px;width:30px;height:30px;border-radius:50%;background:var(--bg);border:1.5px solid var(--line);display:grid;place-items:center;font-size:14px}
 .fotobtn:hover .av{filter:brightness(.92)}
-.carta{display:flex;gap:18px;align-items:flex-start;padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:var(--surface);flex-wrap:wrap}
-.carta>div{flex:1;min-width:220px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+/* Carta de presentación (como el perfil de la Bitácora) */
+.pcarta{border:1.5px solid var(--line);border-radius:18px;background:var(--surface);overflow:hidden}
+.pcover{height:170px;position:relative;background-size:cover;background-repeat:no-repeat}
+.pcover::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.18));pointer-events:none}
+.pcover.conimg::after{background:linear-gradient(180deg,rgba(0,0,0,.28),transparent 45%,rgba(0,0,0,.25))}
+.pcover.ajustando{cursor:grab;touch-action:none;box-shadow:inset 0 0 0 3px var(--baby)}
+.pcover.ajustando:active{cursor:grabbing}
+.pcoveracts{position:absolute;left:16px;top:14px;z-index:3;display:flex;gap:6px;flex-wrap:wrap}
+.pcoverbtn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:99px;border:0;background:rgba(27,28,26,.55);color:#fff;font:700 13px var(--body);cursor:pointer;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pcoverbtn:hover{background:rgba(27,28,26,.8)}
+.pcoverbtn.ok{background:#fff;color:#1B1C1A}
+.pcoverhint{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:99px;background:rgba(27,28,26,.55);color:#fff;font-size:13px;font-weight:700}
+.pmarca{position:absolute;right:20px;top:16px;z-index:1;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.85)}
+.pcarta .pbody{display:flex;align-items:flex-end;gap:26px;padding:0 28px;margin-top:-84px;position:relative;z-index:2;flex-wrap:wrap}
+.pfoto{position:relative;flex:none}
+.av.xxl{width:176px;height:176px;font-size:64px;border:6px solid var(--surface);box-shadow:0 10px 30px rgba(0,0,0,.22);box-sizing:content-box}
+.pfotobtn{position:absolute;right:8px;bottom:10px;width:44px;height:44px;border-radius:50%;background:var(--fg);color:var(--bg);display:grid;place-items:center;cursor:pointer;border:3px solid var(--surface);box-shadow:0 4px 12px rgba(0,0,0,.2);font-size:18px}
+.pfotobtn:hover{background:var(--flame);color:#fff}
+.pcarta .pinfo{display:flex;flex-direction:column;gap:6px;min-width:240px;flex:1;padding:96px 0 4px}
+.pcarta .pinfo h2{margin:0;font:900 34px var(--display);font-stretch:108%;line-height:1.1}
+.pcarta .u{font-family:var(--mono);font-size:14px;color:var(--muted)}
+.pcarta .prol{font-weight:800;font-size:15px}
+.pchips{display:flex;flex-wrap:wrap;gap:6px}
+.pchips .chip{text-decoration:none;font-weight:800}
+.pcarta .mail{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.pcarta .pbio{padding:22px 28px 4px}
+.pcarta .pbio h3{margin:0 0 6px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.pcarta .pbio p{margin:0;font-size:16px;line-height:1.6;white-space:pre-wrap;max-width:68ch}
+.pcarta .pbio p.vacio{color:var(--muted);font-size:14px}
+.pcarta .pacts{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 28px 0}
+.pcarta>:last-child{padding-bottom:24px}
+.pcarta .favs{display:flex;flex-direction:column;gap:6px;width:100%}
+@media (max-width:640px){
+  .pcover{height:120px}
+  .pcoverbtn span{display:none}.pcoverbtn{padding:0 10px}
+  .pmarca{display:none}
+  .pcarta .pbody{flex-direction:column;align-items:center;text-align:center;margin-top:-80px;gap:12px;padding:0 18px}
+  .pcarta .pinfo{padding:0;align-items:center;min-width:0;width:100%}
+  .pcarta .pinfo h2{font-size:28px}
+  .pchips{justify-content:center}
+  .av.xxl{width:148px;height:148px;font-size:54px}
+  .pcarta .pbio,.pcarta .pacts{padding-left:18px;padding-right:18px}
+}
 .bio{margin:0;font-size:15.5px;line-height:1.55;white-space:pre-wrap}
 .favs{display:flex;flex-direction:column;gap:6px}.favs>b{font-size:13px}
 .chip.fav{background:var(--rosa-soft);color:var(--rosa-ink);border-color:transparent;text-decoration:none;height:28px;padding:0 12px;font-size:12.5px}
@@ -204,7 +245,8 @@ img.av{object-fit:cover;background:var(--surface)}
 .band .wrap{padding-block:44px 0;display:flex;flex-direction:column;gap:18px}
 .brandrow{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#C9D2D1}
 .bandnav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.atras{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:99px;border:1.5px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06);color:#fff;font:800 13px var(--body);cursor:pointer}
+.bandnav .atras,.bandnav .areatag{height:30px;box-sizing:border-box;align-self:center}
+.atras{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:6px;border:1.5px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06);color:#fff;font:800 13px var(--body);cursor:pointer}
 .atras:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.5)}
 .areatag{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:var(--area);color:var(--on-area);font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px 4px 8px;border-radius:6px;line-height:1.2}
 .areatag svg{width:14px;height:14px}
@@ -268,9 +310,9 @@ dialog::backdrop{background:rgba(0,0,0,.5)}
 
 /* ---------- Librería ---------- */
 .buscador{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.buscador #q{flex:1 1 280px;max-width:480px}
-.buscador #lpdf{margin-left:auto}
-@media (max-width:640px){.buscador #q{flex-basis:100%;max-width:none}.buscador .btn{flex:1;padding-inline:10px}.buscador #lpdf{margin-left:0}}
+.buscador #q{flex:1 1 280px}
+.buscador .btn{flex:0 0 132px;justify-content:center;padding-inline:10px}
+@media (max-width:640px){.buscador #q{flex-basis:100%}.buscador .btn{flex:1 1 0;min-width:0}}
 .letra-h{font:500 12px var(--mono);letter-spacing:.12em;color:var(--muted);padding:14px 4px 6px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:2}
 .songs{list-style:none;margin:0;padding:0}
 .srow{display:flex;align-items:center;gap:12px;padding:12px 6px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}
@@ -458,6 +500,17 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 input[type=date].fsel{padding:0 12px;color:var(--fg);font-family:var(--mono);font-weight:500;color-scheme:light dark}
 input[type=date].fsel::-webkit-calendar-picker-indicator{opacity:.6;cursor:pointer}
 .mincard{display:flex;flex-direction:column}
+.qtit{margin:0;font:900 28px var(--display);font-stretch:108%}
+.qsub{margin:4px 0 0;color:var(--muted)}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.mtarj{border:1.5px solid var(--line);border-top:6px solid var(--c);border-radius:16px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;background:var(--bg);cursor:pointer;transition:border-color .15s,transform .15s}
+.mtarj:hover,.mtarj:focus-visible{border-color:var(--c);outline:none;transform:translateY(-2px)}
+.mtarj b{font-size:17px;font-weight:800}
+.mtarj>span{font-size:13px;color:var(--muted)}
+.mtarj .u,.mtarj .n{font-family:var(--mono);font-size:12.5px}
+.mtarj .bio{margin:0;font-size:12.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4}
+.mtarj .chip{margin-top:2px}
+.mlogoxl{width:84px;height:84px;border-radius:50%;object-fit:cover;display:grid;place-items:center;color:#fff;font:900 30px var(--display);margin-bottom:4px;background:var(--surface)}
 .avisomin{display:block;padding:12px 16px;border-radius:12px;background:var(--flame-soft);color:var(--fg);text-decoration:none;border-left:5px solid var(--flame)}
 .avisomin:hover{filter:brightness(.97)}
 .chip.priv{background:var(--lav-soft);color:var(--lav-ink);border-color:transparent}
@@ -550,15 +603,17 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=15"></script>
-<script src="cifrado.js?v=15"></script>
-<script src="senas.js?v=15"></script>
-<script src="datos.js?v=15"></script>
-<script src="pdf.js?v=15"></script>
+<script src="config.publico.js?v=16"></script>
+<script src="cifrado.js?v=16"></script>
+<script src="senas.js?v=16"></script>
+<script src="datos.js?v=16"></script>
+<script src="pdf.js?v=16"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+/** Pasa todos los acordes del texto ChordPro «semis» semitonos (respeta [*Bm] con acento; no toca [*x2] ni marcas de ritmo). */
+const transportaTexto = (t, semis, bem) => String(t || "").replace(/\[(\*?)([^\]]+)\]/g, (m, ac, a) => (C.esAcorde(a) ? `[${ac}${C.transportaAcorde(a, semis, bem)}]` : m));
 const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const ls = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 function toast(msg) { $$(".toast").forEach(x => x.remove()); const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2800); }
@@ -620,18 +675,93 @@ function avatar(x, respaldo, clase = "") {
   const n = (p && p.nombre) || respaldo || (typeof x === "string" ? nombreDe(x) : "?");
   return p && p.foto ? `<img class="av ${clase}" src="${esc(p.foto)}" alt="${esc(n)}">` : `<span class="av ${clase}">${esc(iniciales(n))}</span>`;
 }
-/** Recorta al centro y comprime la foto a 192×192 JPEG (≈10 KB) para guardarla dentro del perfil. */
+/** Recorta al centro y comprime la foto a 360×360 JPEG (≈30 KB) para guardarla dentro del perfil (se ve grande en la carta). */
 function fotoChica(archivo) {
   return new Promise((ok, mal) => {
     const img = new Image(), url = URL.createObjectURL(archivo);
     img.onload = () => {
-      const lado = Math.min(img.width, img.height), c = document.createElement("canvas"); c.width = c.height = 192;
-      c.getContext("2d").drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, 192, 192);
+      const lado = Math.min(img.width, img.height), c = document.createElement("canvas"); c.width = c.height = 360;
+      c.getContext("2d").drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, 360, 360);
       URL.revokeObjectURL(url); ok(c.toDataURL("image/jpeg", 0.82));
     };
     img.onerror = () => { URL.revokeObjectURL(url); mal(new Error("No pude leer esa imagen.")); };
     img.src = url;
   });
+}
+/** Portada del perfil: JPEG de máx. 1200 px de ancho (≈150 KB). La posición vertical va al final como «#y=0…100». */
+function portadaChica(archivo) {
+  return new Promise((ok, mal) => {
+    const img = new Image(), url = URL.createObjectURL(archivo);
+    img.onload = () => {
+      const k = Math.min(1, 1200 / img.width), c = document.createElement("canvas");
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      let q = 0.78, d = c.toDataURL("image/jpeg", q);
+      while (d.length > 560000 && q > 0.4) d = c.toDataURL("image/jpeg", (q -= 0.08));
+      ok(d);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); mal(new Error("No pude leer esa imagen.")); };
+    img.src = url;
+  });
+}
+const portadaSrc = v => (v ? String(v).split("#")[0] : null);
+const portadaY = v => { const x = /#y=(\d+)/.exec(v || ""); return x ? Math.min(100, +x[1]) : 50; };
+/** Texto blanco u oscuro según el color de fondo (para los chips de ministerio). */
+function tintaSobre(hex) {
+  const h = String(hex || "").replace("#", ""); if (h.length !== 6) return "#fff";
+  const [r, g, b] = [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16));
+  return 0.299 * r + 0.587 * g + 0.114 * b > 160 ? "#1B1C1A" : "#fff";
+}
+/** Carta de presentación (como el perfil de la Bitácora): portada, foto grande, nombre, @usuario, rol, ministerios y «Sobre mí».
+ *  op: {mio: es mi perfil (se puede cambiar foto y portada), email, extra: HTML al final} */
+function cartaPerfil(p, op = {}) {
+  const ms = D.lista("cif_miembros").filter(x => x.persona_id === p.id).map(x => ({ x, m: D.uno("cif_ministerios", x.ministerio_id) })).filter(o => o.m)
+    .sort((a, b) => a.m.nombre.localeCompare(b.m.nombre));
+  const m0 = ms.length ? ms[0].m : null;
+  const c1 = (m0 && m0.color_primario) || "#FF3D1A", c0 = (m0 && m0.color_oscuro) || "#1B1C1A", c2 = (m0 && m0.color_secundario) || "#98D5E0";
+  const por = portadaSrc(p.portada), y = portadaY(p.portada);
+  const fondo = por ? `background-image:url('${esc(por)}');background-position:center ${y}%` : `background:linear-gradient(120deg,${esc(c1)} 0%,${esc(c0)} 62%,${esc(c2)} 130%)`;
+  const rol = p.superadmin ? "Desarrollador web" : ms.some(o => o.x.rol === "admin") ? "Admin de ministerio" : p.artista ? "Dirige o canta" : "Músico";
+  return `<section class="pcarta">
+    <div class="pcover${por ? " conimg" : ""}" id="pcover" style="${fondo}">
+      ${op.mio ? `<div class="pcoveracts" id="pcoveracts"><label class="pcoverbtn">📷 <span>${por ? "Cambiar portada" : "Poner portada"}</span><input type="file" id="pport" accept="image/*" hidden></label>${por ? `<button type="button" class="pcoverbtn" id="pportaj">↕ <span>Ajustar</span></button><button type="button" class="pcoverbtn" id="pportq">Quitar</button>` : ""}</div>` : ""}
+      <span class="pmarca">Tiempo de Dios</span></div>
+    <div class="pbody">
+      <div class="pfoto">${avatar(p, op.email, "xxl")}${op.mio ? `<label class="pfotobtn" title="Cambiar foto" aria-label="Cambiar foto">📷<input type="file" id="pfoto" accept="image/*" hidden></label>` : ""}</div>
+      <div class="pinfo"><h2>${esc(p.nombre || "Sin nombre")}</h2>
+        ${p.usuario ? `<span class="u">@${esc(p.usuario)}</span>` : op.mio ? `<span class="u">Aún sin @usuario</span>` : ""}
+        <b class="prol">${esc(rol)}${p.voz ? " · " + esc(p.voz) : ""}</b>
+        <div class="pchips">${ms.map(o => { const c = o.m.color_primario || "#FF3D1A"; return `<a class="chip" href="#ministerio/${o.m.id}" style="background:${esc(c)};color:${tintaSobre(c)};border-color:transparent">${o.m.tipo === "solista" ? "🎤 " : ""}${esc(o.m.nombre)}${o.x.rol === "admin" ? " · Admin" : ""}</a>`; }).join("") || (op.mio ? `<a class="chip" href="#ministerios">Sin ministerio · pedir entrar</a>` : "")}</div>
+        ${op.email ? `<a class="mail" href="mailto:${esc(op.email)}">${esc(op.email)}</a>` : ""}</div></div>
+    <div class="pbio"><h3>Sobre mí</h3>${p.bio ? `<p>${esc(p.bio)}</p>` : `<p class="vacio">${op.mio ? "Aún no escribes tu descripción: agrégala abajo, en «Mis datos»." : "Sin descripción."}</p>`}</div>
+    ${op.mio && p.foto ? `<div class="pacts"><button type="button" class="btn xs ghost" id="pfotoq">Quitar foto</button></div>` : ""}
+    ${op.extra ? `<div class="pacts">${op.extra}</div>` : ""}
+  </section>`;
+}
+/** Botones de la carta en «Mi perfil»: foto, portada (subir, ajustar arrastrando y quitar). Se guarda al momento. */
+function enlazarCarta() {
+  const yoP = () => miPerfil() || { id: yo().id, estilo: st.estilo };
+  const pf = $("#pfoto"); if (pf) pf.onchange = async ev => {
+    const a = ev.target.files[0]; if (!a) return;
+    try { await D.guardar("cif_perfiles", { ...yoP(), foto: await fotoChica(a) }); toast("Foto guardada."); render(); } catch (er) { toast(er.message); }
+  };
+  const fq = $("#pfotoq"); if (fq) fq.onclick = async () => { await D.guardar("cif_perfiles", { ...yoP(), foto: null }); toast("Foto quitada."); render(); };
+  const pp = $("#pport"); if (pp) pp.onchange = async ev => {
+    const a = ev.target.files[0]; if (!a) return;
+    try { await D.guardar("cif_perfiles", { ...yoP(), portada: (await portadaChica(a)) + "#y=50" }); toast("Portada guardada. Usa «↕ Ajustar» para acomodarla."); render(); }
+    catch (er) { toast(/portada|column/i.test(er.message || "") ? "Falta correr la migración 008 en Supabase para guardar portadas." : er.message); }
+  };
+  const pq = $("#pportq"); if (pq) pq.onclick = async () => { await D.guardar("cif_perfiles", { ...yoP(), portada: null }); toast("Portada quitada."); render(); };
+  const aj = $("#pportaj"); if (aj) aj.onclick = () => {
+    const cv = $("#pcover"), acts = $("#pcoveracts"), src = portadaSrc(yoP().portada);
+    let y = portadaY(yoP().portada), ini = null;
+    st.editando = true; cv.classList.add("ajustando");
+    acts.innerHTML = `<span class="pcoverhint">Arrastra hacia arriba o abajo</span><button type="button" class="pcoverbtn ok" id="pportok">Listo</button>`;
+    cv.onpointerdown = e => { if (e.target.closest("button")) return; cv.setPointerCapture(e.pointerId); ini = { py: e.clientY, y }; };
+    cv.onpointermove = e => { if (!ini) return; y = Math.max(0, Math.min(100, ini.y - (e.clientY - ini.py) / 2)); cv.style.backgroundPosition = `center ${y}%`; };
+    cv.onpointerup = cv.onpointercancel = () => (ini = null);
+    $("#pportok").onclick = async () => { st.editando = false; await D.guardar("cif_perfiles", { ...yoP(), portada: src + "#y=" + Math.round(y) }); toast("Portada acomodada."); render(); };
+  };
 }
 const esSuper = () => D.modo === "local" || !!(miPerfil() && miPerfil().superadmin);
 const membresias = () => yo() ? D.lista("cif_miembros").filter(m => m.persona_id === yo().id) : [];
@@ -726,7 +856,7 @@ function shell(band, main) {
       ${esMusico() ? nav("nueva", "nueva", "Nueva canción", IC.mas, "--sol") : ""}
       <div class="sidesec">Equipo</div>
       ${nav("senas", "senas", "Señas para dirigir", IC.mano, "--lav")}
-      ${m ? nav("ministerio/" + m.id, "ministerio", m.tipo === "solista" ? "Mi perfil de solista" : "Perfil del ministerio", IC.marca, "--flame") : ""}
+      ${m ? nav("ministerio/" + m.id, r.p[0] === m.id ? "ministerio" : "-", m.tipo === "solista" ? "Mi perfil de solista" : "Perfil del ministerio", IC.marca, "--flame") : ""}
       ${nav("ministerios", "ministerios", "Ministerios", IC.gente, "--rosa", pendMin().length || "")}
       ${nav("amigos", "amigos", "Amigos y sus tonos", IC.amigos, "--sea", pendAmigos().length || "")}
       ${esSuper() ? nav("usuarios", "usuarios", "Usuarios", IC.gente, "--sol", D.nube ? "" : D.lista("cif_perfiles").length) : ""}
@@ -1556,7 +1686,21 @@ function enlazarEditor(base) {
   };
   enlazarVis();
   campo("#etit", "titulo"); campo("#eaut", "autor"); campo("#ebpm", "bpm", v => +v || null); campo("#ecom", "compas"); campo("#elig", "liga"); campo("#enot", "notas");
-  $("#eton").onchange = e => { c.tono = e.target.value; ed.sel = null; repintar(); $$(".preview .chip").forEach(x => x.textContent = c.tono); };
+  // Cambiar el tono pasa los acordes al tono nuevo (o, si se elige, solo corrige la etiqueta)
+  $("#eton").onchange = async e => {
+    const antes = c.tono, nuevo = e.target.value, semis = antes ? C.distancia(antes, nuevo) : 0;
+    const conAcordes = /\[\*?[A-G]/.test(c.contenido || "");
+    let pasar = false;
+    if (antes && semis && conAcordes) {
+      const d = await dialogo(`<h2>Cambiar de ${esc(antes)} a ${esc(nuevo)}</h2><p>¿Qué hago con los acordes?</p>
+        <div class="seg pdfcols" role="radiogroup"><label><input type="radio" name="modo" value="pasar" checked><span>Pasarlos a ${esc(nuevo)}</span></label><label><input type="radio" name="modo" value="etiqueta"><span>Dejarlos igual (solo corrijo el tono)</span></label></div>`, "Cambiar");
+      if (!d) { e.target.value = antes; return; }
+      pasar = d.modo === "pasar";
+    }
+    if (pasar) c.contenido = transportaTexto(c.contenido, semis, C.usaBemoles(nuevo));
+    c.tono = nuevo; ed.sel = null; repintar(); $$(".preview .chip").forEach(x => x.textContent = c.tono);
+    if (pasar) toast(`Acordes pasados de ${antes} a ${nuevo}. Toca Guardar para quedarte con el cambio.`);
+  };
   $$("[data-paso]").forEach(b => b.onclick = () => { ed.paso = b.dataset.paso; $$("[data-paso]").forEach(x => x.classList.toggle("on", x === b)); repintar(); });
   function enlazarPanel() {
     const ta = $("#eletra");
@@ -1772,8 +1916,10 @@ function vMinisterio(id) {
         </div>
         <label class="mcampo" style="margin-top:18px"><b>Descripción</b><small>aparece en el perfil del ministerio</small><textarea class="field mdesc" name="descripcion" rows="3" maxlength="400" placeholder="Ministerio de alabanza de…">${esc(e.descripcion)}</textarea></label>
         <div class="row" style="margin-top:12px"><button class="btn">Guardar</button><button type="button" class="btn ghost" id="mreset">Colores de Tiempo de Dios</button><span class="status" id="mmsg"></span></div></form>`
-        : m.descripcion ? `<section class="caja"><h3>Sobre ${esc(m.nombre)}</h3><p class="bio">${esc(m.descripcion)}</p></section>` : ""}`,
+        : m.descripcion ? `<section class="caja"><h3>Sobre ${esc(m.nombre)}</h3><p class="bio">${esc(m.descripcion)}</p></section>` : ""}
+      ${gestionMin(m)}`,
     after() {
+      enlazarMinisterios();
       $("#mprueba").onclick = async () => {
         const c = canciones().find(x => x.titulo === "Aquí Estoy") || canciones()[0];
         if (!c) return toast("No hay canciones en la librería.");
@@ -1804,6 +1950,45 @@ function vMinisterio(id) {
 // Flujo: el desarrollador da de alta el ministerio (y puede nombrar a su admin) → cada persona crea su cuenta
 // → pide entrar a su ministerio → un admin de ese ministerio o el desarrollador acepta o rechaza.
 const ROL_TXT = { admin: "Admin", musico: "Músico", lector: "Solo ver" };
+/** Integrantes y administración de un ministerio (va en su página #ministerio/<id>). */
+function gestionMin(m) {
+  const mios = new Set(membresias().map(m => m.ministerio_id));
+  const misSol = yo() ? D.lista("cif_solicitudes").filter(s => s.persona_id === yo().id && s.estado === "pendiente") : [];
+  const dev = esSuper();
+  const personas = D.lista("cif_perfiles").sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+  const optPersonas = (excluir = new Set()) => personas.filter(p => !excluir.has(p.id)).map(p => `<option value="${p.id}">${esc(p.nombre || "Sin nombre")}${p.usuario ? " · @" + esc(p.usuario) : ""}</option>`).join("");
+  // solicitudes que yo puedo resolver (admin de ese ministerio o desarrollador)
+  const porRevisar = D.lista("cif_solicitudes").filter(s => s.estado === "pendiente" && rolEn(s.ministerio_id) === "admin" && (!yo() || s.persona_id !== yo().id));
+  const filaSol = x => `<li>${avatar(x.persona_id)}<span><b>${esc(nombreDe(x.persona_id))}</b> <small class="status">quiere entrar a</small> <b>${esc((D.uno("cif_ministerios", x.ministerio_id) || {}).nombre || "?")}</b>${x.mensaje ? `<br><small class="status">«${esc(x.mensaje)}»</small>` : ""}</span>
+    <select class="fsel" data-solrol="${x.id}" aria-label="Entra como"><option value="musico">Como músico</option><option value="lector">Solo ver</option><option value="admin">Como admin</option></select>
+    <button class="btn xs" data-acepta="${x.id}">Aceptar</button><button class="btn xs ghost" data-rechaza="${x.id}">Rechazar</button></li>`;
+
+
+    const rol = rolEn(m.id), admin = rol === "admin", soy = mios.has(m.id);
+    const miem = D.lista("cif_miembros").filter(x => x.ministerio_id === m.id).sort((a, b) => nombreDe(a.persona_id).localeCompare(nombreDe(b.persona_id)));
+    const admins = miem.filter(x => x.rol === "admin");
+    const vigente = m.suscripcion_hasta && m.suscripcion_hasta >= hoyISO();
+    return `<section class="caja mincard"><p class="status" style="margin:0 0 8px">${dev ? "Administración: nombre, tipo, suscripción y admins" : "Integrantes y administración"}</p>
+      <div class="row">
+        ${dev ? `<input class="field minnombre" data-mnom="${m.id}" value="${esc(m.nombre)}" aria-label="Nombre del ministerio">` : `<h3 style="margin:0">Integrantes</h3>`}
+        ${soy ? `<span class="chip">Tú: ${esc(ROL_TXT[membresias().find(x => x.ministerio_id === m.id).rol] || "")}</span>` : ""}
+        <span class="chip ${vigente ? "pista" : ""}">${vigente ? "Suscripción hasta " + esc(m.suscripcion_hasta) : "Sin suscripción"}</span>
+        <span class="chip">${miem.length} integrante${miem.length === 1 ? "" : "s"}</span>
+                ${m.tipo === "solista" ? `<span class="chip solista">🎤 Solista</span>` : ""}
+      </div>
+      <p class="status" style="margin:8px 0 0">${m.tipo === "solista" ? "Artista" : "Admin"}: ${admins.length ? admins.map(a => esc(nombreDe(a.persona_id))).join(", ") : "nadie todavía"}</p>
+      ${dev ? `<div class="minadmin">
+          <select class="fsel" data-mtipo="${m.id}" aria-label="Tipo"><option value="ministerio" ${m.tipo !== "solista" ? "selected" : ""}>Ministerio</option><option value="solista" ${m.tipo === "solista" ? "selected" : ""}>🎤 Solista</option></select>
+          <label class="row" style="font-size:13px;font-weight:700;gap:6px">Suscripción hasta <input type="date" class="fsel" data-susc="${m.id}" value="${esc(m.suscripcion_hasta || "")}"></label>
+          <select class="fsel" data-nombra="${m.id}" aria-label="Nombrar admin"><option value="">＋ Nombrar admin…</option>${optPersonas(new Set(admins.map(a => a.persona_id)))}</select>
+          <span class="sp"></span><button class="btn xs ghost" data-mborrar="${m.id}">Borrar ministerio</button></div>` : ""}
+      ${soy || dev ? `<ul class="miembros" style="margin-top:12px">${miem.map(x => `<li>${avatar(x.persona_id)}<span><a href="#persona/${x.persona_id}"><b>${esc(nombreDe(x.persona_id))}</b></a>${(D.uno("cif_perfiles", x.persona_id) || {}).artista ? ' <span class="chip mio">artista</span>' : ""}</span>
+        ${admin ? `<select class="fsel" data-rol="${m.id}|${x.persona_id}">${["admin", "musico", "lector"].map(r => `<option value="${r}" ${r === x.rol ? "selected" : ""}>${ROL_TXT[r]}</option>`).join("")}</select><button class="btn xs ghost" data-saca="${m.id}|${x.persona_id}" aria-label="Quitar">✕</button>` : `<span class="chip">${esc(ROL_TXT[x.rol] || x.rol)}</span>`}</li>`).join("") || `<li class="status">Sin integrantes: comparte la liga de la app para que pidan entrar.</li>`}</ul>` : ""}
+      ${admin && D.modo === "local" ? `<div class="row" style="margin-top:10px"><input class="field" data-nuevo="${m.id}" placeholder="Nombre de la persona (modo local)" style="flex:1"><button class="btn sm" data-agrega="${m.id}">Agregar</button></div>` : ""}
+      ${admin && D.nube ? `<form class="row" data-invita="${m.id}" style="margin-top:10px"><input class="field" name="email" type="email" placeholder="correo@… para invitar" required autocomplete="off" data-1p-ignore data-lpignore="true" style="flex:2;min-width:180px"><input class="field" name="nombre" placeholder="Nombre" autocomplete="off" data-1p-ignore data-lpignore="true" style="flex:1;min-width:120px"><button class="btn sm">Invitar al ministerio</button></form>` : ""}
+      ${!soy && !dev ? `<div class="row" style="margin-top:10px">${misSol.some(s => s.ministerio_id === m.id) ? `<span class="status">Solicitud enviada · esperando a un admin</span><button class="btn xs ghost" data-cancela="${m.id}">Cancelar</button>` : `<button class="btn sm" data-pide="${m.id}">Solicitar unirme</button>`}</div>` : ""}
+    </section>`;
+  }
 function vMinisterios() {
   const todos = D.lista("cif_ministerios").sort((a, b) => a.nombre.localeCompare(b.nombre));
   const mios = new Set(membresias().map(m => m.ministerio_id));
@@ -1818,31 +2003,18 @@ function vMinisterios() {
     <button class="btn xs" data-acepta="${x.id}">Aceptar</button><button class="btn xs ghost" data-rechaza="${x.id}">Rechazar</button></li>`;
 
   const card = m => {
-    const rol = rolEn(m.id), admin = rol === "admin", soy = mios.has(m.id);
-    const miem = D.lista("cif_miembros").filter(x => x.ministerio_id === m.id).sort((a, b) => nombreDe(a.persona_id).localeCompare(nombreDe(b.persona_id)));
-    const admins = miem.filter(x => x.rol === "admin");
-    const vigente = m.suscripcion_hasta && m.suscripcion_hasta >= hoyISO();
-    return `<section class="caja mincard">
-      <div class="row">
-        ${dev ? `<input class="field minnombre" data-mnom="${m.id}" value="${esc(m.nombre)}" aria-label="Nombre del ministerio">` : `<h3 style="margin:0">${esc(m.nombre)}</h3>`}
-        ${soy ? `<span class="chip">Tú: ${esc(ROL_TXT[membresias().find(x => x.ministerio_id === m.id).rol] || "")}</span>` : ""}
-        <span class="chip ${vigente ? "pista" : ""}">${vigente ? "Suscripción hasta " + esc(m.suscripcion_hasta) : "Sin suscripción"}</span>
-        <span class="chip">${miem.length} integrante${miem.length === 1 ? "" : "s"}</span>
-        <a class="btn xs ghost" href="#ministerio/${m.id}">🎨 Perfil y marca</a>
-        ${m.tipo === "solista" ? `<span class="chip solista">🎤 Solista</span>` : ""}
-      </div>
-      <p class="status" style="margin:8px 0 0">${m.tipo === "solista" ? "Artista" : "Admin"}: ${admins.length ? admins.map(a => esc(nombreDe(a.persona_id))).join(", ") : "nadie todavía"}</p>
-      ${dev ? `<div class="minadmin">
-          <select class="fsel" data-mtipo="${m.id}" aria-label="Tipo"><option value="ministerio" ${m.tipo !== "solista" ? "selected" : ""}>Ministerio</option><option value="solista" ${m.tipo === "solista" ? "selected" : ""}>🎤 Solista</option></select>
-          <label class="row" style="font-size:13px;font-weight:700;gap:6px">Suscripción hasta <input type="date" class="fsel" data-susc="${m.id}" value="${esc(m.suscripcion_hasta || "")}"></label>
-          <select class="fsel" data-nombra="${m.id}" aria-label="Nombrar admin"><option value="">＋ Nombrar admin…</option>${optPersonas(new Set(admins.map(a => a.persona_id)))}</select>
-          <span class="sp"></span><button class="btn xs ghost" data-mborrar="${m.id}">Borrar ministerio</button></div>` : ""}
-      ${soy || dev ? `<ul class="miembros" style="margin-top:12px">${miem.map(x => `<li>${avatar(x.persona_id)}<span><a href="#persona/${x.persona_id}"><b>${esc(nombreDe(x.persona_id))}</b></a>${(D.uno("cif_perfiles", x.persona_id) || {}).artista ? ' <span class="chip mio">artista</span>' : ""}</span>
-        ${admin ? `<select class="fsel" data-rol="${m.id}|${x.persona_id}">${["admin", "musico", "lector"].map(r => `<option value="${r}" ${r === x.rol ? "selected" : ""}>${ROL_TXT[r]}</option>`).join("")}</select><button class="btn xs ghost" data-saca="${m.id}|${x.persona_id}" aria-label="Quitar">✕</button>` : `<span class="chip">${esc(ROL_TXT[x.rol] || x.rol)}</span>`}</li>`).join("") || `<li class="status">Sin integrantes: comparte la liga de la app para que pidan entrar.</li>`}</ul>` : ""}
-      ${admin && D.modo === "local" ? `<div class="row" style="margin-top:10px"><input class="field" data-nuevo="${m.id}" placeholder="Nombre de la persona (modo local)" style="flex:1"><button class="btn sm" data-agrega="${m.id}">Agregar</button></div>` : ""}
-      ${admin && D.nube ? `<form class="row" data-invita="${m.id}" style="margin-top:10px"><input class="field" name="email" type="email" placeholder="correo@… para invitar" required autocomplete="off" data-1p-ignore data-lpignore="true" style="flex:2;min-width:180px"><input class="field" name="nombre" placeholder="Nombre" autocomplete="off" data-1p-ignore data-lpignore="true" style="flex:1;min-width:120px"><button class="btn sm">Invitar al ministerio</button></form>` : ""}
-      ${!soy && !dev ? `<div class="row" style="margin-top:10px">${misSol.some(s => s.ministerio_id === m.id) ? `<span class="status">Solicitud enviada · esperando a un admin</span><button class="btn xs ghost" data-cancela="${m.id}">Cancelar</button>` : `<button class="btn sm" data-pide="${m.id}">Solicitar unirme</button>`}</div>` : ""}
-    </section>`;
+    const miem = D.lista("cif_miembros").filter(x => x.ministerio_id === m.id), sol = m.tipo === "solista";
+    const admins = miem.filter(x => x.rol === "admin").map(x => nombreDe(x.persona_id));
+    const nS = D.lista("cif_sets").filter(x => !x.borrada && x.ministerio_id === m.id).length;
+    const mio = membresias().find(x => x.ministerio_id === m.id), c = m.color_primario || "#FF3D1A", lg = logoSrc(m.logo);
+    return `<div class="mtarj" data-ir="${m.id}" role="link" tabindex="0" style="--c:${esc(c)}">
+      ${lg ? `<img class="mlogoxl" src="${esc(lg)}" alt="">` : `<span class="mlogoxl" style="background:${esc(c)}">${esc(iniciales(m.nombre))}</span>`}
+      <b>${esc(m.nombre)}</b><span class="u">${sol ? "🎤 Solista" : "Ministerio"}</span>
+      <span>${admins.length ? (sol ? "Artista: " : "Admin: ") + esc(admins.join(", ")) : "Sin admin todavía"}</span>
+      ${m.descripcion ? `<p class="bio">${esc(m.descripcion)}</p>` : ""}
+      <span class="n">${miem.length} integrante${miem.length === 1 ? "" : "s"} · ${nS} set${nS === 1 ? "" : "s"}</span>
+      ${mio ? `<span class="chip">Tú: ${esc(ROL_TXT[mio.rol] || mio.rol)}</span>` : dev ? "" : misSol.some(x => x.ministerio_id === m.id) ? `<span class="status">Solicitud enviada</span><button class="btn xs ghost" data-cancela="${m.id}">Cancelar</button>` : `<button class="btn xs" data-pide="${m.id}">Solicitar unirme</button>`}
+    </div>`;
   };
   const propios = todos.filter(m => mios.has(m.id)), otros = todos.filter(m => !mios.has(m.id));
   const sinMinisterio = !dev && !propios.length;
@@ -1861,73 +2033,80 @@ function vMinisterios() {
           <select class="field" name="admin"><option value="">Admin / artista: lo nombro después</option>${optPersonas()}</select>
           <label class="field" style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px">Suscripción hasta <input type="date" name="susc" style="border:0;background:none;flex:1;min-width:0"></label>
           <button class="btn">Crear ministerio</button></div></form>` : ""}
-      ${dev ? (todos.length ? `<h2 class="status">TODOS LOS MINISTERIOS (${todos.length})</h2>${todos.map(card).join("")}` : "")
-        : `${propios.length ? `<h2 class="status">MIS MINISTERIOS</h2>${propios.map(card).join("")}` : ""}${otros.length ? `<h2 class="status">${propios.length ? "OTROS MINISTERIOS" : "ELIGE TU MINISTERIO"}</h2>${otros.map(card).join("")}` : ""}`}
+      ${todos.length ? `<section><h2 class="qtit">Quién es quién</h2><p class="qsub">Toca un ministerio para ver su perfil, su marca y sus integrantes.</p></section>` : ""}
+      ${dev ? (todos.length ? `<div class="mgrid">${todos.map(card).join("")}</div>` : "")
+        : `${propios.length ? `<h2 class="status">MIS MINISTERIOS</h2><div class="mgrid">${propios.map(card).join("")}</div>` : ""}${otros.length ? `<h2 class="status">${propios.length ? "OTROS MINISTERIOS" : "ELIGE TU MINISTERIO"}</h2><div class="mgrid">${otros.map(card).join("")}</div>` : ""}`}
       ${!todos.length ? `<div class="empty"><strong>Aún no hay ministerios</strong><p>${dev ? "Crea el primero arriba." : "Cuando el desarrollador dé de alta tu ministerio aparecerá aquí."}</p></div>` : ""}`,
     after() {
-      const fm = $("#fmin"); if (fm) fm.onsubmit = async e => {
-        e.preventDefault();
-        const n = fm.nombre.value.trim(), tipo = fm.tipo.value, adminId = fm.admin.value; if (!n) return;
-        const m = await D.guardar("cif_ministerios", { nombre: n, tipo, codigo: Math.random().toString(36).slice(2, 8).toUpperCase(), color: "flame", creado_por: yo().id, suscripcion_hasta: fm.susc.value || null });
-        if (adminId) await D.guardar("cif_miembros", { ministerio_id: m.id, persona_id: adminId, rol: "admin" });
-        st.min = m.id; ls.set("cifrados-min", m.id); fm.reset();
-        toast(`${tipo === "solista" ? "Solista" : "Ministerio"} «${n}» creado${adminId ? " con " + nombreDe(adminId) + " como admin" : ""}.`);
-      };
-      $$("[data-mtipo]").forEach(x => x.onchange = () => { const m = D.uno("cif_ministerios", x.dataset.mtipo); x.blur(); D.guardar("cif_ministerios", { ...m, tipo: x.value }); });
-      $$("[data-mnom]").forEach(x => x.onchange = () => { const m = D.uno("cif_ministerios", x.dataset.mnom), v = x.value.trim(); x.blur(); if (!v) { x.value = m.nombre; return; } D.guardar("cif_ministerios", { ...m, nombre: v }); toast("Nombre actualizado."); });
-      $$("[data-susc]").forEach(x => x.onchange = () => { const m = D.uno("cif_ministerios", x.dataset.susc); x.blur(); D.guardar("cif_ministerios", { ...m, suscripcion_hasta: x.value || null }); });
-      $$("[data-nombra]").forEach(x => x.onchange = async () => {
-        const m = x.dataset.nombra, p = x.value; x.blur(); if (!p) return;
-        await D.guardar("cif_miembros", { ...(D.uno("cif_miembros", m + "|" + p) || {}), ministerio_id: m, persona_id: p, rol: "admin" });
-        toast(`${nombreDe(p)} ahora es admin de ${(D.uno("cif_ministerios", m) || {}).nombre}.`);
-      });
-      $$("[data-mborrar]").forEach(b => b.onclick = async () => {
-        const m = D.uno("cif_ministerios", b.dataset.mborrar);
-        const d = await dialogo(`<h2>¿Borrar ${esc(m.nombre)}?</h2><p>Se borran sus sets, integrantes y solicitudes. La librería y los tonos no se tocan. No se puede deshacer.</p><label class="lb">Escribe el nombre para confirmar<input class="field" name="conf" autocomplete="off"></label>`, "Borrar");
-        if (!d) return;
-        if (norm(d.conf) !== norm(m.nombre)) return toast("El nombre no coincide; no se borró.");
-        await D.borrar("cif_ministerios", m);
-        // lo dependiente se borra en cascada en la nube; aquí se limpia la copia local
-        D.lista("cif_miembros").filter(x => x.ministerio_id === m.id).forEach(x => D.aplicarLocal("cif_miembros", [x], true));
-        D.lista("cif_sets").filter(x => x.ministerio_id === m.id).forEach(x => D.aplicarLocal("cif_sets", [x], true));
-        D.lista("cif_solicitudes").filter(x => x.ministerio_id === m.id).forEach(x => D.aplicarLocal("cif_solicitudes", [x], true));
-        toast(`«${m.nombre}» se borró.`);
-      });
-      $$("[data-pide]").forEach(b => b.onclick = async () => {
-        const m = D.uno("cif_ministerios", b.dataset.pide);
-        const d = await dialogo(`<h2>Unirme a ${esc(m.nombre)}</h2><p>Un admin del ministerio o el desarrollador revisará tu solicitud.</p><label class="lb">Mensaje (opcional)<input class="field" name="mensaje" placeholder="Canto en el coro de los domingos…"></label>`, "Enviar solicitud");
-        if (!d) return;
-        const s = await D.guardar("cif_solicitudes", { ministerio_id: m.id, persona_id: yo().id, mensaje: d.mensaje || null, estado: "pendiente" });
-        toast("Solicitud enviada. Te avisamos por correo cuando te acepten.");
-        avisarCorreo("aviso_solicitud", s.id);
-      });
-      $$("[data-cancela]").forEach(b => b.onclick = () => { D.lista("cif_solicitudes").filter(s => s.ministerio_id === b.dataset.cancela && s.persona_id === yo().id && s.estado === "pendiente").forEach(s => D.borrar("cif_solicitudes", s)); });
-      $$("[data-acepta]").forEach(b => b.onclick = async () => {
-        const s = D.uno("cif_solicitudes", b.dataset.acepta), sel = $(`[data-solrol="${s.id}"]`), rol = sel ? sel.value : "musico";
-        await D.guardar("cif_miembros", { ministerio_id: s.ministerio_id, persona_id: s.persona_id, rol });
-        await D.guardar("cif_solicitudes", { ...s, estado: "aceptada" });
-        toast(`${nombreDe(s.persona_id)} ya es parte del ministerio (${ROL_TXT[rol].toLowerCase()}).`);
-        avisarCorreo("aviso_respuesta", s.id);
-      });
-      $$("[data-rechaza]").forEach(b => b.onclick = async () => { const s = D.uno("cif_solicitudes", b.dataset.rechaza); await D.guardar("cif_solicitudes", { ...s, estado: "rechazada" }); toast("Solicitud rechazada."); avisarCorreo("aviso_respuesta", s.id); });
-      $$("[data-invita]").forEach(f => f.onsubmit = async e => {
-        e.preventDefault();
-        const m = f.dataset.invita, email = f.email.value.trim(), nombre = f.nombre.value.trim();
-        try {
-          const r = await D.fn("usuarios", { accion: "invitar", email, nombre, ministerio_id: m, rol: "musico", redirectTo: location.origin + location.pathname });
-          toast(r.existia ? `${email} ya tenía cuenta: quedó agregado al ministerio.` : `Invitación enviada a ${email}.`);
-          f.reset(); D.sincronizar();
-        } catch (er) { toast(er.message); }
-      });
-      $$("[data-rol]").forEach(s => s.onchange = () => { const [m, p] = s.dataset.rol.split("|"); s.blur(); D.guardar("cif_miembros", { ...D.uno("cif_miembros", m + "|" + p), rol: s.value }); });
-      $$("[data-saca]").forEach(b => b.onclick = async () => { const [m, p] = b.dataset.saca.split("|"); if (await confirmar(`¿Quitar a ${nombreDe(p)} del ministerio?`)) D.borrar("cif_miembros", { ministerio_id: m, persona_id: p }); });
-      $$("[data-agrega]").forEach(b => b.onclick = async () => {
-        const inp = $(`[data-nuevo="${b.dataset.agrega}"]`), n = inp.value.trim(); if (!n) return;
-        const p = await D.guardar("cif_perfiles", { id: D.uuid(), nombre: n, usuario: norm(n).replace(/[^a-z0-9]+/g, "."), artista: true, estilo: {} });
-        await D.guardar("cif_miembros", { ministerio_id: b.dataset.agrega, persona_id: p.id, rol: "musico" });
-      });
+      enlazarMinisterios();
+      $$("[data-ir]").forEach(t => { const ir = () => (location.hash = "#ministerio/" + t.dataset.ir); t.onclick = e => { if (!e.target.closest("button,a,select,input")) ir(); }; t.onkeydown = e => { if (e.key === "Enter" && e.target === t) ir(); }; });
     },
   };
+}
+
+/** Botones de ministerios (crear, solicitudes, integrantes, admins, invitar). Los usan la lista y la página de cada ministerio. */
+function enlazarMinisterios() {
+  const fm = $("#fmin"); if (fm) fm.onsubmit = async e => {
+    e.preventDefault();
+    const n = fm.nombre.value.trim(), tipo = fm.tipo.value, adminId = fm.admin.value; if (!n) return;
+    const m = await D.guardar("cif_ministerios", { nombre: n, tipo, codigo: Math.random().toString(36).slice(2, 8).toUpperCase(), color: "flame", creado_por: yo().id, suscripcion_hasta: fm.susc.value || null });
+    if (adminId) await D.guardar("cif_miembros", { ministerio_id: m.id, persona_id: adminId, rol: "admin" });
+    st.min = m.id; ls.set("cifrados-min", m.id); fm.reset();
+    toast(`${tipo === "solista" ? "Solista" : "Ministerio"} «${n}» creado${adminId ? " con " + nombreDe(adminId) + " como admin" : ""}.`);
+  };
+  $$("[data-mtipo]").forEach(x => x.onchange = () => { const m = D.uno("cif_ministerios", x.dataset.mtipo); x.blur(); D.guardar("cif_ministerios", { ...m, tipo: x.value }); });
+  $$("[data-mnom]").forEach(x => x.onchange = () => { const m = D.uno("cif_ministerios", x.dataset.mnom), v = x.value.trim(); x.blur(); if (!v) { x.value = m.nombre; return; } D.guardar("cif_ministerios", { ...m, nombre: v }); toast("Nombre actualizado."); });
+  $$("[data-susc]").forEach(x => x.onchange = () => { const m = D.uno("cif_ministerios", x.dataset.susc); x.blur(); D.guardar("cif_ministerios", { ...m, suscripcion_hasta: x.value || null }); });
+  $$("[data-nombra]").forEach(x => x.onchange = async () => {
+    const m = x.dataset.nombra, p = x.value; x.blur(); if (!p) return;
+    await D.guardar("cif_miembros", { ...(D.uno("cif_miembros", m + "|" + p) || {}), ministerio_id: m, persona_id: p, rol: "admin" });
+    toast(`${nombreDe(p)} ahora es admin de ${(D.uno("cif_ministerios", m) || {}).nombre}.`);
+  });
+  $$("[data-mborrar]").forEach(b => b.onclick = async () => {
+    const m = D.uno("cif_ministerios", b.dataset.mborrar);
+    const d = await dialogo(`<h2>¿Borrar ${esc(m.nombre)}?</h2><p>Se borran sus sets, integrantes y solicitudes. La librería y los tonos no se tocan. No se puede deshacer.</p><label class="lb">Escribe el nombre para confirmar<input class="field" name="conf" autocomplete="off"></label>`, "Borrar");
+    if (!d) return;
+    if (norm(d.conf) !== norm(m.nombre)) return toast("El nombre no coincide; no se borró.");
+    await D.borrar("cif_ministerios", m);
+    // lo dependiente se borra en cascada en la nube; aquí se limpia la copia local
+    D.lista("cif_miembros").filter(x => x.ministerio_id === m.id).forEach(x => D.aplicarLocal("cif_miembros", [x], true));
+    D.lista("cif_sets").filter(x => x.ministerio_id === m.id).forEach(x => D.aplicarLocal("cif_sets", [x], true));
+    D.lista("cif_solicitudes").filter(x => x.ministerio_id === m.id).forEach(x => D.aplicarLocal("cif_solicitudes", [x], true));
+    toast(`«${m.nombre}» se borró.`);
+  });
+  $$("[data-pide]").forEach(b => b.onclick = async () => {
+    const m = D.uno("cif_ministerios", b.dataset.pide);
+    const d = await dialogo(`<h2>Unirme a ${esc(m.nombre)}</h2><p>Un admin del ministerio o el desarrollador revisará tu solicitud.</p><label class="lb">Mensaje (opcional)<input class="field" name="mensaje" placeholder="Canto en el coro de los domingos…"></label>`, "Enviar solicitud");
+    if (!d) return;
+    const s = await D.guardar("cif_solicitudes", { ministerio_id: m.id, persona_id: yo().id, mensaje: d.mensaje || null, estado: "pendiente" });
+    toast("Solicitud enviada. Te avisamos por correo cuando te acepten.");
+    avisarCorreo("aviso_solicitud", s.id);
+  });
+  $$("[data-cancela]").forEach(b => b.onclick = () => { D.lista("cif_solicitudes").filter(s => s.ministerio_id === b.dataset.cancela && s.persona_id === yo().id && s.estado === "pendiente").forEach(s => D.borrar("cif_solicitudes", s)); });
+  $$("[data-acepta]").forEach(b => b.onclick = async () => {
+    const s = D.uno("cif_solicitudes", b.dataset.acepta), sel = $(`[data-solrol="${s.id}"]`), rol = sel ? sel.value : "musico";
+    await D.guardar("cif_miembros", { ministerio_id: s.ministerio_id, persona_id: s.persona_id, rol });
+    await D.guardar("cif_solicitudes", { ...s, estado: "aceptada" });
+    toast(`${nombreDe(s.persona_id)} ya es parte del ministerio (${ROL_TXT[rol].toLowerCase()}).`);
+    avisarCorreo("aviso_respuesta", s.id);
+  });
+  $$("[data-rechaza]").forEach(b => b.onclick = async () => { const s = D.uno("cif_solicitudes", b.dataset.rechaza); await D.guardar("cif_solicitudes", { ...s, estado: "rechazada" }); toast("Solicitud rechazada."); avisarCorreo("aviso_respuesta", s.id); });
+  $$("[data-invita]").forEach(f => f.onsubmit = async e => {
+    e.preventDefault();
+    const m = f.dataset.invita, email = f.email.value.trim(), nombre = f.nombre.value.trim();
+    try {
+      const r = await D.fn("usuarios", { accion: "invitar", email, nombre, ministerio_id: m, rol: "musico", redirectTo: location.origin + location.pathname });
+      toast(r.existia ? `${email} ya tenía cuenta: quedó agregado al ministerio.` : `Invitación enviada a ${email}.`);
+      f.reset(); D.sincronizar();
+    } catch (er) { toast(er.message); }
+  });
+  $$("[data-rol]").forEach(s => s.onchange = () => { const [m, p] = s.dataset.rol.split("|"); s.blur(); D.guardar("cif_miembros", { ...D.uno("cif_miembros", m + "|" + p), rol: s.value }); });
+  $$("[data-saca]").forEach(b => b.onclick = async () => { const [m, p] = b.dataset.saca.split("|"); if (await confirmar(`¿Quitar a ${nombreDe(p)} del ministerio?`)) D.borrar("cif_miembros", { ministerio_id: m, persona_id: p }); });
+  $$("[data-agrega]").forEach(b => b.onclick = async () => {
+    const inp = $(`[data-nuevo="${b.dataset.agrega}"]`), n = inp.value.trim(); if (!n) return;
+    const p = await D.guardar("cif_perfiles", { id: D.uuid(), nombre: n, usuario: norm(n).replace(/[^a-z0-9]+/g, "."), artista: true, estilo: {} });
+    await D.guardar("cif_miembros", { ministerio_id: b.dataset.agrega, persona_id: p.id, rol: "musico" });
+  });
 }
 
 /** Manda un aviso por correo cuando el cambio ya subió a la nube (si falla, no estorba). */
@@ -2071,10 +2250,7 @@ function vPersona(id) {
   const favs = (p.favoritas || []).map(cid => D.uno("cif_canciones", cid)).filter(c => c && !c.borrada && veCancion(c));
   return {
     band: bandHTML({ tag: soyYo ? "Mis tonos" : "Perfil", titulo: esc(p.nombre || "Sin nombre"), sub: [p.usuario && `<span>@${esc(p.usuario)}</span>`, p.voz && `<span>${esc(p.voz)}</span>`, mins.length && `<span>${esc(mins.join(" · "))}</span>`, `<span><b>${tonos.length}</b> tonos</span>`].filter(Boolean).join("") }),
-    main: `<section class="carta">${avatar(p, "", "grande")}<div>
-        ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : `<p class="status">${soyYo ? "Aún no escribes tu descripción." : "Sin descripción."}</p>`}
-        ${favs.length ? `<div class="favs"><b>❤️ Canciones favoritas</b><div class="row" style="gap:6px">${favs.map(c => `<a class="chip fav" href="#cancion/${c.id}">${esc(c.titulo)}</a>`).join("")}</div></div>` : ""}
-        ${soyYo ? `<a class="btn xs ghost" href="#perfil" style="margin-top:8px">✎ Editar mi perfil</a>` : ""}</div></section>
+    main: `${cartaPerfil(p, { mio: false, extra: `${favs.length ? `<div class="favs"><b>❤️ Canciones favoritas</b><div class="row" style="gap:6px">${favs.map(c => `<a class="chip fav" href="#cancion/${c.id}">${esc(c.titulo)}</a>`).join("")}</div></div>` : ""}${soyYo ? `<a class="btn xs ghost" href="#perfil">✎ Editar mi perfil</a>` : ""}` })}
       ${!soyYo && !a && yo() ? `<div class="row"><button class="btn" id="pamigo">＋ Agregar como amigo</button></div>` : ""}
       <h2 class="status" style="margin:0">TONOS GUARDADOS</h2>
       ${tonos.length ? `<ul class="songs">${tonos.map(({ t, c }) => `<li><a class="srow" href="#cancion/${c.id}" data-vertono="${esc(t.tono)}" data-capo="${t.capo || 0}" data-cid="${c.id}"><div><b>${esc(c.titulo)}</b><small>${esc(c.autor || "—")} · original ${esc(c.tono || "")}</small></div><span class="chips"><span class="chip mio">★ ${esc(t.tono)}${t.capo ? " · capo " + t.capo : ""}</span></span></a></li>`).join("")}</ul>`
@@ -2104,12 +2280,7 @@ function vPerfil() {
   return {
     band: bandHTML({ tag: "Perfil", titulo: "Mi <em>perfil</em>", sub: `${email && D.nube ? `<span>${esc(email)}</span>` : ""}${esSuper() && D.nube ? "<span>Desarrollador</span>" : ""}` }),
     main: `
-      <section class="perfilcab">
-        <div class="fotoedit"><label class="fotobtn" title="Cambiar foto">${avatar(p, email, "grande")}<span>📷</span><input type="file" id="pfoto" accept="image/*" hidden></label>
-          ${p.foto ? `<button type="button" class="btn xs ghost" id="pfotoq">Quitar foto</button>` : `<small class="status">Toca para poner tu foto</small>`}</div>
-        <div><h2>${esc(p.nombre || "Sin nombre")}</h2><p>${p.usuario ? "@" + esc(p.usuario) : "Aún sin @usuario"}${p.voz ? " · " + esc(p.voz) : ""}</p>
-          <div class="row" style="gap:6px;margin-top:8px">${mins.map(({ m, min }) => `<a class="chip" href="#ministerio/${min.id}" title="${m.rol === "admin" ? "Editar logo y colores" : "Ver perfil del ministerio"}">${esc(min.nombre)} · ${esc({ admin: "Admin", musico: "Músico", lector: "Solo ver" }[m.rol])}${m.rol === "admin" ? " · 🎨" : ""}</a>`).join("") || `<a class="chip" href="#ministerios">Sin ministerio · pedir entrar</a>`}</div></div>
-      </section>
+      ${cartaPerfil({ id: yo() ? yo().id : "", ...p }, { mio: true, email: D.nube ? email : "" })}
       <form class="caja" id="fperfil"><h3>Mis datos</h3>
         <div class="grid2 perfilcampos">
           <label class="lb">Nombre <small>Así te ve el equipo</small><input class="field" name="nombre" value="${esc(p.nombre || "")}" maxlength="60" required autocomplete="name"></label>
@@ -2150,13 +2321,7 @@ function vPerfil() {
         await D.guardar("cif_perfiles", { ...act, nombre, usuario: usuario || null, voz: voz || null, artista: f.artista.checked, bio: f.bio.value.trim().slice(0, 280) || null, favoritas: favEd.slice(0, 5) });
         favEd = null; f.querySelector("button").blur(); toast("Perfil guardado."); render();
       };
-      // foto: se recorta y comprime aquí mismo y se guarda al momento
-      $("#pfoto").onchange = async ev => {
-        const a = ev.target.files[0]; if (!a) return;
-        try { const foto = await fotoChica(a); await D.guardar("cif_perfiles", { ...(miPerfil() || { id: yo().id, estilo: st.estilo }), foto }); toast("Foto guardada."); render(); }
-        catch (er) { toast(er.message); }
-      };
-      const fq = $("#pfotoq"); if (fq) fq.onclick = async () => { await D.guardar("cif_perfiles", { ...miPerfil(), foto: null }); toast("Foto quitada."); render(); };
+      enlazarCarta();
       // favoritas: se editan aquí y se guardan con «Guardar cambios»
       const pintaFav = () => { $("#pfavs").innerHTML = favoritasHTML(); $$("[data-favq]").forEach(b => b.onclick = () => { favEd = favEd.filter(x => x !== b.dataset.favq); pintaFav(); }); };
       pintaFav();
