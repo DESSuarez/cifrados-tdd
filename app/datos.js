@@ -309,7 +309,20 @@
     return { enviar: payload => ch.send({ type: "broadcast", event: "pos", payload }), salir: () => { sb.removeChannel(ch); vivos.delete(setId); } };
   }
 
-  async function sincronizar() { if (red) { await subirRed(); await bajarRed().catch(() => {}); conectarWS(); return; } await subir(); await bajar(); }
+  async function sincronizar() { if (red) { await subirRed(); await bajarRed().catch(() => {}); conectarWS(); return; } await subir(); await bajar(); reenviarHuerfanas(); }
+  // Canciones creadas en este dispositivo que la nube rechazó antes (p. ej. por la regla de suscripción, migración 014):
+  // nunca recibieron datos del servidor (no traen creada_por). Una vez por sesión se buscan y se vuelven a subir.
+  let huerfanasRevisadas = false;
+  async function reenviarHuerfanas() {
+    if (!nube || !estado.usuario || huerfanasRevisadas) return;
+    huerfanasRevisadas = true;
+    const locales = [...mem.cif_canciones.values()].filter(r => !r.borrada && !r.creada_por && !sinSubir.has("cif_canciones|" + r.id));
+    if (!locales.length) return;
+    const { data, error } = await sb.from("cif_canciones").select("id").in("id", locales.map(r => r.id));
+    if (error) { huerfanasRevisadas = false; return; }
+    const enNube = new Set((data || []).map(r => r.id));
+    for (const r of locales.filter(x => !enNube.has(x.id))) await guardar("cif_canciones", { ...r, creada_por: estado.usuario.id });
+  }
   window.addEventListener("online", () => { estado.enLinea = true; avisaEstado(); sincronizar(); });
   window.addEventListener("offline", () => { estado.enLinea = false; avisaEstado(); });
   // Celulares: al volver a la app (o a la pestaña) se sincroniza y se reabre el tiempo real; además cada 30 s a la vista.

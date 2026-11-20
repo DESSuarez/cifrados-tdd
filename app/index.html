@@ -709,11 +709,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=32"></script>
-<script src="cifrado.js?v=32"></script>
-<script src="senas.js?v=32"></script>
-<script src="datos.js?v=32"></script>
-<script src="pdf.js?v=32"></script>
+<script src="config.publico.js?v=33"></script>
+<script src="cifrado.js?v=33"></script>
+<script src="senas.js?v=33"></script>
+<script src="datos.js?v=33"></script>
+<script src="pdf.js?v=33"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -2083,6 +2083,9 @@ function enlazarEditor(base) {
     // se editó en el tono de quien edita: se guarda de vuelta en el tono original
     if (ed.tonoGuardar && fila.tono !== ed.tonoGuardar) { fila.contenido = transportaTexto(fila.contenido, C.distancia(fila.tono, ed.tonoGuardar), C.usaBemoles(ed.tonoGuardar)); fila.tono = ed.tonoGuardar; }
     if (!base && !fila.ministerio_id) fila.ministerio_id = minActual() ? minActual().id : null;
+    if (!base && yo()) fila.creada_por = yo().id; // así sale en «Canciones que ha subido» de su perfil
+    // en un ministerio donde no es músico o admin no la puede guardar: queda a su nombre, sin ministerio
+    if (!base && fila.ministerio_id && D.nube && !["admin", "musico"].includes(rolEn(fila.ministerio_id))) fila.ministerio_id = null;
     if (fila.visibilidad === "ministerio" && !fila.ministerio_id) return toast("Elige de qué ministerio es la canción.");
     const r = await D.guardar("cif_canciones", fila);
     st.editando = false; const id = r.id; ed = null; toast("Canción guardada."); location.hash = "#cancion/" + id;
@@ -2395,6 +2398,40 @@ function vMinisterios() {
       $$("[data-ir]").forEach(t => { const ir = () => (location.hash = "#ministerio/" + t.dataset.ir); t.onclick = e => { if (!e.target.closest("button,a,select,input")) ir(); }; t.onkeydown = e => { if (e.key === "Enter" && e.target === t) ir(); }; });
     },
   };
+}
+
+// ================= CANCIONES QUE SUBIÓ UNA PERSONA (en su perfil) =================
+// En la nube: RPC cif_subidas (migración 014), las del banco y las que tú ya ves. Sin nube: las de este dispositivo.
+const subidas = {}; // persona → {res, cargando, error, q, t}
+function subidasHTML(id, soyYo) {
+  const s = subidas[id] || (subidas[id] = { res: null, cargando: false, error: "", q: "", t: 0 });
+  if (!s.cargando && (s.res === null || Date.now() - s.t > 30000)) {
+    s.cargando = true; s.t = Date.now();
+    (D.nube ? D.consulta("cif_subidas", { p: id }) : Promise.resolve(D.lista("cif_canciones").filter(c => !c.borrada && c.creada_por === id).map(c => ({ ...c, ministerio: c.ministerio_id ? nombreMin(c.ministerio_id) : "" }))))
+      .then(r => { s.res = r || []; s.error = ""; }).catch(e => { s.error = e.message || String(e); if (s.res === null) s.res = []; })
+      .finally(() => { s.cargando = false; if (ruta().v === "persona") render(); });
+  }
+  const mias = new Set(canciones().map(c => tituloN(c.titulo)));
+  const m = minActual(), puede = !!m && ["admin", "musico"].includes(rolEn(m.id));
+  const q = norm(s.q), lista = (s.res || []).filter(r => !q || norm(r.titulo + " " + r.autor).includes(q));
+  return `<section class="caja subidas"><div class="row"><h3 style="margin:0">🎵 ${soyYo ? "Canciones que he subido" : "Canciones que ha subido"}${s.res ? ` <small class="status">${s.res.length}</small>` : ""}</h3><span class="sp"></span>
+      ${(s.res || []).length > 6 ? `<input class="field" id="subq" type="search" placeholder="Buscar en sus canciones…" value="${esc(s.q)}" style="max-width:260px;height:40px" autocomplete="off">` : ""}</div>
+    ${s.error && /cif_subidas|function/i.test(s.error) ? `<p class="status">Falta correr la migración 014 en Supabase para ver esta lista.</p>` : ""}
+    ${s.res === null ? `<p class="status">Buscando…</p>` : !s.res.length ? `<p class="status">${soyYo ? "Aún no subes canciones. Las que des de alta en «Nueva canción» aparecen aquí y en el banco." : "Aún no ha subido canciones al banco."}</p>`
+      : `<ul class="songs">${lista.slice(0, 200).map(r => {
+          const tengo = mias.has(tituloN(r.titulo)), enLib = tengo && canciones().find(c => tituloN(c.titulo) === tituloN(r.titulo));
+          return `<li><div class="srow brow"><div>${enLib ? `<a href="#cancion/${enLib.id}"><b>${esc(r.titulo)}</b></a>` : `<b>${esc(r.titulo)}</b>`}<small>${artistasHTML(r, false) || "—"}${r.ministerio ? `<span class="etq"> · ${esc(r.ministerio)}</span>` : ""}</small></div>
+            <span class="chips">${r.tono ? `<span class="chip tono">${esc(r.tono)}</span>` : ""}${tengo ? `<span class="chip pista">✓ En tu librería</span>` : puede ? `<button class="btn xs badd" data-sadd="${r.id}">＋ Añadir a la librería</button>` : ""}</span></div></li>`;
+        }).join("")}</ul>`}
+  </section>`;
+}
+function enlazarSubidas(id) {
+  const sq = $("#subq"); if (sq) sq.oninput = () => { subidas[id].q = sq.value; const pos = sq.selectionStart; render(); const n = $("#subq"); if (n) { n.focus(); n.setSelectionRange(pos, pos); } };
+  $$("[data-sadd]").forEach(b => b.onclick = async () => {
+    b.disabled = true; b.textContent = "Añadiendo…";
+    try { const n = await agregarDelBanco([b.dataset.sadd]); b.outerHTML = `<span class="chip pista">✓ En tu librería</span>`; toast(n ? `Añadida a la librería de ${minActual().nombre}.` : "Ya estaba en tu librería."); }
+    catch (e) { b.disabled = false; b.textContent = "＋ Añadir a la librería"; toast(e.message || String(e)); }
+  });
 }
 
 // ================= BANCO DE CANCIONES =================
@@ -2798,6 +2835,7 @@ function vPersona(id) {
           <select class="field" name="tono" aria-label="Tono">${C.TONOS.map(t => `<option>${t}</option>`).join("")}</select>
           <select class="field" name="capo" aria-label="Capo">${[0, 1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}">${n ? "Capo " + n : "Sin capo"}</option>`).join("")}</select>
           <button class="btn">Guardar tono</button></div></form>` : ""}
+      ${subidasHTML(id, soyYo)}
       <h2 class="status" style="margin:0">TONOS GUARDADOS</h2>
       ${tonos.length ? `<ul class="songs">${tonos.map(({ t, c }) => `<li><a class="srow" href="#cancion/${c.id}" data-vertono="${esc(t.tono)}" data-capo="${t.capo || 0}" data-cid="${c.id}"><div><b>${esc(c.titulo)}</b><small>${esc(c.autor || "—")} · original ${esc(c.tono || "")}</small></div><span class="chips"><span class="chip mio">★ ${esc(t.tono)}${t.capo ? " · capo " + t.capo : ""}</span>${puedoAsignarA(id) ? `<button class="xmini" data-tquita="${c.id}" title="Quitar este tono">✕</button>` : ""}</span></a></li>`).join("")}</ul>`
         : `<div class="empty"><strong>${soyYo ? "Aún no guardas tonos" : "Sin tonos guardados"}</strong><p>${soyYo ? "Abre una canción, ponla en tu tono y toca «★ Este es mi tono». Queda en tu perfil y lo ve tu equipo." : "Cuando guarde tonos aparecerán aquí."}</p></div>`}`,
@@ -2816,6 +2854,7 @@ function vPersona(id) {
         };
       }
       $$("[data-tquita]").forEach(x => x.onclick = async ev => { ev.preventDefault(); ev.stopPropagation(); if (!(await confirmar("¿Quitar este tono?"))) return; await D.borrar("cif_tonos", { cancion_id: x.dataset.tquita, persona_id: id }); toast("Tono quitado."); });
+      enlazarSubidas(id);
       // al abrir desde aquí, la canción se ve en el tono de esta persona
       $$("[data-vertono]").forEach(x => x.onclick = () => { st.tonoVista[x.dataset.cid] = x.dataset.vertono; st.capo[x.dataset.cid] = +x.dataset.capo; });
     },

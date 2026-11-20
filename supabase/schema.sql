@@ -789,5 +789,30 @@ create policy t_propio on cif_tonos for all to authenticated
     select 1 from cif_miembros a join cif_miembros b on b.ministerio_id = a.ministerio_id
     where a.persona_id = auth.uid() and a.rol = 'admin' and b.persona_id = cif_tonos.persona_id));
 
+-- =====================================================================
+-- Versión 15: cualquier usuario sube canciones + «Canciones que ha subido» (= migraciones/014)
+-- =====================================================================
+
+-- 1) Subir canciones: cualquier usuario con sesión, a su nombre; si la pone en un ministerio, debe ser músico o admin de él
+drop policy if exists c_alta on cif_canciones;
+create policy c_alta on cif_canciones for insert to authenticated
+  with check (
+    cif_super()
+    or (coalesce(creada_por, auth.uid()) = auth.uid()
+        and (ministerio_id is null or cif_rol(ministerio_id) in ('admin', 'musico'))));
+
+-- 2) Canciones que subió una persona (las del banco y las que tú ya puedes ver), para su perfil
+create or replace function cif_subidas(p uuid)
+returns table (id uuid, titulo text, autor text, tono text, etiquetas text[], ministerio_id uuid, ministerio text, actualizado timestamptz)
+language sql stable security definer set search_path = public as $$
+  select c.id, c.titulo, c.autor, c.tono, c.etiquetas, c.ministerio_id, m.nombre, c.actualizado
+  from cif_canciones c left join cif_ministerios m on m.id = c.ministerio_id
+  where auth.uid() is not null and c.creada_por = p and not c.borrada
+    and (coalesce(c.visibilidad, 'todos') = 'todos' or cif_ve(c.ministerio_id, c.compartida_con, c.autor, c.etiquetas, c.titulo))
+  order by c.actualizado desc
+  limit 500 $$;
+grant execute on function cif_subidas(uuid) to authenticated;
+revoke execute on function cif_subidas(uuid) from anon;
+
 -- Primer superadmin (cambia el correo y corre esta línea):
 -- update cif_perfiles set superadmin = true where id = (select id from auth.users where email = 'tu-correo@tiempodedios.mx');
