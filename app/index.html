@@ -323,6 +323,8 @@ dialog::backdrop{background:rgba(0,0,0,.5)}
 .buscador{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .buscador #q{flex:1 1 280px}
 .buscador .btn{flex:0 0 132px;justify-content:center;padding-inline:10px}
+.brow{cursor:default}
+.bandlink{color:var(--baby);font-weight:700;text-decoration:none}.bandlink:hover{text-decoration:underline}
 @media (max-width:640px){.buscador #q{flex-basis:100%}.buscador .btn{flex:1 1 0;min-width:0}}
 .letra-h{font:500 12px var(--mono);letter-spacing:.12em;color:var(--muted);padding:14px 4px 6px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:2}
 .songs{list-style:none;margin:0;padding:0}
@@ -622,11 +624,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=20"></script>
-<script src="cifrado.js?v=20"></script>
-<script src="senas.js?v=20"></script>
-<script src="datos.js?v=20"></script>
-<script src="pdf.js?v=20"></script>
+<script src="config.publico.js?v=21"></script>
+<script src="cifrado.js?v=21"></script>
+<script src="senas.js?v=21"></script>
+<script src="datos.js?v=21"></script>
+<script src="pdf.js?v=21"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -652,6 +654,7 @@ const IC = {
   menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
   x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   marca: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7.5" r="1"/><circle cx="15" cy="7.5" r="1"/></svg>',
+  buscar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>',
   lado: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg>',
   nota: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
   amigos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M19 8v6M16 11h6"/></svg>',
@@ -806,10 +809,16 @@ function minActual() {
 // La librería muestra lo que ve el ministerio elegido arriba del menú (así el desarrollador ve lo mismo que cada ministerio).
 const hayColectivo = () => D.lista("cif_ministerios").some(m => "colectivo" in m); // false si aún no se corre la 009
 const esColectivo = id => { const m = id && D.uno("cif_ministerios", id); return !!(m && m.colectivo); };
+// Librería de cada ministerio (igual que cif_lib_ve en SQL, migración 011): sus canciones y las que le compartieron,
+// las de Tiempo de Dios (todos) y las litúrgicas (ministerios del colectivo). Lo demás se trae del banco con «Añadir».
+// Mientras no se corra la 011 hay canciones sin ministerio: entonces sigue la regla anterior (el colectivo comparte todo).
+let _lib = { t: 0, v: false };
+const libPorMinisterio = () => { const ahora = Date.now(); if (ahora - _lib.t > 1500) _lib = { t: ahora, v: !D.lista("cif_canciones").some(c => !c.borrada && !c.ministerio_id) }; return _lib.v; };
 function minVe(x, c) {
-  if (esTDD(c)) return true;
   if (c.ministerio_id === x || (c.compartida_con || []).includes(x)) return true;
-  return (c.visibilidad || "todos") === "todos" && esColectivo(x) && (!c.ministerio_id || esColectivo(c.ministerio_id));
+  if (esTDD(c)) return true;
+  if (!libPorMinisterio()) return (c.visibilidad || "todos") === "todos" && esColectivo(x) && (!c.ministerio_id || esColectivo(c.ministerio_id));
+  return esLiturgica(c) && esColectivo(x);
 }
 const veCancion = c => {
   if (!hayColectivo()) return D.modo === "local" || (c.visibilidad || "todos") === "todos" || esSuper() || (yo() && c.creada_por === yo().id)
@@ -819,7 +828,7 @@ const veCancion = c => {
   return esSuper() || esTDD(c) || !!(yo() && c.creada_por === yo().id);
 };
 /** Cómo se llama «abierta» para esta canción: todo el colectivo o solo su ministerio (si es de fuera). */
-const abiertaTxt = c => (!hayColectivo() ? "Toda la librería" : !c.ministerio_id || esColectivo(c.ministerio_id) ? "Todo el colectivo TDD" : "Todo " + nombreMin(c.ministerio_id));
+const abiertaTxt = c => (!hayColectivo() ? "Toda la librería" : "En el banco de canciones");
 const nombreMin = id => (D.uno("cif_ministerios", id) || {}).nombre || "otro ministerio";
 const esPrivada = c => (c.visibilidad || "todos") === "ministerio";
 /** ¿Puedo cambiar con quién se comparte? (músico/admin de su ministerio, quien la creó, o desarrollador) */
@@ -924,6 +933,7 @@ function shell(band, main) {
     <nav class="areanav">
       <div class="sidesec">Música</div>
       ${nav("libreria", "libreria", "Librería", IC.lib, "--flame", canciones().length)}
+      ${hayColectivo() || !D.nube ? nav("banco", "banco", "Banco de canciones", IC.buscar, "--baby-ink") : ""}
       ${nav("sets", "sets", m ? "Sets · " + esc(m.nombre) : "Sets", IC.set, "--sea", nSets)}
       ${esMusico() ? nav("nueva", "nueva", "Nueva canción", IC.mas, "--sol") : ""}
       <div class="sidesec">Equipo</div>
@@ -981,7 +991,7 @@ function render() {
   let out;
   try {
     out = r.v === "cancion" ? vCancion(r.p) : r.v === "sets" ? vSets() : r.v === "set" ? vSet(r.p[0]) : r.v === "nueva" ? vEditor(null) : r.v === "editar" ? vEditor(r.p[0]) :
-      r.v === "senas" ? vSenas() : r.v === "ministerios" ? vMinisterios() : r.v === "ajustes" ? vAjustes() : r.v === "perfil" ? vPerfil() : r.v === "amigos" ? vAmigos() : r.v === "usuarios" ? vUsuarios() : r.v === "persona" ? vPersona(r.p[0]) : r.v === "ministerio" ? vMinisterio(r.p[0]) : vLibreria();
+      r.v === "senas" ? vSenas() : r.v === "ministerios" ? vMinisterios() : r.v === "ajustes" ? vAjustes() : r.v === "perfil" ? vPerfil() : r.v === "amigos" ? vAmigos() : r.v === "usuarios" ? vUsuarios() : r.v === "persona" ? vPersona(r.p[0]) : r.v === "ministerio" ? vMinisterio(r.p[0]) : r.v === "banco" ? vBanco() : vLibreria();
   } catch (e) { console.error(e); out = { band: bandHTML({ titulo: "Algo falló" }), main: `<p class="status">${esc(e.message)}</p>`, }; }
   const y = window.scrollY;
   app.innerHTML = shell(out.band, out.main);
@@ -1111,7 +1121,7 @@ function vLibreria() {
       : enTab.length ? `<div class="empty"><strong>Nada con esos filtros</strong><p>Prueba con otra palabra o quita filtros.</p></div>`
       : `<div class="empty"><strong>${vacio[0]}</strong><p>${vacio[1]}</p>${st.tab !== "tdd" || !todas.length ? `<div class="row">${suscrito() && esMusico() ? `<button class="btn" id="imp2">Importar de SongbookPro</button>` : ""}${esMusico() ? `<a class="btn ghost" href="#nueva">Crear una</a>` : ""}</div>` : `<button class="btn ghost" data-ir-tab="otras">Ver las demás canciones (${n.otras})</button>`}</div>`}`;
   return {
-    band: bandHTML({ titulo: "La <em>librería</em>", sub: `<span><b>${todas.length}</b> canciones</span><span>${!hayColectivo() ? "compartidas con todos los ministerios" : minActual() ? (esColectivo(minActual().id) ? "del colectivo Tiempo de Dios y de " + esc(minActual().nombre) : "de " + esc(minActual().nombre) + " y de Tiempo de Dios") : "todas"}</span>`,
+    band: bandHTML({ titulo: "La <em>librería</em>", sub: `<span><b>${todas.length}</b> canciones</span><span>${!hayColectivo() ? "compartidas con todos los ministerios" : minActual() ? "librería de " + esc(minActual().nombre) + (esColectivo(minActual().id) ? " · con Tiempo de Dios y litúrgicas" : " · con Tiempo de Dios") : "todas"}</span><a class="bandlink" href="#banco">Buscar más en el banco →</a>`,
       tabs: tabsHTML([["tdd", "Tiempo de Dios", n.tdd], ["otras", "Otras canciones", n.otras], ["liturgicas", "Litúrgicas", n.liturgicas]], st.tab) }),
     main,
     after() {
@@ -2145,6 +2155,70 @@ function vMinisterios() {
   };
 }
 
+// ================= BANCO DE CANCIONES =================
+// Todas las canciones abiertas de todos los ministerios. Se busca por título o artista y «＋ Añadir» copia la canción
+// a la librería del ministerio elegido arriba del menú (en la nube: cif_banco y cif_agregar, migración 011).
+const banco = { q: "", res: null, cargando: false, error: "", pide: 0 };
+async function buscarBanco() {
+  const yo_ = ++banco.pide;
+  if (!D.nube) {
+    const q = norm(banco.q), vistos = new Set();
+    banco.res = D.lista("cif_canciones").filter(c => !c.borrada && (c.visibilidad || "todos") === "todos" && (!q || norm(c.titulo + " " + c.autor).includes(q)))
+      .sort((a, b) => a.titulo.localeCompare(b.titulo, "es"))
+      .filter(c => { const k = tituloN(c.titulo) + "|" + norm(c.autor); if (vistos.has(k)) return false; vistos.add(k); return true; })
+      .map(c => ({ ...c, ministerio: c.ministerio_id ? nombreMin(c.ministerio_id) : "" })).slice(0, 300);
+    render(); return;
+  }
+  banco.cargando = true; banco.error = ""; render();
+  try { const r = await D.consulta("cif_banco", { q: banco.q, lim: 300 }); if (yo_ === banco.pide) banco.res = r || []; }
+  catch (e) { banco.error = e.message || String(e); }
+  banco.cargando = false; if (yo_ === banco.pide) render();
+}
+async function agregarDelBanco(ids) {
+  const m = minActual(); if (!m) return toast("Elige arriba del menú a qué ministerio añadir.");
+  if (D.nube) { const n = await D.rpc("cif_agregar", { ids, destino: m.id }); return n; }
+  let n = 0;
+  for (const id of ids) {
+    const c = D.uno("cif_canciones", id); if (!c) continue;
+    if (canciones().some(x => tituloN(x.titulo) === tituloN(c.titulo))) continue;
+    const { actualizado, actualizado_por, creada_por, ...resto } = c;
+    await D.guardar("cif_canciones", { ...resto, id: D.uuid(), ministerio_id: m.id, visibilidad: "todos", compartida_con: [], origen: "banco", creada_por: yo() ? yo().id : null }); n++;
+  }
+  return n;
+}
+function vBanco() {
+  if (banco.res === null && !banco.cargando && !banco.error) setTimeout(buscarBanco, 0);
+  const m = minActual(), puede = !!m && ["admin", "musico"].includes(rolEn(m.id));
+  const mias = new Set(canciones().map(c => tituloN(c.titulo)));
+  const res = banco.res || [], faltan = res.filter(r => !mias.has(tituloN(r.titulo)));
+  return {
+    band: bandHTML({ tag: "Música", titulo: "Banco de <em>canciones</em>", sub: `<span>Las canciones que suben todos los ministerios</span><span>${m ? "Lo que añadas va a la librería de <b>" + esc(m.nombre) + "</b>" : "Elige un ministerio arriba del menú"}</span>` }),
+    main: `
+      <div class="buscador"><input class="field" id="bq" type="search" placeholder="Busca por título o artista…" value="${esc(banco.q)}" autocomplete="off">
+        ${puede && faltan.length > 1 ? `<button class="btn ghost" id="baddall" style="flex-basis:auto">＋ Añadir las ${faltan.length} que no tengo</button>` : ""}</div>
+      <p class="status" style="margin:0">${banco.cargando ? "Buscando…" : banco.error ? "" : `${res.length}${res.length >= 300 ? "+" : ""} canciones${banco.q ? " para «" + esc(banco.q) + "»" : ""} · ${res.length - faltan.length} ya están en tu librería`}${!puede && m ? " · Solo músicos y admins de " + esc(m.nombre) + " pueden añadir" : ""}</p>
+      ${banco.error ? `<div class="empty"><strong>No se pudo leer el banco</strong><p>${esc(banco.error)}</p><p>Revisa que esté corrida la migración 011 en Supabase.</p></div>` : ""}
+      <ul class="songs">${res.map(r => `<li><div class="srow brow"><div><b>${esc(r.titulo)}</b><small>${artistasHTML(r, false) || "—"}${r.ministerio ? `<span class="etq"> · subida por ${esc(r.ministerio)}</span>` : ""}${r.copias > 1 ? `<span class="etq"> · en ${r.copias} librerías</span>` : ""}</small></div>
+        <span class="chips">${r.tono ? `<span class="chip tono">${esc(r.tono)}</span>` : ""}${mias.has(tituloN(r.titulo)) ? `<span class="chip pista">✓ En tu librería</span>` : puede ? `<button class="btn xs" data-badd="${r.id}">＋ Añadir</button>` : ""}</span></div></li>`).join("")}</ul>
+      ${!banco.cargando && banco.res && !res.length ? `<div class="empty"><strong>Sin resultados</strong><p>Prueba con otra parte del título o con el nombre del artista.</p></div>` : ""}`,
+    after() {
+      const bq = $("#bq"); let t;
+      bq.oninput = () => { banco.q = bq.value; clearTimeout(t); t = setTimeout(async () => { await buscarBanco(); const n = $("#bq"); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } }, 300); };
+      $$("[data-badd]").forEach(b => b.onclick = async () => {
+        b.disabled = true; b.textContent = "Añadiendo…";
+        try { const n = await agregarDelBanco([b.dataset.badd]); toast(n ? `Añadida a la librería de ${minActual().nombre}.` : "Ya estaba en tu librería."); render(); }
+        catch (e) { b.disabled = false; b.textContent = "＋ Añadir"; toast(e.message || String(e)); }
+      });
+      const ba = $("#baddall"); if (ba) ba.onclick = async () => {
+        if (!(await confirmar(`¿Añadir ${faltan.length} canciones a la librería de ${minActual().nombre}?`, "Se copian: cada quien puede editar las suyas sin tocar las de los demás."))) return;
+        ba.disabled = true;
+        try { const n = await agregarDelBanco(faltan.map(r => r.id)); toast(`${n} canciones añadidas a ${minActual().nombre}.`); render(); }
+        catch (e) { ba.disabled = false; toast(e.message || String(e)); }
+      };
+    },
+  };
+}
+
 // ================= ENVÍOS E INTERCAMBIOS DE CANCIONES =================
 // Un ministerio le «envía» a otro las canciones que el otro no tiene, o «intercambian» en los dos sentidos.
 // El admin del que recibe acepta; en la nube copia cif_transferir() (migración 009); sin nube se copia aquí mismo.
@@ -2160,7 +2234,7 @@ async function copiarLocal(origen, destino) {
   const lista = faltanEn(origen, destino);
   for (const c of lista) {
     const { id, actualizado, actualizado_por, creada_por, ...resto } = c;
-    await D.guardar("cif_canciones", { ...resto, id: D.uuid(), ministerio_id: destino, visibilidad: "ministerio", compartida_con: [], origen: "intercambio", creada_por: yo() ? yo().id : null });
+    await D.guardar("cif_canciones", { ...resto, id: D.uuid(), ministerio_id: destino, visibilidad: "todos", compartida_con: [], origen: "intercambio", creada_por: yo() ? yo().id : null });
   }
   return lista.length;
 }

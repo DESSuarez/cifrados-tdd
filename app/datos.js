@@ -353,6 +353,7 @@
     const { error } = await sb.auth.updateUser({ password, ...(nombre ? { data: { nombre } } : {}) });
     if (error) throw error;
   }
+  async function consulta(nombre, args) { if (!nube) throw new Error("Sin nube"); const { data, error } = await sb.rpc(nombre, args); if (error) throw error; return data; }
   async function rpc(nombre, args) { if (!nube) throw new Error("Sin nube"); const { data, error } = await sb.rpc(nombre, args); if (error) throw error; await bajar(); return data; }
 
   // ---------- Audio (pistas) ----------
@@ -382,7 +383,7 @@
     uno: (t, id) => mem[t].get(id),
     alCambiar: f => oyentes.add(f),
     alEstado: f => (oyEstado.add(f), f({ ...estado })),
-    entrar, registrarse, recuperar, salir, rpc, fn, nuevaClave, canalVivo,
+    entrar, registrarse, recuperar, salir, rpc, consulta, fn, nuevaClave, canalVivo,
     subirAudio, audio, borrarAudio, audioLocal,
     nube, sb, modo: MODO, red,
     entrarRed, elegirYo, pinRed, enviarARed, traerDeRed,
