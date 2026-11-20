@@ -82,12 +82,22 @@ a{color:var(--area-ink)}
 .sync{display:flex;align-items:center;gap:8px;font:500 12px var(--mono);color:var(--muted);padding:8px 10px;border-radius:10px;background:var(--bg);border:1px solid var(--line);cursor:pointer;text-align:left}
 .sync i{width:9px;height:9px;border-radius:50%;flex:none;background:#1DB954}
 .sync.pend i{background:var(--sol)}.sync.off i{background:var(--muted)}.sync.local i{background:var(--baby-ink)}.sync.err i{background:var(--flame)}
-.userbar{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:12px}
-.acct{flex:1;min-width:0;display:flex;align-items:center;gap:10px;height:48px;padding:0 10px 0 7px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);text-align:left;text-decoration:none}
+/* tarjeta de cuenta a todo lo ancho; abajo Apariencia y Salir */
+.userbar{position:relative;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:12px}
+.ubtns{display:flex;gap:6px}
+.ubtn{flex:1;height:36px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:700;font-size:13px;padding:0 10px}
+.ubtn:hover{border-color:var(--flame)}
+.ubtn svg{width:16px;height:16px;flex:none}
+.temamenu{position:absolute;left:0;right:0;bottom:calc(100% + 6px);background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 18px 40px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:2px;z-index:60}
+.temamenu button{display:flex;align-items:center;gap:10px;border:0;background:none;color:var(--fg);padding:9px 10px;border-radius:9px;font-weight:700;font-size:14px;text-align:left}
+.temamenu button:hover{background:var(--surface)}
+.temamenu button span{width:22px;text-align:center}
+.temamenu button b{margin-left:auto;color:var(--flame)}
+.acct{flex:1;min-width:0;display:flex;align-items:center;gap:10px;height:52px;padding:0 10px 0 8px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);text-align:left;text-decoration:none}
 .acct:hover{border-color:var(--flame)}
 .av{width:32px;height:32px;border-radius:50%;background:var(--flame);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
 .acct>span:not(.av){flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
-.acct b{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.acct small{font-size:11.5px;color:var(--muted)}
+.acct b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.acct small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .temabtn{width:48px;height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);display:grid;place-items:center;padding:0}
 .temabtn svg{width:20px;height:20px}
 .mtop{display:none;align-items:center;gap:6px;margin:-8px 0 -4px -8px}
@@ -397,6 +407,10 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 .tonosbar .sp{flex:1}
 .tonosbar .fijo{cursor:default;background:var(--flame-soft);color:var(--flame);border-color:transparent}
 .fsel{height:34px;border:1.5px solid var(--line);border-radius:99px;background:var(--bg);padding:0 12px;font-weight:700;font-size:13px;max-width:220px}
+/* flecha propia con aire respecto al borde (la nativa quedaba pegada) */
+select.fsel{-webkit-appearance:none;appearance:none;padding:0 34px 0 14px;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A9493' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 13px center;background-size:14px}
 .fsel.on{border-color:var(--area);color:var(--area-ink)}
 .filtros{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:-8px}
 .momento{border:1px solid var(--line);border-left:5px solid var(--sea);border-radius:14px;padding:12px 14px;background:var(--surface);display:flex;flex-direction:column;gap:8px}
@@ -420,6 +434,15 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 .xmini{border:0;background:none;color:var(--muted);padding:0 0 0 4px;font-size:11px;cursor:pointer}
 .xmini:hover{color:var(--flame)}
 .perfilcampos{align-items:start}
+.perfilcampos .lb{gap:4px}
+.perfilcampos .lb small{order:0}
+.perfilcab{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.perfilcab h2{margin:0;font:900 26px var(--display);font-stretch:110%}
+.perfilcab p{margin:2px 0 0;color:var(--muted);font-family:var(--mono);font-size:13px}
+.av.grande{width:76px;height:76px;font-size:28px}
+.arroba{position:relative;display:block}
+.arroba b{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700}
+.arroba .field{padding-left:32px}
 .perfilcampos .lb small{font-size:12.5px;margin-top:-2px}
 .ualta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
 </style>
@@ -427,10 +450,10 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=5"></script>
-<script src="cifrado.js?v=5"></script>
-<script src="senas.js?v=5"></script>
-<script src="datos.js?v=5"></script>
+<script src="config.publico.js?v=6"></script>
+<script src="cifrado.js?v=6"></script>
+<script src="senas.js?v=6"></script>
+<script src="datos.js?v=6"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -446,6 +469,7 @@ const IC = {
   mano: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5a1.5 1.5 0 0 1 3 0v6M11 11V4a1.5 1.5 0 0 1 3 0v7M14 11V5.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-1a6 6 0 0 1-5-3l-2.4-4a1.5 1.5 0 0 1 2.5-1.6L8 15"/></svg>',
   gente: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>',
   ajus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
+  perfil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
   play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>',
   pausa: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>',
   sol: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
@@ -568,12 +592,18 @@ function shell(band, main) {
       ${nav("ministerios", "ministerios", "Ministerios", IC.gente, "--rosa", pendMin().length || "")}
       ${nav("amigos", "amigos", "Amigos y sus tonos", IC.amigos, "--sea", pendAmigos().length || "")}
       ${esSuper() ? nav("usuarios", "usuarios", "Usuarios", IC.gente, "--sol", D.nube ? "" : D.lista("cif_perfiles").length) : ""}
-      ${nav("ajustes", "ajustes", "Mi perfil y estilo", IC.ajus, "--baby-ink")}
+      ${nav("perfil", "perfil", "Mi perfil", IC.perfil, "--rosa")}
+      ${nav("ajustes", "ajustes", "Estilo y respaldo", IC.ajus, "--baby-ink")}
     </nav>
     <button class="sync" id="syncb" title="Sincronizar ahora"><i></i><span id="synct">…</span></button>
-    <div class="userbar"><a class="acct" href="#ajustes"><span class="av">${esc(iniciales(nm))}</span><span><b>${esc(nm)}</b><small>${esc(m ? m.nombre + " · " + (rolEn(m.id) || "") : D.nube ? "Sin ministerio" : "Modo local")}</small></span></a>
-      <button class="temabtn" id="temab" title="Día / Noche / Retro / Auto">${document.documentElement.dataset.theme === "dark" || document.documentElement.dataset.theme === "retro" ? IC.luna : IC.sol}</button>
-      ${D.nube ? `<button class="temabtn" id="salirb" title="Cerrar sesión" aria-label="Cerrar sesión">${IC.salir}</button>` : ""}</div>
+    <div class="userbar">
+      <a class="acct" href="#perfil" title="Mi perfil"><span class="av">${esc(iniciales(nm))}</span><span><b>${esc(nm)}</b><small>${esc(p && p.usuario ? "@" + p.usuario : "")}${p && p.usuario ? " · " : ""}${esc(m ? m.nombre : D.nube ? "Sin ministerio" : "Modo local")}</small></span></a>
+      <div class="ubtns">
+        <button class="ubtn" id="temab" aria-haspopup="true" aria-expanded="false">${temaActual() === "dia" ? IC.sol : IC.luna}<span>${{ auto: "Auto", dia: "Día", noche: "Noche", retro: "Retro" }[temaActual()]}</span></button>
+        ${D.nube ? `<button class="ubtn" id="salirb">${IC.salir}<span>Salir</span></button>` : ""}
+      </div>
+      <div class="temamenu" id="temamenu" role="menu" hidden>${[["dia", "☀️", "Día"], ["noche", "🌙", "Noche"], ["retro", "👾", "Retro"], ["auto", "◐", "Auto (como tu sistema)"]].map(([k, i, l]) => `<button role="menuitemradio" aria-checked="${temaActual() === k}" data-tm="${k}"><span>${i}</span>${l}${temaActual() === k ? '<b>✓</b>' : ""}</button>`).join("")}</div>
+    </div>
   </aside>
   <div class="sideborde" id="sideborde"></div>
   <div class="maincol">
@@ -601,7 +631,7 @@ function render() {
   let out;
   try {
     out = r.v === "cancion" ? vCancion(r.p) : r.v === "sets" ? vSets() : r.v === "set" ? vSet(r.p[0]) : r.v === "nueva" ? vEditor(null) : r.v === "editar" ? vEditor(r.p[0]) :
-      r.v === "senas" ? vSenas() : r.v === "ministerios" ? vMinisterios() : r.v === "ajustes" ? vAjustes() : r.v === "amigos" ? vAmigos() : r.v === "usuarios" ? vUsuarios() : r.v === "persona" ? vPersona(r.p[0]) : vLibreria();
+      r.v === "senas" ? vSenas() : r.v === "ministerios" ? vMinisterios() : r.v === "ajustes" ? vAjustes() : r.v === "perfil" ? vPerfil() : r.v === "amigos" ? vAmigos() : r.v === "usuarios" ? vUsuarios() : r.v === "persona" ? vPersona(r.p[0]) : vLibreria();
   } catch (e) { console.error(e); out = { band: bandHTML({ titulo: "Algo falló" }), main: `<p class="status">${esc(e.message)}</p>`, }; }
   const y = window.scrollY;
   app.innerHTML = shell(out.band, out.main);
@@ -623,11 +653,11 @@ function enlazarShell() {
   const sb = $("#sideborde"); if (sb) sb.onmouseenter = () => document.documentElement.classList.add("asoma");
   $("#side").onmouseleave = () => document.documentElement.classList.remove("asoma");
   const bSalir = $("#salirb"); if (bSalir) bSalir.onclick = async () => { if (await confirmar("¿Cerrar sesión?", "Se borra la copia de este dispositivo; tus datos siguen en la nube.")) D.salir(); };
-  $("#temab").onclick = () => {
-    const orden = ["auto", "dia", "noche", "retro"], act = ls.get("cifrados-tema-v", "auto");
-    const sig = orden[(orden.indexOf(act) + 1) % orden.length]; aplicarTema(sig);
-    toast({ auto: "Apariencia automática", dia: "Modo día", noche: "Modo noche", retro: "👾 Modo retro" }[sig]);
-  };
+  // Apariencia: menú con las cuatro opciones (antes era un botón que daba vueltas y confundía)
+  const tm = $("#temamenu"), tb = $("#temab");
+  tb.onclick = e => { e.stopPropagation(); tm.hidden = !tm.hidden; tb.setAttribute("aria-expanded", String(!tm.hidden)); };
+  $$("[data-tm]", tm).forEach(b => b.onclick = () => aplicarTema(b.dataset.tm));
+  document.onclick = e => { if (!tm.hidden && !tm.contains(e.target)) { tm.hidden = true; tb.setAttribute("aria-expanded", "false"); } };
   $("#syncb").onclick = () => { if (!D.nube) return toast("Modo local: falta configurar Supabase en config.publico.js"); D.sincronizar(); toast("Sincronizando…"); };
   const ms = $("#minsel"); if (ms) ms.onchange = () => { st.min = ms.value; ls.set("cifrados-min", st.min); render(); };
 }
@@ -646,6 +676,7 @@ document.addEventListener("keydown", e => {
     if (e.key === "Escape") document.body.classList.remove("escenario");
   }
 });
+const temaActual = () => ls.get("cifrados-tema-v", "auto");
 function aplicarTema(t) {
   ls.set("cifrados-tema-v", t);
   try { if (t === "auto") localStorage.removeItem("cifrados-tema"); else localStorage.setItem("cifrados-tema", t); } catch (e) {}
@@ -1635,6 +1666,57 @@ function vPersona(id) {
   };
 }
 
+// ================= MI PERFIL =================
+// Nombre, @usuario, voz y contraseña. Se guarda con un botón (no al salir del campo) para que quede claro.
+function vPerfil() {
+  const p = miPerfil() || {}, email = (yo() && yo().email) || "";
+  const nMis = yo() ? D.lista("cif_tonos").filter(t => t.persona_id === yo().id).length : 0;
+  const mins = membresias().map(m => ({ m, min: D.uno("cif_ministerios", m.ministerio_id) })).filter(x => x.min);
+  return {
+    band: bandHTML({ tag: "Perfil", titulo: "Mi <em>perfil</em>", sub: `${email && D.nube ? `<span>${esc(email)}</span>` : ""}${esSuper() && D.nube ? "<span>Desarrollador</span>" : ""}` }),
+    main: `
+      <section class="perfilcab">
+        <span class="av grande">${esc(iniciales(p.nombre || email))}</span>
+        <div><h2>${esc(p.nombre || "Sin nombre")}</h2><p>${p.usuario ? "@" + esc(p.usuario) : "Aún sin @usuario"}${p.voz ? " · " + esc(p.voz) : ""}</p>
+          <div class="row" style="gap:6px;margin-top:8px">${mins.map(({ m, min }) => `<span class="chip">${esc(min.nombre)} · ${esc({ admin: "Admin", musico: "Músico", lector: "Solo ver" }[m.rol])}</span>`).join("") || `<a class="chip" href="#ministerios">Sin ministerio · pedir entrar</a>`}</div></div>
+      </section>
+      <form class="caja" id="fperfil"><h3>Mis datos</h3>
+        <div class="grid2 perfilcampos">
+          <label class="lb">Nombre <small>Así te ve el equipo</small><input class="field" name="nombre" value="${esc(p.nombre || "")}" maxlength="60" required autocomplete="name"></label>
+          <label class="lb">@usuario <small>Para que tus amigos te encuentren</small><span class="arroba"><b>@</b><input class="field" name="usuario" value="${esc(p.usuario || "")}" placeholder="diego.tdd" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" data-1p-ignore data-lpignore="true"></span></label>
+          <label class="lb">Voz o instrumento <small>Opcional</small><input class="field" name="voz" value="${esc(p.voz || "")}" placeholder="Tenor, guitarra…" autocomplete="off" data-1p-ignore data-lpignore="true"></label>
+        </div>
+        <label class="row" style="margin-top:14px;font-weight:700"><input type="checkbox" name="artista" ${p.artista ? "checked" : ""}> Dirijo o canto: quiero guardar mis tonos</label>
+        <div class="row" style="margin-top:14px"><button class="btn">Guardar cambios</button><span class="status" id="pmsg"></span></div>
+      </form>
+      ${D.nube ? `<form class="caja" id="fpass"><h3>Contraseña</h3>
+        <div class="grid2"><label class="lb">Nueva contraseña<input class="field" name="pass" type="password" minlength="8" autocomplete="new-password" required></label>
+        <label class="lb">Repítela<input class="field" name="pass2" type="password" minlength="8" autocomplete="new-password" required></label></div>
+        <div class="row" style="margin-top:14px"><button class="btn ghost">Cambiar contraseña</button><span class="status" id="cmsg2"></span></div></form>` : ""}
+      <div class="row"><a class="btn sm" href="#persona/yo">★ Mis tonos (${nMis})</a><a class="btn sm ghost" href="#amigos">Amigos</a><a class="btn sm ghost" href="#ajustes">Estilo y respaldo</a><span class="sp"></span>${D.nube ? `<button class="btn sm ghost" id="psalir">Cerrar sesión</button>` : ""}</div>`,
+    after() {
+      const f = $("#fperfil"), msg = $("#pmsg");
+      f.onsubmit = async e => {
+        e.preventDefault();
+        const nombre = f.nombre.value.trim(), usuario = f.usuario.value.trim().replace(/^@/, "").toLowerCase(), voz = f.voz.value.trim();
+        if (!nombre) return (msg.textContent = "Escribe tu nombre.");
+        if (usuario && !/^[a-z0-9._]{2,30}$/.test(usuario)) return (msg.textContent = "El @usuario lleva de 2 a 30 letras sin acento, números, punto o guion bajo.");
+        if (usuario && D.lista("cif_perfiles").some(x => x.id !== yo().id && (x.usuario || "").toLowerCase() === usuario)) return (msg.textContent = "Ese @usuario ya lo tiene alguien más.");
+        const act = miPerfil() || { id: yo().id, estilo: st.estilo };
+        await D.guardar("cif_perfiles", { ...act, nombre, usuario: usuario || null, voz: voz || null, artista: f.artista.checked });
+        f.querySelector("button").blur(); toast("Perfil guardado."); render();
+      };
+      const fp = $("#fpass"); if (fp) fp.onsubmit = async e => {
+        e.preventDefault(); const m2 = $("#cmsg2");
+        if (fp.pass.value !== fp.pass2.value) return (m2.textContent = "Las contraseñas no coinciden.");
+        m2.textContent = "…";
+        try { await D.nuevaClave(fp.pass.value); fp.reset(); m2.textContent = ""; toast("Contraseña cambiada."); } catch (er) { m2.textContent = errorAuth(er.message); }
+      };
+      const ps = $("#psalir"); if (ps) ps.onclick = async () => { if (await confirmar("¿Cerrar sesión?", "Se borra la copia de este dispositivo; tus datos siguen en la nube.")) D.salir(); };
+    },
+  };
+}
+
 // ================= AJUSTES =================
 function vAjustes() {
   const p = miPerfil() || {}, e = st.estilo, tema = ls.get("cifrados-tema-v", "auto");
@@ -1642,14 +1724,8 @@ function vAjustes() {
   const nMis = yo() ? D.lista("cif_tonos").filter(t => t.persona_id === yo().id).length : 0;
   const sus = suscrito();
   return {
-    band: bandHTML({ tag: "Perfil", titulo: "Mi perfil y <em>estilo</em>", sub: `<span>${esc((yo() && yo().email) || "")}</span>` }),
+    band: bandHTML({ tag: "Ajustes", titulo: "Estilo y <em>respaldo</em>", sub: `<span>Cómo ves los cifrados en este dispositivo</span><span><a href="#perfil" style="color:#fff">Tu nombre y @usuario están en Mi perfil →</a></span>` }),
     main: `
-      <section class="caja"><h3>Perfil</h3><div class="grid2 perfilcampos">
-        <label class="lb">Nombre<input class="field" id="pnom" value="${esc(p.nombre || "")}" autocomplete="name"></label>
-        <label class="lb">@usuario<input class="field" id="pusr" value="${esc(p.usuario || "")}" placeholder="ceci.tdd" autocapitalize="off" autocomplete="off" spellcheck="false" data-1p-ignore data-lpignore="true"><small>Para que tus amigos te encuentren</small></label>
-        <label class="lb">Voz o instrumento<input class="field" id="pvoz" value="${esc(p.voz || "")}" placeholder="Tenor, guitarra…" autocomplete="off" data-1p-ignore data-lpignore="true"></label></div>
-        <label class="row" style="margin-top:12px;font-weight:700"><input type="checkbox" id="part" ${p.artista ? "checked" : ""}> Dirijo o canto: quiero guardar mis tonos</label>
-        <div class="row" style="margin-top:12px"><a class="btn sm" href="#persona/yo">★ Mis tonos (${nMis})</a><a class="btn sm ghost" href="#amigos">Amigos</a></div></section>
       <section class="caja"><h3>Cómo se ven los cifrados</h3>
         <div class="grid2">
           <label class="lb">Tamaño de letra <small>${e.tam}px</small><input type="range" id="etam" min="12" max="44" step="1" value="${e.tam}"></label>
@@ -1666,16 +1742,6 @@ function vAjustes() {
         <div class="row">${sus && esMusico() ? `<button class="btn sm" id="dimp">Importar</button>` : ""}${sus ? `<button class="btn sm ghost" id="dexp">Exportar respaldo</button>` : ""}<span class="sp"></span><button class="btn sm ghost" id="dsal">${D.nube ? "Cerrar sesión" : "Borrar datos de este dispositivo"}</button></div>
         <p class="status" style="margin-top:10px">${D.nube ? "Todo se guarda en este dispositivo y en la nube; sin internet sigues trabajando y se sube al volver." : "Modo local: todo vive en este navegador."}</p></section>`,
     after() {
-      const gp = cambios => { const act = miPerfil() || { id: yo().id, estilo: {} }; D.guardar("cif_perfiles", { ...act, ...cambios }); };
-      $("#pnom").onchange = ev => gp({ nombre: ev.target.value.trim() });
-      $("#pusr").onchange = ev => {
-        const v = ev.target.value.trim().replace(/^@/, "").toLowerCase();
-        if (v && !/^[a-z0-9._]{2,30}$/.test(v)) return toast("Usa de 2 a 30 letras sin acento, números, punto o guion bajo.");
-        if (v && D.lista("cif_perfiles").some(x => x.id !== yo().id && (x.usuario || "").toLowerCase() === v)) return toast("Ese @usuario ya está ocupado.");
-        gp({ usuario: v || null }); toast(v ? "Ahora eres @" + v : "Sin @usuario");
-      };
-      $("#pvoz").onchange = ev => gp({ voz: ev.target.value.trim() });
-      $("#part").onchange = ev => gp({ artista: ev.target.checked });
       $("#etam").oninput = ev => { st.estilo.tam = +ev.target.value; ev.target.previousElementSibling.textContent = st.estilo.tam + "px"; aplicarEstilo(); };
       $("#etam").onchange = guardarEstilo;
       $("#einter").oninput = ev => { st.estilo.inter = +ev.target.value; ev.target.previousElementSibling.textContent = st.estilo.inter; aplicarEstilo(); };
