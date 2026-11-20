@@ -267,13 +267,36 @@ h1 em{font-style:normal;color:var(--area)}
 .tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--area)}
 .tab .count{font-family:var(--mono);font-weight:500;font-size:12px;margin-left:6px;color:var(--baby)}
 .setbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--mono);font-size:13px;color:#C9D2D1}
+/* Zonas seguras del iPhone (muesca arriba, barra de inicio abajo): la banda se extiende debajo de la barra de estado */
+.band{padding-top:env(safe-area-inset-top,0px)}
+.ctrls{top:env(safe-area-inset-top,0px)}
+.side{padding-top:max(24px,calc(env(safe-area-inset-top,0px) + 10px));padding-bottom:max(20px,calc(env(safe-area-inset-bottom,0px) + 8px))}
+@media (display-mode:standalone){
+  .band{padding-top:calc(env(safe-area-inset-top,0px) + 10px)}
+  .barramovil{padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))!important}
+  .maincol{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
+}
 .setbar .sp{flex:1}
 .setflechas{display:inline-flex;gap:8px}
 .setflechas .flt{display:none}
-/* celular: las dos flechas juntas abajo, mitad y mitad */
+.setinfo .setvoz{white-space:nowrap}
+.setvivo{display:inline-flex;gap:8px}
+.lblc{display:none}
+/* celular: barra del set compacta — renglón 1: set + en vivo; renglón 2: posición y voz; renglón 3: flechas mitad y mitad */
 @media (max-width:640px){
-  .setflechas{order:10;flex-basis:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .setflechas .navbtn{width:100%;justify-content:center;height:44px;font-size:15px}
+  .setbar{display:grid;grid-template-columns:1fr auto;gap:6px 8px;font-size:12px}
+  .setbar .sp{display:none}
+  .setnom{min-width:0;height:32px;padding:0 12px;font-size:12.5px;border-width:1px;justify-self:start;max-width:100%}
+  .setnom span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .setvivo{grid-column:2;grid-row:1;gap:6px}
+  .setvivo .navbtn{height:32px;min-width:32px;padding:0 10px;font-size:12px;border-width:1px}
+  .setvivo .lbl{display:none}
+  .setvivo .lblc{display:inline}
+  .setvivo .vivoind i{margin:0}
+  .setinfo{grid-column:1/-1;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .setflechas{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
+  .setflechas .navbtn{width:100%;justify-content:center;height:36px;font-size:13px;border-width:1px;background:rgba(255,255,255,.04)}
+  .setflechas .navbtn:disabled{opacity:.35}
   .setflechas .flt{display:inline}
 }
 
@@ -744,11 +767,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=40"></script>
-<script src="cifrado.js?v=40"></script>
-<script src="senas.js?v=40"></script>
-<script src="datos.js?v=40"></script>
-<script src="pdf.js?v=40"></script>
+<script src="config.publico.js?v=41"></script>
+<script src="cifrado.js?v=41"></script>
+<script src="senas.js?v=41"></script>
+<script src="datos.js?v=41"></script>
+<script src="pdf.js?v=41"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1347,8 +1370,8 @@ function vCancion(p) {
   let setbar = "";
   if (ctxSet) {
     const n = ctxSet.s.items.length, it = ctxSet.item || {};
-    setbar = `<div class="setbar"><a class="navbtn" href="#set/${ctxSet.s.id}">← ${esc(ctxSet.s.nombre)}</a><span>${ctxSet.i + 1} de ${n}${it.momento ? " · " + esc(nombreMomento(it.momento)) : ""}${it.persona_id ? " · voz principal: " + esc(nombreDe(it.persona_id)) : ""}</span><span class="sp"></span>
-      ${D.modo !== "local" ? `<button class="navbtn ${st.dirigir ? "on" : ""}" id="dirigir" title="Los demás ven la canción y sección que tú marques">📡 Dirigir</button><button class="navbtn ${st.seguir ? "on" : ""}" id="seguir" title="Abrir lo que marque quien dirige">${st.seguir ? '<span class="vivoind"><i></i>Siguiendo</span>' : "Seguir"}</button>` : ""}
+    setbar = `<div class="setbar"><a class="navbtn setnom" href="#set/${ctxSet.s.id}" title="${esc(ctxSet.s.nombre)}">← <span>${esc(ctxSet.s.nombre)}</span></a><span class="setinfo"><b>${ctxSet.i + 1}/${n}</b>${it.momento ? " · " + esc(nombreMomento(it.momento)) : ""}${it.persona_id ? ` · <span class="setvoz">🎤 ${esc(nombreDe(it.persona_id))}</span>` : ""}</span><span class="sp"></span>
+      ${D.modo !== "local" ? `<span class="setvivo"><button class="navbtn ${st.dirigir ? "on" : ""}" id="dirigir" title="Los demás ven la canción y sección que tú marques" aria-label="Dirigir">📡<span class="lbl"> Dirigir</span></button><button class="navbtn ${st.seguir ? "on" : ""}" id="seguir" title="Abrir lo que marque quien dirige" aria-label="${st.seguir ? "Siguiendo" : "Seguir"}">${st.seguir ? '<span class="vivoind"><i></i><span class="lbl">Siguiendo</span></span>' : '<span class="lbl">Seguir</span><span class="lblc">◎</span>'}</button></span>` : ""}
       <span class="setflechas"><button class="navbtn" id="prev" ${ctxSet.i <= 0 ? "disabled" : ""} aria-label="Canción anterior">‹<span class="flt"> Anterior</span></button><button class="navbtn" id="next" ${ctxSet.i >= n - 1 ? "disabled" : ""} aria-label="Siguiente canción"><span class="flt">Siguiente </span>›</button></span></div>`;
   }
   const sub = [c.autor && `<span class="subarts">${artistasHTML(c)}</span>`, `<span>Original <b>${esc(original)}</b></span>`, c.bpm && `<span><b>${c.bpm}</b> bpm</span>`, c.compas && `<span><b>${esc(c.compas)}</b></span>`, capo ? `<span>Capo <b>${capo}</b> · formas de <b>${esc(forma)}</b></span>` : "",
