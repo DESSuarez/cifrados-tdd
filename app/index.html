@@ -422,7 +422,36 @@ input[type=range]{width:100%;accent-color:var(--area)}
 .item .mov{display:flex;flex-direction:column}
 .item .mov button{border:0;background:none;color:var(--muted);height:18px;width:24px;padding:0;line-height:1}
 .item .mov button:hover{color:var(--fg)}
-@media (max-width:640px){.item{grid-template-columns:auto 22px 1fr}.item .opts{grid-column:1/-1;justify-content:flex-start}}
+.item>*{min-width:0}
+.item .tit a{display:block;overflow:hidden;text-overflow:ellipsis}
+.item .estr{grid-column:1/-1;flex-wrap:wrap;min-width:0}
+@media (max-width:1100px){.item{grid-template-columns:auto 22px 1fr}.item .opts{grid-column:1/-1;justify-content:flex-start}}
+@media (max-width:640px){
+  .item{padding:10px;gap:8px}
+  .item .opts{gap:6px}
+  .item .opts select,.item .opts input{flex:1 1 120px;min-width:0;max-width:100%}
+  .item .opts select.ivoz{flex-basis:100%}
+  .item .opts .btn{flex:0 0 auto}
+  .setbar{flex-wrap:wrap;gap:6px}
+  .setcard{min-width:0}.setcard>div{min-width:0}.setcard p{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+/* Menú fijo abajo en el celular: acceso rápido a Librería, Sets, Nueva, Banco y el menú completo */
+.barramovil{display:none}
+@media (max-width:900px){
+  .barramovil{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+  .barramovil a,.barramovil button{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border:0;background:none;color:var(--muted);text-decoration:none;font:700 11px var(--body);border-radius:10px;cursor:pointer}
+  .barramovil .ic{width:24px;height:24px;display:grid;place-items:center}
+  .barramovil .ic svg{width:22px;height:22px}
+  .barramovil [aria-current="page"]{color:var(--fg);background:color-mix(in srgb,var(--flame) 14%,transparent)}
+  .barramovil [aria-current="page"] .ic{color:var(--flame)}
+  .barramovil i{position:absolute;top:2px;right:calc(50% - 22px);min-width:16px;height:16px;padding:0 4px;border-radius:99px;background:var(--flame);color:#fff;font:800 10px/16px var(--body);font-style:normal}
+  .maincol{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+  body.menu-abierto .barramovil{display:none}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+}
+.asigtono{display:flex;flex-direction:column;gap:10px}
+.asigfila{display:grid;grid-template-columns:minmax(200px,2fr) minmax(90px,1fr) minmax(110px,1fr) auto;gap:8px}
+@media (max-width:700px){.asigfila{grid-template-columns:1fr 1fr}.asigfila input{grid-column:1/-1}.asigfila .btn{grid-column:1/-1}}
 .resultados{list-style:none;margin:6px 0 0;padding:0;border:1px solid var(--line);border-radius:12px;max-height:280px;overflow:auto;background:var(--bg)}
 .resultados button{display:flex;width:100%;gap:8px;align-items:center;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:10px 12px}
 .resultados button:hover{background:var(--surface)}
@@ -441,7 +470,9 @@ input[type=range]{width:100%;accent-color:var(--area)}
 .paleta .acb{height:34px;min-width:44px;padding:0 10px;border-radius:8px;border:1.5px solid var(--line);background:var(--bg);font:800 15px var(--display);color:var(--acorde)}
 .paleta .acb.on{background:var(--acorde);color:#fff;border-color:var(--acorde)}
 .paleta .acb.goma{color:var(--muted)}
-.paleta input{height:34px;width:96px;border:1.5px dashed var(--line);border-radius:8px;padding:0 8px;background:var(--bg)}
+.paleta input{height:34px;width:110px;border:1.5px dashed var(--line);border-radius:8px;padding:0 8px;background:var(--bg);color:var(--fg);font:700 14px var(--body)}
+.otroac{display:inline-flex;gap:4px;align-items:center}
+.otroac .acb{color:var(--fg)!important;font-size:13px!important}
 .edlin{display:flex;flex-wrap:wrap;align-items:flex-end;margin:6px 0;font-size:18px}
 .edsec{margin:16px 0 4px;font:900 12px var(--display);letter-spacing:.08em;text-transform:uppercase;display:flex;gap:8px;align-items:center}
 .edsec::before{content:"";width:5px;height:16px;border-radius:3px;background:var(--sc)}
@@ -463,6 +494,7 @@ input[type=range]{width:100%;accent-color:var(--area)}
 .chipac{display:inline-flex;align-items:center;height:28px;padding:0 9px;border-radius:7px;border:1.5px solid var(--line);font:800 14px var(--display);color:var(--acorde);background:var(--bg);margin:0 4px 0 0;cursor:pointer}
 .edhelp{font-size:13px;color:var(--muted);margin:0}
 .secbtns{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.avisoton{padding:12px 16px;border-radius:12px;background:var(--sol-soft,rgba(242,179,61,.15));border-left:4px solid var(--sol);font-size:14px}
 .edacor{display:flex;flex-direction:column;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
 .acor+.acor{border-top:1.5px solid var(--line)}
 .acor summary{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;list-style:none;user-select:none}
@@ -667,11 +699,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=30"></script>
-<script src="cifrado.js?v=30"></script>
-<script src="senas.js?v=30"></script>
-<script src="datos.js?v=30"></script>
-<script src="pdf.js?v=30"></script>
+<script src="config.publico.js?v=31"></script>
+<script src="cifrado.js?v=31"></script>
+<script src="senas.js?v=31"></script>
+<script src="datos.js?v=31"></script>
+<script src="pdf.js?v=31"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -889,6 +921,24 @@ function chipPrivacidad(c) {
 const canciones = () => D.lista("cif_canciones").filter(c => !c.borrada && veCancion(c)).sort((a, b) => a.titulo.localeCompare(b.titulo, "es", { sensitivity: "base" }));
 const tonosDe = cid => D.lista("cif_tonos").filter(t => t.cancion_id === cid);
 const miTono = cid => yo() && D.uno("cif_tonos", cid + "|" + yo().id);
+/** ¿Puedo cambiar esta canción? Quien la subió, el admin de su ministerio o los músicos y admins del ministerio que es su artista
+ *  (igual que cif_puede_editar en SQL, migración 013). */
+function puedeEditarCancion(c) {
+  if (!c) return false;
+  if (esSuper()) return true;
+  if (yo() && c.creada_por === yo().id) return true;
+  if (c.ministerio_id && rolEn(c.ministerio_id) === "admin") return true;
+  return artistasDe(c).some(a => { const m = minDeArtista(a); return m && m.id && ["admin", "musico"].includes(rolEn(m.id)); });
+}
+/** Personas a las que puedo asignar tono: yo, y los integrantes de los ministerios donde soy admin (todos si soy desarrollador). */
+function genteAsignable() {
+  if (esSuper()) return D.lista("cif_perfiles").sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+  const mins = new Set(membresias().filter(m => m.rol === "admin").map(m => m.ministerio_id));
+  const ids = new Set(D.lista("cif_miembros").filter(m => mins.has(m.ministerio_id)).map(m => m.persona_id));
+  if (yo()) ids.add(yo().id);
+  return D.lista("cif_perfiles").filter(p => ids.has(p.id)).sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+}
+const puedoAsignarA = id => !!yo() && (id === yo().id || genteAsignable().some(p => p.id === id));
 const tracksDe = cid => D.lista("cif_tracks").filter(t => t.cancion_id === cid).sort((a, b) => a.nombre.localeCompare(b.nombre));
 const artistas = () => D.lista("cif_perfiles").filter(p => p.artista || (yo() && p.id === yo().id)).sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
 /** Gente de un set: la del ministerio dueño y la de los invitados (para «quién dirige»). */
@@ -986,18 +1036,18 @@ function shell(band, main) {
     ${ms.length > 1 ? `<select class="minsel" id="minsel" aria-label="Ministerio">${ms.map(x => `<option value="${x.id}" ${m && x.id === m.id ? "selected" : ""}>${x.tipo === "solista" ? "🎤 " : ""}${esc(x.nombre)}</option>`).join("")}</select>` : ""}
     <nav class="areanav">
       <div class="sidesec">Música</div>
-      ${nav("libreria", "libreria", "Librería", IC.lib, "--flame", canciones().length)}
-      ${hayColectivo() || !D.nube ? nav("banco", "banco", "Banco de canciones", IC.buscar, "--baby-ink") : ""}
-      ${nav("sets", "sets", m ? "Sets · " + esc(m.nombre) : "Sets", IC.set, "--sea", nSets)}
       ${esMusico() ? nav("nueva", "nueva", "Nueva canción", IC.mas, "--sol") : ""}
+      ${nav("libreria", "libreria", "Librería", IC.lib, "--flame", canciones().length)}
+      ${nav("sets", "sets", m ? "Sets · " + esc(m.nombre) : "Sets", IC.set, "--sea", nSets)}
+      ${hayColectivo() || !D.nube ? nav("banco", "banco", "Banco de canciones", IC.buscar, "--baby-ink") : ""}
       <div class="sidesec">Equipo</div>
-      ${nav("senas", "senas", "Señas para dirigir", IC.mano, "--lav")}
-      ${m ? nav("ministerio/" + m.id, r.p[0] === m.id ? "ministerio" : "-", m.tipo === "solista" ? "Mi perfil de solista" : "Perfil del ministerio", IC.marca, "--flame") : ""}
+      ${nav("perfil", "perfil", "Mi perfil", IC.perfil, "--rosa")}
       ${nav("ministerios", "ministerios", "Ministerios", IC.gente, "--rosa", pendMin().length + pendInter().length || "")}
       ${nav("amigos", "amigos", "Amigos y sus tonos", IC.amigos, "--sea", pendAmigos().length || "")}
+      ${m ? nav("ministerio/" + m.id, r.p[0] === m.id ? "ministerio" : "-", m.tipo === "solista" ? "Mi perfil de solista" : "Perfil del ministerio", IC.marca, "--flame") : ""}
       ${esSuper() ? nav("usuarios", "usuarios", "Usuarios", IC.gente, "--sol", D.nube ? "" : D.lista("cif_perfiles").length) : ""}
-      ${nav("perfil", "perfil", "Mi perfil", IC.perfil, "--rosa")}
       ${nav("ajustes", "ajustes", "Estilo y respaldo", IC.ajus, "--baby-ink")}
+      ${nav("senas", "senas", "Señas para dirigir", IC.mano, "--lav")}
     </nav>
     <button class="sync" id="syncb" title="Sincronizar ahora"><i></i><span id="synct">…</span></button>
     <div class="userbar">
@@ -1016,6 +1066,11 @@ function shell(band, main) {
       ${band}
     </div></header>
     <main><div class="wrap">${main}</div></main>
+    <nav class="barramovil" aria-label="Menú rápido">
+      ${[["libreria", "Librería", IC.lib, ["libreria", "cancion"]], ["sets", "Sets", IC.set, ["sets", "set"]], esMusico() ? ["nueva", "Nueva", IC.mas, ["nueva", "editar"]] : null, ["banco", "Banco", IC.buscar, ["banco"]]].filter(Boolean)
+        .map(([h, l, ic, vs]) => `<a href="#${h}" ${vs.includes(r.v) ? 'aria-current="page"' : ""}><span class="ic">${ic}</span><span>${l}</span>${h === "sets" && nSets ? `<i>${nSets}</i>` : ""}</a>`).join("")}
+      <button type="button" id="barraMenu" aria-label="Abrir menú"><span class="ic">${IC.menu}</span><span>Menú</span>${pendMin().length + pendInter().length + pendAmigos().length ? `<i>${pendMin().length + pendInter().length + pendAmigos().length}</i>` : ""}</button>
+    </nav>
   </div></div>`;
 }
 /** A dónde lleva «← Atrás» si se entró directo a la pantalla (sin historial dentro de la app). */
@@ -1064,6 +1119,7 @@ function enlazarShell() {
     if (matchMedia("(min-width:901px)").matches) { document.documentElement.classList.toggle("asoma"); return; }
     document.body.classList.add("menu-abierto"); const b = document.createElement("div"); b.className = "sideback"; b.onclick = cerrarMenu; document.body.appendChild(b);
   };
+  const bm = $("#barraMenu"); if (bm) bm.onclick = () => $("#abrirMenu").onclick();
   $("#cerrarMenu").onclick = cerrarMenu;
   $("#ocultarLat").onclick = alternarLateral;
   const sb = $("#sideborde"); if (sb) sb.onmouseenter = () => document.documentElement.classList.add("asoma");
@@ -1225,7 +1281,7 @@ function vCancion(p) {
   const tonosCerca = tonos.filter(t => cercanos.has(t.persona_id)), tonosLejos = tonos.filter(t => !cercanos.has(t.persona_id));
   const chipTono = t => `<button class="tchip ${t.tono === tono && (t.capo || 0) === capo ? "on" : ""}" data-tono="${esc(t.tono)}" data-capo="${t.capo || 0}" title="Ver en el tono de ${esc(nombreDe(t.persona_id))}">${yo() && t.persona_id === yo().id ? "★ Yo" : esc(nombreDe(t.persona_id))} <small>${esc(t.tono)}${t.capo ? " c" + t.capo : ""}</small></button>`;
   const esMio = mt && mt.tono === tono && (mt.capo || 0) === capo;
-  const puedeOtros = (esSuper() || membresias().some(m => m.rol === "admin")) && artistas().length > 1;
+  const puedeOtros = genteAsignable().filter(p => !yo() || p.id !== yo().id).length > 0;
 
   let setbar = "";
   if (ctxSet) {
@@ -1251,7 +1307,7 @@ function vCancion(p) {
     <button class="ctl escx" id="tescx">Salir</button>
     <span class="sp" style="flex:1"></span>
     ${D.nube && comparteCancion(c) ? `<button class="ctl noesc" id="tcomp" title="Elegir qué ministerios ven esta canción">↔ Compartir</button>` : ""}
-    ${esMusico() ? `<a class="ctl noesc" href="#editar/${c.id}">✎ Editar</a>` : ""}
+    ${esMusico() && puedeEditarCancion(c) ? `<a class="ctl noesc" href="#editar/${c.id}">✎ Editar</a>` : ""}
     <button class="ctl noesc" id="tprint" title="Exportar PDF (1 o 2 columnas)">⎙ PDF</button>
   </div>
   <div class="tonosbar noesc">
@@ -1262,7 +1318,7 @@ function vCancion(p) {
     <span class="sp"></span>
     ${esMio ? `<span class="tchip on fijo">★ Es tu tono</span><button class="btn xs ghost" id="qmio" title="Quitar mi tono">Quitar</button>`
       : `<button class="btn sm" id="gmio">★ Este es mi tono · ${esc(tono)}${capo ? " c" + capo : ""}</button>`}
-    ${puedeOtros ? `<select class="fsel" id="gpara" aria-label="Guardar tono para otra persona"><option value="">Guardar para…</option>${artistas().filter(a => a.id !== yo().id).map(a => `<option value="${a.id}">${esc(a.nombre)}</option>`).join("")}</select>` : ""}
+    ${puedeOtros ? `<select class="fsel" id="gpara" aria-label="Guardar tono para otra persona"><option value="">Guardar este tono para…</option>${genteAsignable().filter(a => a.id !== yo().id).map(a => `<option value="${a.id}">${esc(a.nombre)}${D.uno("cif_tonos", c.id + "|" + a.id) ? " · ★ " + esc(D.uno("cif_tonos", c.id + "|" + a.id).tono) : ""}</option>`).join("")}</select>` : ""}
     ${ctxSet && editaSet(ctxSet.s) && ctxSet.item && ctxSet.item.tono !== tono ? `<button class="btn xs ghost" id="gset">Usar ${esc(tono)} en este set</button>` : ""}
   </div>
   ${secs.length > 1 ? `<div class="secchips noesc">${secs.map(s => `<button data-ir="${esc(s)}" style="--sc:var(${C.colorSeccion(s)})">${esc(s)}</button>`).join("")}</div>` : ""}
@@ -1542,6 +1598,7 @@ function itemHTML(s, it, i, puede, gente) {
     <div class="tit"><a href="#cancion/${it.cancion_id}/set/${s.id}/${i}">${esc(c.titulo)}</a><small>${esc(c.autor || "")}${it.nota ? " · " + esc(it.nota) : ""}${it.estructura ? " · estructura propia" : ""}</small></div>
     <div class="opts">${puede ? `<select data-itono="${i}" title="Tono">${opT}</select>
       <select class="ivoz ${it.persona_id ? "on" : ""}" data-iper="${i}" title="Voz principal: si tiene su tono guardado, la canción se pone en ese tono"><option value="">🎤 Voz principal</option>${gente.map(p => ({ p, t: D.uno("cif_tonos", it.cancion_id + "|" + p.id) })).sort((a, b) => (b.t ? 1 : 0) - (a.t ? 1 : 0) || (a.p.nombre || "").localeCompare(b.p.nombre || "")).map(({ p, t }) => `<option value="${p.id}" ${p.id === it.persona_id ? "selected" : ""}>🎤 ${esc(p.nombre)}${t ? ` · ★ ${t.tono}${t.capo ? " capo " + t.capo : ""}` : " · sin tono"}</option>`).join("")}</select>
+      ${it.persona_id && !D.uno("cif_tonos", it.cancion_id + "|" + it.persona_id) && puedoAsignarA(it.persona_id) ? `<button class="btn xs" data-guardavoz="${i}" title="Guarda este tono en el perfil de la voz principal">★ Guardar ${esc(it.tono || orig)} como su tono</button>` : ""}
       <input data-inota="${i}" value="${esc(it.nota || "")}" placeholder="Nota" style="width:110px">`
       : `<span class="chip tono">${esc(it.tono || orig)}</span>${it.persona_id ? `<span class="chip">${esc(nombreDe(it.persona_id))}</span>` : ""}`}
       <button class="btn xs ${abierto ? "on" : "ghost"}" data-abre="${it.id}" title="Estructura en bloques">▦ Estructura</button>
@@ -1604,6 +1661,12 @@ function vSet(id) {
       $$("[data-quita]").forEach(b => b.onclick = () => { const it = itemsAct(); it.splice(+b.dataset.quita, 1); guarda({ items: it }); });
       $$("[data-itono]").forEach(x => x.onchange = () => ponItem(+x.dataset.itono, { tono: x.value }));
       $$("[data-inota]").forEach(x => x.onchange = () => ponItem(+x.dataset.inota, { nota: x.value.trim() }));
+      // la voz principal aún no tiene su tono en esta canción: guardarlo desde el set
+      $$("[data-guardavoz]").forEach(b => b.onclick = async () => {
+        const it = itemsAct()[+b.dataset.guardavoz], c = D.uno("cif_canciones", it.cancion_id), tono = it.tono || (c && c.tono) || "C";
+        await D.guardar("cif_tonos", { cancion_id: it.cancion_id, persona_id: it.persona_id, tono, capo: it.capo || 0 });
+        toast(`Guardado: ${nombreDe(it.persona_id)} canta «${c ? c.titulo : ""}» en ${tono}${it.capo ? " con capo " + it.capo : ""}.`);
+      });
       $$("[data-iper]").forEach(x => x.onchange = () => {
         // voz principal: si tiene su tono guardado para esta canción, el set se pone en ese tono (y capo)
         const i = +x.dataset.iper, it = itemsAct(), cid = it[i].cancion_id, t = x.value && D.uno("cif_tonos", cid + "|" + x.value);
@@ -1696,12 +1759,22 @@ function vEditor(id) {
   const base = id ? D.uno("cif_canciones", id) : null;
   if (id && !base) return { band: bandHTML({ titulo: "No encontré esa canción" }), main: "" };
   if (!esMusico()) return { band: bandHTML({ titulo: "Sin permiso" }), main: `<p>Solo músicos y admins editan la librería.</p>` };
-  if (!ed || ed.id !== (id || "nueva")) ed = { id: id || "nueva", c: base ? { compartida_con: [], visibilidad: "todos", ...base } : { titulo: "", autor: minActual() ? minActual().nombre : "", tono: "G", bpm: null, compas: "4/4", contenido: "", orden: [], etiquetas: [], liga: "", notas: "", ministerio_id: minActual() ? minActual().id : null, visibilidad: D.nube && minActual() ? "ministerio" : "todos", compartida_con: [] }, paso: base ? "acordes" : "letra", sel: null };
+  if (base && !puedeEditarCancion(base)) return { band: bandHTML({ titulo: "Solo la edita quien la subió" }), main: `<div class="empty"><strong>No puedes cambiar «${esc(base.titulo)}»</strong><p>La edita quien la subió, el admin de ${esc(base.ministerio_id ? nombreMin(base.ministerio_id) : "su ministerio")} o el artista (${esc(artistasDe(base).join(" × ") || "—")}). Así todos ven siempre la misma versión, la más nueva.</p><p>Tu tono sí lo puedes guardar desde la canción.</p></div>` };
+  if (!ed || ed.id !== (id || "nueva")) ed = { id: id || "nueva", c: base ? { compartida_con: [], visibilidad: "todos", ...base } : { titulo: "", autor: minActual() ? minActual().nombre : "", tono: "G", bpm: null, compas: "4/4", contenido: "", orden: [], etiquetas: [], liga: "", notas: "", ministerio_id: minActual() ? minActual().id : null, visibilidad: "todos", compartida_con: [] }, paso: base ? "acordes" : "letra", sel: null };
+  // Se edita en el tono en que tú la tienes (tu tono guardado o el que estabas viendo); al guardar vuelve a su tono original
+  if (ed.ini === undefined && base && base.tono) {
+    const vt = st.tonoVista[base.id] || (miTono(base.id) || {}).tono;
+    if (vt && vt !== base.tono && /\[\*?[A-G]/.test(base.contenido || "")) {
+      ed.tonoGuardar = base.tono; ed.c.tono = vt;
+      ed.c.contenido = transportaTexto(base.contenido, C.distancia(base.tono, vt), C.usaBemoles(vt));
+    }
+  }
   if (ed.ini === undefined) ed.ini = JSON.stringify(ed.c);
   if (!ed.abiertos) ed.abiertos = new Set();
   st.editando = true;
   const c = ed.c;
   const main = `
+    ${ed.tonoGuardar && c.tono !== ed.tonoGuardar ? `<div class="avisoton">🎤 Estás editando en <b>tu tono, ${esc(c.tono)}</b>. Al guardar, la canción se queda en su tono original (<b>${esc(ed.tonoGuardar)}</b>) y cada quien la sigue viendo en el suyo.</div>` : ""}
     <div class="grid2">
       <label class="lb">Título<input class="field" id="etit" value="${esc(c.titulo)}" placeholder="Nombre de la canción"></label>
       <label class="lb">Tono en que la escribes<select class="field" id="eton">${C.TONOS.map(t => `<option ${t === c.tono ? "selected" : ""}>${t}</option>`).join("")}</select></label>
@@ -1800,11 +1873,13 @@ function panelEditor() {
   // acordes: paleta + sílabas
   const pal = C.acordesDelTono(c.tono);
   const usados = [...new Set((c.contenido.match(/\[([^\]*][^\]]*)\]/g) || []).map(x => x.slice(1, -1)).filter(C.esAcorde))];
-  const todos = [...new Set(pal.concat(usados))];
-  if (!ed.sel) ed.sel = todos[0];
+  // los acordes escritos a mano («Otro») se quedan en la paleta mientras editas
+  ed.extra = ed.extra || [];
+  const todos = [...new Set(pal.concat(usados, ed.extra))];
+  if (ed.sel === undefined || ed.sel === null) ed.sel = todos[0];
   return `
     <div class="paleta">${todos.map(a => `<button class="acb ${ed.sel === a ? "on" : ""}" data-ac="${esc(a)}">${esc(a)}</button>`).join("")}
-      <input id="eotro" placeholder="Otro: F#m7" aria-label="Otro acorde">
+      <span class="otroac"><input id="eotro" placeholder="Otro: F#m7" aria-label="Otro acorde" autocomplete="off" autocapitalize="off" spellcheck="false" data-1p-ignore data-lpignore="true"><button class="acb" id="eotrook" type="button" title="Usar este acorde">Usar</button></span>
       <button class="acb goma ${ed.sel === "" ? "on" : ""}" data-ac="" title="Borrar acordes">⌫ Borrar</button>
       <button class="acb goma ${ed.sel === "|" ? "on" : ""}" data-ac="|" title="Barra de compás">|</button>
       <button class="acb goma ${ed.sel === "-" ? "on" : ""}" data-ac="-" title="Sostener">—</button></div>
@@ -1857,7 +1932,8 @@ function ponerAcorde(li, p, ac, alFinal) {
   let letra = "", marcas = []; const re = /\[([^\]]*)\]/g; let m, ult = 0;
   while ((m = re.exec(lin))) { letra += lin.slice(ult, m.index); marcas.push({ pos: letra.length, s: m[1] }); ult = re.lastIndex; }
   letra += lin.slice(ult);
-  if (alFinal) { if (ac) { if (!/\s$/.test(letra) && (letra.length || marcas.length)) letra += "  "; marcas.push({ pos: letra.length, s: ac }); } }
+  // al final: siempre dos espacios antes del acorde nuevo si ya hay un acorde ahí (líneas de solo acordes) o si la letra no termina en espacio
+  if (alFinal) { if (ac) { if (marcas.some(x => x.pos === letra.length) || (letra.length && !/\s$/.test(letra))) letra += "  "; marcas.push({ pos: letra.length, s: ac }); } }
   else {
     const hay = marcas.filter(x => x.pos === p);
     marcas = marcas.filter(x => x.pos !== p);
@@ -1865,6 +1941,8 @@ function ponerAcorde(li, p, ac, alFinal) {
   }
   marcas.sort((a, b) => a.pos - b.pos);
   let out = "", q = 0; marcas.forEach(x => { out += letra.slice(q, x.pos) + "[" + x.s + "]"; q = x.pos; });
+  // línea solo de acordes (intro, instrumental…): todos a la misma distancia, dos espacios entre uno y otro
+  if (!letra.trim() && marcas.length) out = marcas.map(x => "[" + x.s + "]").join("  "), q = letra.length;
   lineas[li] = (out + letra.slice(q)).replace(/\s+$/, "");
   ed.c.contenido = lineas.join("\n");
 }
@@ -1910,6 +1988,8 @@ function enlazarEditor(base) {
       pasar = d.modo === "pasar";
     }
     if (pasar) c.contenido = transportaTexto(c.contenido, semis, C.usaBemoles(nuevo));
+    // si eliges otro tono a mano, la canción se guarda en ese tono (ya no se regresa al original)
+    if (ed.tonoGuardar) { ed.tonoGuardar = null; const av = $(".avisoton"); if (av) av.remove(); }
     c.tono = nuevo; ed.sel = null; repintar(); $$(".preview .chip").forEach(x => x.textContent = c.tono);
     if (pasar) toast(`Acordes pasados de ${antes} a ${nuevo}. Toca Guardar para quedarte con el cambio.`);
   };
@@ -1939,7 +2019,14 @@ function enlazarEditor(base) {
     const aj = $("#eajus"); if (aj) aj.onclick = () => { const a = c.contenido; c.contenido = C.ajustarASilabas(a); repintar(); toast(a === c.contenido ? "Todos los acordes ya estaban en su sílaba." : "Acordes acomodados al inicio de su sílaba."); };
     const ir = $("#eira"); if (ir) ir.onclick = () => { ed.paso = "acordes"; $$("[data-paso]").forEach(x => x.classList.toggle("on", x.dataset.paso === "acordes")); repintar(); };
     $$("[data-ac]").forEach(b => b.onclick = () => { ed.sel = b.dataset.ac; $$("[data-ac]").forEach(x => x.classList.toggle("on", x === b)); });
-    const ot = $("#eotro"); if (ot) ot.onkeydown = e => { if (e.key === "Enter") { const v = ot.value.trim(); if (!C.esAcorde(v)) return toast("Eso no parece acorde (ej. F#m7, Bb/D)."); ed.sel = v; repintar(); } };
+    // «Otro» acorde: con Enter o «Usar» queda elegido y se agrega a la paleta (funciona también en el celular)
+    const ot = $("#eotro");
+    const usarOtro = () => {
+      const v = ot.value.trim().replace(/^\[|\]$/g, ""); if (!v) return;
+      if (!C.esAcorde(v)) return toast("Eso no parece acorde (ej. F#m7, Bb/D, EbMaj9).");
+      ed.extra = [...new Set((ed.extra || []).concat(v))]; ed.sel = v; repintar(); toast(`Listo: toca la sílaba donde va ${v}.`);
+    };
+    if (ot) { ot.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); usarOtro(); } }; $("#eotrook").onclick = usarOtro; }
     const lineas = $("#edlineas");
     if (lineas) lineas.onclick = e => {
       const b = e.target.closest("[data-l]"); if (!b || b.classList.contains("gap") && !e.target.closest(".chipac")) return;
@@ -1967,6 +2054,8 @@ function enlazarEditor(base) {
   $("#eguardar").onclick = async () => {
     if (!c.titulo.trim()) { $("#etit").focus(); return toast("Ponle título a la canción."); }
     const fila = { ...c, titulo: c.titulo.trim(), autor: (c.autor || "").trim(), origen: c.origen || "manual" };
+    // se editó en el tono de quien edita: se guarda de vuelta en el tono original
+    if (ed.tonoGuardar && fila.tono !== ed.tonoGuardar) { fila.contenido = transportaTexto(fila.contenido, C.distancia(fila.tono, ed.tonoGuardar), C.usaBemoles(ed.tonoGuardar)); fila.tono = ed.tonoGuardar; }
     if (!base && !fila.ministerio_id) fila.ministerio_id = minActual() ? minActual().id : null;
     if (fila.visibilidad === "ministerio" && !fila.ministerio_id) return toast("Elige de qué ministerio es la canción.");
     const r = await D.guardar("cif_canciones", fila);
@@ -2295,12 +2384,21 @@ async function buscarBanco() {
       .sort((a, b) => a.titulo.localeCompare(b.titulo, "es"))
       .filter(c => { const k = tituloN(c.titulo) + "|" + norm(c.autor); if (vistos.has(k)) return false; vistos.add(k); return true; })
       .map(c => ({ ...c, ministerio: c.ministerio_id ? nombreMin(c.ministerio_id) : "" })).slice(0, 1000);
-    render(); return;
+    pintaBanco(); return;
   }
-  banco.cargando = true; banco.error = ""; render();
+  // no se redibuja al empezar a buscar: así puedes seguir escribiendo mientras llega la respuesta
+  banco.cargando = true; banco.error = "";
+  const est = $("#bestado"); if (est) est.textContent = "Buscando…";
   try { const r = await D.consulta("cif_banco", { q: banco.q, lim: 1000 }); if (yo_ === banco.pide) banco.res = r || []; }
   catch (e) { banco.error = e.message || String(e); }
-  banco.cargando = false; if (yo_ === banco.pide) render();
+  banco.cargando = false; if (yo_ === banco.pide) pintaBanco();
+}
+/** Redibuja el banco sin quitarte el cursor del buscador (y sin perder lo que escribiste mientras buscaba). */
+function pintaBanco() {
+  const bq = $("#bq"), conFoco = bq && document.activeElement === bq, ini = bq ? bq.selectionStart : 0, fin = bq ? bq.selectionEnd : 0;
+  if (bq) banco.q = bq.value;
+  render();
+  const n = $("#bq"); if (n && conFoco) { n.focus(); try { n.setSelectionRange(ini, fin); } catch (e) {} }
 }
 async function agregarDelBanco(ids) {
   const m = minActual(); if (!m) return toast("Elige arriba del menú a qué ministerio añadir.");
@@ -2309,13 +2407,13 @@ async function agregarDelBanco(ids) {
   for (const id of ids) {
     const c = D.uno("cif_canciones", id); if (!c) continue;
     if (canciones().some(x => tituloN(x.titulo) === tituloN(c.titulo))) continue;
-    const { actualizado, actualizado_por, creada_por, ...resto } = c;
-    await D.guardar("cif_canciones", { ...resto, id: D.uuid(), ministerio_id: m.id, visibilidad: "todos", compartida_con: [], origen: "banco", creada_por: yo() ? yo().id : null }); n++;
+    await D.guardar("cif_canciones", { ...c, compartida_con: [...new Set((c.compartida_con || []).concat(m.id))] }); n++;
   }
   return n;
 }
+let _bancoVisto = 0;
 function vBanco() {
-  if (banco.res === null && !banco.cargando && !banco.error) setTimeout(buscarBanco, 0);
+  if ((banco.res === null || Date.now() - _bancoVisto > 20000) && !banco.cargando) { _bancoVisto = Date.now(); banco.error = ""; setTimeout(buscarBanco, 0); }
   const m = minActual(), puede = !!m && ["admin", "musico"].includes(rolEn(m.id));
   const mias = new Set(canciones().map(c => tituloN(c.titulo)));
   const todo = banco.res || [];
@@ -2349,7 +2447,7 @@ function vBanco() {
         ${etqs.map(t => `<button class="tchip ${banco.fTags.includes(t) ? "on" : ""}" data-btag="${esc(t)}" style="--c:var(--sea)">#${esc(t)}</button>`).join("")}
         ${hayFiltro ? `<button class="tchip" id="bflimpia" style="--c:var(--muted)">✕ Quitar filtros</button>` : ""}
       </div>
-      <p class="status" style="margin:0">${banco.cargando ? "Buscando…" : banco.error ? "" : `${res.length} de ${enTab.length}${todo.length >= 1000 ? "+" : ""} canciones${banco.q ? " para «" + esc(banco.q) + "»" : ""} · ${res.length - faltan.length} ya están en tu librería`}${!puede && m ? " · Solo músicos y admins de " + esc(m.nombre) + " pueden añadir" : ""}</p>
+      <p class="status" id="bestado" style="margin:0">${banco.cargando ? "Buscando…" : banco.error ? "" : `${res.length} de ${enTab.length}${todo.length >= 1000 ? "+" : ""} canciones${banco.q ? " para «" + esc(banco.q) + "»" : ""} · ${res.length - faltan.length} ya están en tu librería`}${!puede && m ? " · Solo músicos y admins de " + esc(m.nombre) + " pueden añadir" : ""}</p>
       ${banco.error ? `<div class="empty"><strong>No se pudo leer el banco</strong><p>${esc(banco.error)}</p><p>Revisa que esté corrida la migración 011 en Supabase.</p></div>` : ""}
       <ul class="songs">${res.map(r => `<li><div class="srow brow"><div><b>${esc(r.titulo)}</b><small>${artistasHTML(r, false) || "—"}${r.ministerio ? `<span class="etq"> · subida por ${esc(r.ministerio)}</span>` : ""}${r.copias > 1 ? `<span class="etq"> · en ${r.copias} librerías</span>` : ""}</small></div>
         <span class="chips">${r.tono ? `<span class="chip tono">${esc(r.tono)}</span>` : ""}${mias.has(tituloN(r.titulo)) ? `<span class="chip pista">✓ En tu librería</span>` : puede ? `<button class="btn xs badd" data-badd="${r.id}">＋ Añadir a la librería</button>` : ""}</span></div></li>`).join("")}</ul>
@@ -2363,7 +2461,7 @@ function vBanco() {
       $$("[data-btag]").forEach(b => b.onclick = () => { const t = b.dataset.btag; banco.fTags = banco.fTags.includes(t) ? banco.fTags.filter(x => x !== t) : banco.fTags.concat(t); render(); });
       const bl = $("#bflimpia"); if (bl) bl.onclick = () => { banco.fArt = banco.fTono = banco.fMin = ""; banco.fTags = []; banco.faltan = false; render(); };
       const bq = $("#bq"); let t;
-      bq.oninput = () => { banco.q = bq.value; clearTimeout(t); t = setTimeout(async () => { await buscarBanco(); const n = $("#bq"); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } }, 300); };
+      bq.oninput = () => { banco.q = bq.value; clearTimeout(t); t = setTimeout(buscarBanco, 350); };
       $$("[data-badd]").forEach(b => b.onclick = async () => {
         b.disabled = true; b.textContent = "Añadiendo…";
         try {
@@ -2373,7 +2471,7 @@ function vBanco() {
         } catch (e) { b.disabled = false; b.textContent = "＋ Añadir a la librería"; toast(e.message || String(e)); }
       });
       const ba = $("#baddall"); if (ba) ba.onclick = async () => {
-        if (!(await confirmar(`¿Añadir ${faltan.length} canciones a la librería de ${minActual().nombre}?`, "Se copian: cada quien puede editar las suyas sin tocar las de los demás."))) return;
+        if (!(await confirmar(`¿Añadir ${faltan.length} canciones a la librería de ${minActual().nombre}?`, "Se enlazan: siempre verás la versión más nueva, y solo la cambia quien la subió o su artista. Tu tono lo guardas aparte."))) return;
         ba.disabled = true;
         try { const n = await agregarDelBanco(faltan.map(r => r.id)); toast(`${n} canciones añadidas a ${minActual().nombre}.`); render(); }
         catch (e) { ba.disabled = false; toast(e.message || String(e)); }
@@ -2396,8 +2494,7 @@ function faltanEn(origen, destino) {
 async function copiarLocal(origen, destino) {
   const lista = faltanEn(origen, destino);
   for (const c of lista) {
-    const { id, actualizado, actualizado_por, creada_por, ...resto } = c;
-    await D.guardar("cif_canciones", { ...resto, id: D.uuid(), ministerio_id: destino, visibilidad: "todos", compartida_con: [], origen: "intercambio", creada_por: yo() ? yo().id : null });
+    await D.guardar("cif_canciones", { ...c, compartida_con: [...new Set((c.compartida_con || []).concat(destino))] });
   }
   return lista.length;
 }
@@ -2412,7 +2509,7 @@ function intercambiosHTML(min) {
   const tipoTxt = x => x.tipo === "intercambio" ? "intercambio" : "envío";
   const n = (o, d) => faltanEn(o, d).length;
   return `<section class="caja" id="inter"><h3>Pasar canciones</h3>
-    <p>Puedes <b>enviarle</b> a otro ministerio tus canciones que no tenga, o hacer un <b>intercambio</b>: cada quien recibe las que le faltan. Se copian (cada quien edita las suyas) y el admin del otro ministerio acepta. Las de Tiempo de Dios ya las tienen todos.</p>
+    <p>Puedes <b>enviarle</b> a otro ministerio tus canciones que no tenga, o hacer un <b>intercambio</b>: cada quien recibe las que le faltan. No se copian: se enlazan, así todos ven siempre la versión más nueva y solo la cambia quien la subió o su artista. El admin del otro ministerio acepta. Las de Tiempo de Dios ya las tienen todos.</p>
     ${entran.map(x => `<div class="interrow entra"><span><b>${esc(nombreMin(x.de))}</b> ${x.tipo === "intercambio" ? "propone un <b>intercambio</b>" : "te quiere <b>enviar</b> sus canciones"}${x.tipo === "intercambio" ? "" : ` (≈ ${n(x.de, min.id)} que no tienes)`}${x.mensaje ? ` · «${esc(x.mensaje)}»` : ""}</span>
       ${admin ? `<button class="btn xs" data-xacepta="${x.id}">Aceptar</button><button class="btn xs ghost" data-xrechaza="${x.id}">Rechazar</button>` : `<span class="status">Esperando a un admin</span>`}</div>`).join("")}
     ${salen.map(x => `<div class="interrow"><span>Propusiste un ${tipoTxt(x)} a <b>${esc(nombreMin(x.para))}</b> · esperando que acepte</span>${admin ? `<button class="btn xs ghost" data-xcancela="${x.id}">Cancelar</button>` : ""}</div>`).join("")}
@@ -2668,11 +2765,31 @@ function vPersona(id) {
     band: bandHTML({ tag: soyYo ? "Mis tonos" : "Perfil", titulo: esc(p.nombre || "Sin nombre"), sub: [p.usuario && `<span>@${esc(p.usuario)}</span>`, p.voz && `<span>${esc(p.voz)}</span>`, mins.length && `<span>${esc(mins.join(" · "))}</span>`, `<span><b>${tonos.length}</b> tonos</span>`].filter(Boolean).join("") }),
     main: `${cartaPerfil(p, { mio: false, extra: `${favs.length ? `<div class="favs"><b>❤️ Canciones favoritas</b><div class="row" style="gap:6px">${favs.map(c => `<a class="chip fav" href="#cancion/${c.id}">${esc(c.titulo)}</a>`).join("")}</div></div>` : ""}${soyYo ? `<a class="btn xs ghost" href="#perfil">✎ Editar mi perfil</a>` : ""}` })}
       ${!soyYo && !a && yo() ? `<div class="row"><button class="btn" id="pamigo">＋ Agregar como amigo</button></div>` : ""}
+      ${puedoAsignarA(id) ? `<form class="caja asigtono" id="ptono"><h3>🎤 ${soyYo ? "Guardar un tono" : "Asignar un tono a " + esc((p.nombre || "").split(" ")[0])}</h3>
+        <p class="status" style="margin:0">${soyYo ? "Elige la canción y el tono en que la cantas." : "Como admin de su ministerio puedes dejarle su tono. Se ve en la canción y en los sets donde sea voz principal."}</p>
+        <div class="asigfila"><input class="field" name="cancion" list="ptonolista" placeholder="Busca la canción…" autocomplete="off" data-1p-ignore data-lpignore="true" required>
+          <datalist id="ptonolista">${canciones().map(c => `<option value="${esc(c.titulo)}${c.autor ? " — " + esc(c.autor) : ""}">`).join("")}</datalist>
+          <select class="field" name="tono" aria-label="Tono">${C.TONOS.map(t => `<option>${t}</option>`).join("")}</select>
+          <select class="field" name="capo" aria-label="Capo">${[0, 1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}">${n ? "Capo " + n : "Sin capo"}</option>`).join("")}</select>
+          <button class="btn">Guardar tono</button></div></form>` : ""}
       <h2 class="status" style="margin:0">TONOS GUARDADOS</h2>
-      ${tonos.length ? `<ul class="songs">${tonos.map(({ t, c }) => `<li><a class="srow" href="#cancion/${c.id}" data-vertono="${esc(t.tono)}" data-capo="${t.capo || 0}" data-cid="${c.id}"><div><b>${esc(c.titulo)}</b><small>${esc(c.autor || "—")} · original ${esc(c.tono || "")}</small></div><span class="chips"><span class="chip mio">★ ${esc(t.tono)}${t.capo ? " · capo " + t.capo : ""}</span></span></a></li>`).join("")}</ul>`
+      ${tonos.length ? `<ul class="songs">${tonos.map(({ t, c }) => `<li><a class="srow" href="#cancion/${c.id}" data-vertono="${esc(t.tono)}" data-capo="${t.capo || 0}" data-cid="${c.id}"><div><b>${esc(c.titulo)}</b><small>${esc(c.autor || "—")} · original ${esc(c.tono || "")}</small></div><span class="chips"><span class="chip mio">★ ${esc(t.tono)}${t.capo ? " · capo " + t.capo : ""}</span>${puedoAsignarA(id) ? `<button class="xmini" data-tquita="${c.id}" title="Quitar este tono">✕</button>` : ""}</span></a></li>`).join("")}</ul>`
         : `<div class="empty"><strong>${soyYo ? "Aún no guardas tonos" : "Sin tonos guardados"}</strong><p>${soyYo ? "Abre una canción, ponla en tu tono y toca «★ Este es mi tono». Queda en tu perfil y lo ve tu equipo." : "Cuando guarde tonos aparecerán aquí."}</p></div>`}`,
     after() {
       const b = $("#pamigo"); if (b) b.onclick = async () => { await D.guardar("cif_amistades", { de: yo().id, para: id, estado: D.nube ? "pendiente" : "aceptada" }); toast(D.nube ? "Solicitud enviada." : "Agregado."); };
+      // asignar tono (la persona misma o el admin de su ministerio)
+      const ft = $("#ptono");
+      if (ft) {
+        const busca = () => { const v = norm(ft.cancion.value.split(" — ")[0]); return canciones().find(c => norm(c.titulo) === v) || canciones().find(c => norm(c.titulo).startsWith(v)); };
+        ft.cancion.onchange = () => { const c = busca(); if (c) { const t = D.uno("cif_tonos", c.id + "|" + id); ft.tono.value = t ? t.tono : c.tono || "C"; ft.capo.value = t ? t.capo || 0 : 0; } };
+        ft.onsubmit = async e => {
+          e.preventDefault(); const c = busca();
+          if (!c) return toast("No encontré esa canción en tu librería.");
+          await D.guardar("cif_tonos", { cancion_id: c.id, persona_id: id, tono: ft.tono.value, capo: +ft.capo.value });
+          toast(`Guardado: «${c.titulo}» en ${ft.tono.value}${+ft.capo.value ? " con capo " + ft.capo.value : ""} para ${nombreDe(id)}.`); ft.reset(); render();
+        };
+      }
+      $$("[data-tquita]").forEach(x => x.onclick = async ev => { ev.preventDefault(); ev.stopPropagation(); if (!(await confirmar("¿Quitar este tono?"))) return; await D.borrar("cif_tonos", { cancion_id: x.dataset.tquita, persona_id: id }); toast("Tono quitado."); });
       // al abrir desde aquí, la canción se ve en el tono de esta persona
       $$("[data-vertono]").forEach(x => x.onclick = () => { st.tonoVista[x.dataset.cid] = x.dataset.vertono; st.capo[x.dataset.cid] = +x.dataset.capo; });
     },

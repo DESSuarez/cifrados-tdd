@@ -71,17 +71,23 @@
       const filas = await todos(t);
       filas.forEach(r => mem[t].set(llaveDe(t, r), r));
     }
-    estado.pendientes = (await todos("_salida")).length;
+    const salida = await todos("_salida");
+    estado.pendientes = salida.length;
+    salida.forEach(it => { if (it.op === "upsert" && it.fila) sinSubir.add(it.tabla + "|" + llaveDe(it.tabla, it.fila)); });
     estado.ultima = await meta.get("ultima");
   }
 
   /** Guarda localmente si es más nuevo que lo que hay. */
-  async function aplicar(tabla, filas, borrar) {
+  // Llaves con un cambio de este dispositivo que aún no sube (mientras tanto, lo local manda)
+  const sinSubir = new Set();
+  async function aplicar(tabla, filas, borrar, delServidor) {
     const nuevas = [];
     for (const r of filas) {
       const k = llaveDe(tabla, r), prev = mem[tabla].get(k);
       if (borrar) { mem[tabla].delete(k); nuevas.push([k, null]); continue; }
-      if (prev && prev.actualizado && r.actualizado && prev.actualizado > r.actualizado) continue;
+      // del servidor: es la versión buena (su hora la pone la base). Solo se ignora si aquí hay un cambio sin subir.
+      if (delServidor) { if (sinSubir.has(tabla + "|" + k)) continue; }
+      else if (prev && prev.actualizado && r.actualizado && prev.actualizado > r.actualizado) continue;
       mem[tabla].set(k, r); nuevas.push([k, r]);
     }
     if (!nuevas.length) return;
@@ -98,6 +104,7 @@
     if (!LLAVE[tabla] && !r.id) r.id = uuid();
     if (estado.usuario && CON_AUTOR.has(tabla)) r.actualizado_por = estado.usuario.id;
     await aplicar(tabla, [r]);
+    if (nube) sinSubir.add(tabla + "|" + llaveDe(tabla, r));
     await tx("_salida", "readwrite", s => s.add({ tabla, op: "upsert", fila: r }));
     estado.pendientes++; avisaEstado();
     subir();
@@ -154,6 +161,7 @@
           try { window.dispatchEvent(new CustomEvent("cif-rechazo", { detail: { tabla: it.tabla, mensaje: error.message } })); } catch (e) { /* sin ventana */ }
         }
         await tx("_salida", "readwrite", s => s.delete(k));
+        sinSubir.delete(it.tabla + "|" + llaveDe(it.tabla, it.fila));
         estado.pendientes = Math.max(0, estado.pendientes - 1);
       }
     } catch (e) { console.warn("subir", e); estado.error = "Sin conexión con la nube; se reintentará."; }
@@ -164,20 +172,26 @@
     if (!nube || !estado.usuario || !navigator.onLine) return;
     estado.sincronizando = true; avisaEstado();
     try {
-      const desde = (await meta.get("ultima")) || "1970-01-01T00:00:00Z";
-      const inicio = ahora();
+      // «ultima» es la hora más nueva que mandó el servidor (no la del reloj de este dispositivo) menos 2 min de traslape:
+      // así no se pierde ningún cambio aunque los relojes de celular y compu no coincidan.
+      const ult = (await meta.get("ultima")) || "1970-01-01T00:00:00Z";
+      const desde = new Date(new Date(ult).getTime() - 120000).toISOString();
+      let maxima = ult;
       for (const t of TABLAS) {
         let q = sb.from(t).select("*").limit(10000);
         if (!CHICAS.has(t)) q = q.gt("actualizado", desde);
         const { data, error } = await q;
         if (error) { console.warn(t, error.message); continue; }
         if (CHICAS.has(t)) {
-          // tablas pequeñas: se reemplazan completas (así se notan las bajas)
+          // tablas pequeñas: se reemplazan completas (así se notan las bajas), sin perder lo que aún no sube
+          const pend = [...mem[t].entries()].filter(([k]) => sinSubir.has(t + "|" + k));
           mem[t].clear(); await tx(t, "readwrite", s => s.clear());
+          if (pend.length) await aplicar(t, pend.map(([, r]) => r));
         }
-        await aplicar(t, data || []);
+        await aplicar(t, data || [], false, true);
+        if (!CHICAS.has(t)) for (const r of data || []) if (r.actualizado && r.actualizado > maxima) maxima = r.actualizado;
       }
-      await meta.set("ultima", inicio); estado.ultima = inicio; estado.error = "";
+      await meta.set("ultima", maxima); estado.ultima = ahora(); estado.error = "";
     } catch (e) { console.warn("bajar", e); estado.error = "No se pudo bajar de la nube."; }
     estado.sincronizando = false; avisaEstado();
   }
@@ -187,9 +201,9 @@
     if (!nube || canal) return;
     canal = sb.channel("cifrados");
     TABLAS.forEach(t => canal.on("postgres_changes", { event: "*", schema: "public", table: t }, p => {
-      if (p.eventType === "DELETE") aplicar(t, [p.old], true); else aplicar(t, [p.new]);
+      if (p.eventType === "DELETE") aplicar(t, [p.old], true); else aplicar(t, [p.new], false, true);
     }));
-    canal.subscribe();
+    canal.subscribe(st => { if (st === "CHANNEL_ERROR" || st === "TIMED_OUT" || st === "CLOSED") { try { sb.removeChannel(canal); } catch (e) {} canal = null; setTimeout(escuchar, 5000); } });
   }
 
   // ---------- RED LOCAL (servidor en la compu de quien dirige) ----------
@@ -298,6 +312,17 @@
   async function sincronizar() { if (red) { await subirRed(); await bajarRed().catch(() => {}); conectarWS(); return; } await subir(); await bajar(); }
   window.addEventListener("online", () => { estado.enLinea = true; avisaEstado(); sincronizar(); });
   window.addEventListener("offline", () => { estado.enLinea = false; avisaEstado(); });
+  // Celulares: al volver a la app (o a la pestaña) se sincroniza y se reabre el tiempo real; además cada 30 s a la vista.
+  let ultimaVuelta = 0;
+  const alVolver = () => {
+    if (document.visibilityState !== "visible" || Date.now() - ultimaVuelta < 3000) return;
+    ultimaVuelta = Date.now();
+    if (nube && estado.usuario) { if (!canal) escuchar(); sincronizar(); } else if (red) sincronizar();
+  };
+  document.addEventListener("visibilitychange", alVolver);
+  window.addEventListener("focus", alVolver);
+  window.addEventListener("pageshow", alVolver);
+  setInterval(() => { if (document.visibilityState === "visible" && ((nube && estado.usuario) || red)) sincronizar(); }, 30000);
 
   // ---------- Sesión ----------
   async function iniciar() {
