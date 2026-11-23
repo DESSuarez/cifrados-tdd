@@ -8,8 +8,6 @@
   const ss = { get(k, d) { try { const v = sessionStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 
   // ---------- Planes: pesos mexicanos con IVA, por ministerio ----------
-  // incluye = personas incluidas; extra = costo mensual por cada persona adicional. Anual = 10 meses (2 gratis).
-  // De dónde salen los números: docs/PRECIOS.md
   const PLANES = [
     { id: "gratis", nombre: "Gratis", lema: "Para empezar a tocar", mes: 0, incluye: 1, extra: 0, color: "--sea",
       cosas: ["1 persona: tú y tus cifrados", "Tu librería personal (hasta 30 canciones)", "Banco de canciones de Tiempo de Dios", "Transponer, capo y notación: C D E · Do Re Mi · 1 4 5", "Solo letra y desplazamiento automático", "Guarda tu tono en cada canción", "1 set activo"] },
@@ -19,7 +17,6 @@
       cosas: ["10 personas incluidas · +$29 por persona extra", "Todo lo de Básico", "Pistas que cambian de tono y velocidad", "Sets compartidos con otros ministerios", "PDF con el logo y los colores de tu ministerio", "Importa SongbookPro, ChordPro y «acordes arriba»", "Red local: toquen sin internet en eventos", "Respaldo y exportación", "✨ Foto o PDF → cifrado: 100 páginas al mes (muy pronto)"] },
   ];
   const plan = id => PLANES.find(p => p.id === id) || PLANES[1];
-  // mensual = base + personas extra; anual = 10 meses (2 gratis)
   const mensual = (p, personas) => (p.mes === 0 ? 0 : p.mes + Math.max(0, (personas || p.incluye) - p.incluye) * p.extra);
   const precio = (p, anual, personas) => (anual ? mensual(p, personas) * 10 : mensual(p, personas));
   const dinero = n => "$" + n.toLocaleString("es-MX");
@@ -32,24 +29,49 @@
   const nav = logueado => `<header class="i-nav"><a href="#conoce" class="i-marca">${LOGO}<span><b>CifraDios</b><small>Tiempo de Dios</small></span></a>
     <nav><a href="#planes" class="i-lnk">Planes</a>${logueado ? `<a href="#libreria" class="i-btn sm">Abrir la app →</a>` : `<a href="#entrar" class="i-btn sm ghost">Entrar</a>`}</nav></header>`;
 
-  // tarjeta de muestra con acordes sobre la letra
-  const muestra = `<div class="i-demo" aria-hidden="true">
-      <div class="i-demo-top"><span class="i-pill">Tono <b>G</b> → <b>A</b></span><span class="i-pill">Capo 2</span><span class="i-pill on">▼ Auto</span></div>
-      <div class="i-demo-sec">Coro</div>
-      <div class="i-ln"><span><i>A</i>Tu bondad </span><span><i>E/G#</i>nunca me aban</span><span><i>F#m</i>dona</span></div>
-      <div class="i-ln"><span><i>D</i>Tu verdad </span><span><i>A</i>siempre me ha cui</span><span><i>E</i>dado</span></div>
-      <div class="i-demo-sec rosa">Puente</div>
-      <div class="i-ln"><span><i>F#m</i>Santo, </span><span><i>D</i>santo es el </span><span><i>A</i>Señor</span></div>
-      <div class="i-demo-voz">🎤 Ale · coros: Memo, Ceci</div>
-    </div>`;
+  // ---------- Mockups para las secciones de features ----------
+  const mockTonos = `<div class="i-mock"><div class="i-m-bar">
+      <span class="i-m-tone">Original <b>G</b></span><span class="i-m-tone act">★ Mi tono <b>A</b></span>
+      <span class="i-m-tone">Daniela <b>E</b></span><span class="i-m-tone">Set <b>D</b></span>
+    </div>
+    <div class="i-m-sec">Coro</div>
+    <div class="i-m-line"><i>A</i><i>E/G#</i><i>F#m</i></div>
+    <div class="i-m-letra">Tu bondad nunca me abandona</div>
+    <div class="i-m-line"><i>D</i><i>A</i><i>E</i></div>
+    <div class="i-m-letra">Tu verdad siempre me ha cuidado</div></div>`;
 
-  const FUNCIONES = [
-    ["🎚️", "Transpón en un toque", "Sube o baja el tono y los acordes se acomodan solos. Con capo, en letras o en números."],
-    ["⛪", "Sets para la misa", "Arma el set por momentos: Entrada, Ofertorio, Comunión… y llévalo al ensayo."],
-    ["📡", "En vivo, todos juntos", "Quien dirige marca la canción y la sección, y en el celular de todos cambia al momento."],
-    ["🎤", "El tono de cada voz", "Cada quien guarda su tono; al elegir voz principal, el set se pone en el suyo."],
-    ["🖨️", "PDF con tu marca", "Cancioneros con portada, índice y los colores de tu ministerio. Listos para imprimir."],
-    ["🤝", "Banco del colectivo", "Canciones de Tiempo de Dios y de los ministerios del colectivo, siempre en su última versión."],
+  const mockSet = `<div class="i-mock"><div class="i-m-head">
+      <b>Misa dominical</b><span class="i-m-live">● En vivo</span>
+    </div>
+    <div class="i-m-item on"><span>1</span><div><b>Santo, santo</b><small>Entrada · A</small></div></div>
+    <div class="i-m-item"><span>2</span><div><b>Piedad, piedad</b><small>Piedad · Em</small></div></div>
+    <div class="i-m-item"><span>3</span><div><b>Confiaré</b><small>Ofertorio · G</small></div></div>
+    <div class="i-m-item"><span>4</span><div><b>Tu bondad</b><small>Comunión · D</small></div></div></div>`;
+
+  const mockPdf = `<div class="i-mock i-m-pdf"><div class="i-m-cover">
+      <div class="i-m-logo">K</div><b>KAIRÓS</b><small>Set dominical · 24 nov 2026</small>
+    </div><div class="i-m-page">
+      <div class="i-m-sec">Coro</div>
+      <div class="i-m-line"><i>A</i><i>E/G#</i><i>F#m</i></div>
+      <div class="i-m-letra">Tu bondad nunca me abandona</div>
+      <div class="i-m-sec rosa">Puente</div>
+      <div class="i-m-line"><i>F#m</i><i>D</i><i>A</i></div>
+      <div class="i-m-letra">Santo, santo es el Señor</div></div></div>`;
+
+  const mockSenas = `<div class="i-mock i-m-senas">
+    <div class="i-m-sena"><span>☝️</span><div><b>Verso 1</b><small>Un dedo arriba</small></div></div>
+    <div class="i-m-sena"><span>✌️</span><div><b>Verso 2</b><small>Dos dedos</small></div></div>
+    <div class="i-m-sena"><span>✊</span><div><b>Coro</b><small>Puño cerrado</small></div></div>
+    <div class="i-m-sena"><span>🤚</span><div><b>Terminar</b><small>Palma abierta</small></div></div></div>`;
+
+  // ---------- Tarjetas y funciones extra ----------
+  const FUNCIONES_EXTRA = [
+    ["📶", "Funciona sin internet", "Tu música guardada en el celular. Toca aunque no haya señal."],
+    ["🤝", "Banco del colectivo", "Canciones de Tiempo de Dios y del colectivo, siempre en su última versión."],
+    ["🎵", "Pistas con cambio de tono", "Sube o baja el tono de la pista para que suene como tu voz."],
+    ["✏️", "Importa lo que ya tienes", "ChordPro, SongbookPro o pega «acordes arriba» y se arma solo."],
+    ["👁️", "Vista minimalista", "Solo los acordes y la letra, sin distracciones. Cada quien la elige."],
+    ["🌙", "Modo oscuro", "Día, noche, retro y automático. Se ve bien en cualquier luz."],
   ];
 
   function tarjetaPlan(p) {
@@ -63,34 +85,84 @@
       <ul>${p.cosas.map(c => `<li>${esc(c)}</li>`).join("")}</ul></article>`;
   }
 
+  // ---------- Página de inicio (rediseño Apple-inspired) ----------
   function vConoce(r, logueado) {
     return `<div class="inicio">${nav(logueado)}
-      <section class="i-hero"><div class="i-wrap i-hero-in">
-        <div class="i-hero-txt">
-          <span class="i-eyebrow">Música católica · Tiempo de Dios</span>
-          <h1>Tus cifrados, <em>listos para alabar.</em></h1>
-          <p>La app para que tu ministerio toque cada canción en el tono correcto: acordes, letras y sets para la misa y el ensayo, sincronizados en el celular de todos.</p>
-          <div class="i-ctas"><a href="#suscribir/gratis" class="i-btn">Empieza gratis</a><a href="#planes" class="i-btn ghost claro">Ver planes</a></div>
-          <p class="i-mini">Sin tarjeta para el plan gratis · Funciona en celular, tablet y computadora</p>
-        </div>${muestra}</div></section>
-      <section class="i-sec"><div class="i-wrap">
-        <h2>Todo lo que tu ministerio necesita <em>para tocar</em></h2>
-        <div class="i-grid">${FUNCIONES.map(([ic, t, d]) => `<div class="i-feat"><span class="i-ic">${ic}</span><h3>${t}</h3><p>${d}</p></div>`).join("")}</div>
+
+      <section class="i-hero"><div class="i-wrap i-hero-cen">
+        <span class="i-eyebrow">Música católica · Tiempo de Dios</span>
+        <h1>Tus cifrados,<br><em>listos para alabar.</em></h1>
+        <p class="i-hero-sub">La app para que tu ministerio toque cada canción en el tono correcto: acordes, letras y sets para la misa y el ensayo, sincronizados en el celular de todos.</p>
+        <div class="i-ctas"><a href="#suscribir/gratis" class="i-btn lg">Empieza gratis</a><a href="#planes" class="i-btn ghost claro">Ver planes</a></div>
+        <p class="i-mini">Sin tarjeta · Celular, tablet y computadora</p>
       </div></section>
-      <section class="i-sec alt" id="planes"><div class="i-wrap">
+
+      <div class="i-chips" aria-hidden="true"><div class="i-chips-row">
+        ${[["🎚️","Tonos por artista"],["⛪","Sets litúrgicos"],["📡","En vivo"],["🎤","Voces"],["🖨️","PDF con tu marca"],["📶","Sin internet"],["🤝","Banco del colectivo"],["🤙","Señas"]].map(([ic,t])=>`<span class="i-chip">${ic} ${esc(t)}</span>`).join("")}
+      </div></div>
+
+      <section class="i-show reveal" style="--ac:var(--flame)"><div class="i-wrap i-show-in">
+        <div class="i-show-txt">
+          <span class="i-eyebrow" style="color:var(--ac)">Transporte y tonos</span>
+          <h2>Cada quien en <em>su tono,</em> sin errores.</h2>
+          <p>Sube o baja el tono y los acordes se acomodan solos. Cada voz guarda el suyo; al abrir un set, todos ven la canción en su tono.</p>
+        </div>
+        <div class="i-show-vis">${mockTonos}</div>
+      </div></section>
+
+      <section class="i-show reveal flip" style="--ac:var(--baby)"><div class="i-wrap i-show-in">
+        <div class="i-show-txt">
+          <span class="i-eyebrow" style="color:var(--ac)">Sets en vivo</span>
+          <h2>Del ensayo a la misa, <em>todos juntos.</em></h2>
+          <p>Arma el set por momentos litúrgicos. Quien dirige marca la canción y la sección, y en el celular de todos cambia al momento.</p>
+        </div>
+        <div class="i-show-vis">${mockSet}</div>
+      </div></section>
+
+      <section class="i-show reveal" style="--ac:var(--lav)"><div class="i-wrap i-show-in">
+        <div class="i-show-txt">
+          <span class="i-eyebrow" style="color:var(--ac)">PDF con tu marca</span>
+          <h2>Cancioneros <em>profesionales,</em> listos para imprimir.</h2>
+          <p>Portada, índice y los colores de tu ministerio. Una o dos columnas, con la estructura que elijas para cada canción.</p>
+        </div>
+        <div class="i-show-vis">${mockPdf}</div>
+      </div></section>
+
+      <section class="i-show reveal flip" style="--ac:var(--sol)"><div class="i-wrap i-show-in">
+        <div class="i-show-txt">
+          <span class="i-eyebrow" style="color:var(--ac)">Señas para dirigir</span>
+          <h2>Un lenguaje <em>sin palabras</em> para tu equipo.</h2>
+          <p>Señas con las manos para indicar verso, coro, puente, repetir o terminar. Todos las aprenden en la app.</p>
+        </div>
+        <div class="i-show-vis">${mockSenas}</div>
+      </div></section>
+
+      <section class="i-sec reveal"><div class="i-wrap">
+        <h2>Y mucho <em>más</em></h2>
+        <div class="i-grid">${FUNCIONES_EXTRA.map(([ic, t, d]) => `<div class="i-feat"><span class="i-ic">${ic}</span><h3>${t}</h3><p>${d}</p></div>`).join("")}</div>
+      </div></section>
+
+      <section class="i-sec alt reveal" id="planes"><div class="i-wrap">
         <h2>Elige tu <em>plan</em></h2><p class="i-sub">Precio por ministerio, no por persona: todo tu equipo entra.</p>
         <div class="i-periodo" role="radiogroup" aria-label="Periodo de pago"><button role="radio" aria-checked="${!est.anual}" class="${!est.anual ? "on" : ""}" data-periodo="mes">Mensual</button><button role="radio" aria-checked="${est.anual}" class="${est.anual ? "on" : ""}" data-periodo="anual">Anual <span>2 meses gratis</span></button></div>
         <div class="i-planes">${PLANES.map(tarjetaPlan).join("")}</div>
         <p class="i-nota">Pesos mexicanos con IVA incluido. ¿Son más de 10? Cada persona extra se suma a tu plan. Cambia de plan o cancela cuando quieras.</p>
       </div></section>
-      <section class="i-sec"><div class="i-wrap i-pasos">
+
+      <section class="i-sec reveal"><div class="i-wrap i-pasos">
         <h2>Así de <em>fácil</em></h2>
         <ol><li><b>Elige tu plan</b><span>Gratis para probar, Básico o Pro para todo tu ministerio.</span></li>
           <li><b>Crea tu cuenta</b><span>Te llega un correo para poner tu contraseña.</span></li>
           <li><b>Invita a tu equipo</b><span>Músicos y voces entran a los sets y guardan su tono.</span></li>
           <li><b>¡A tocar!</b><span>Del ensayo a la misa, todos en la misma página.</span></li></ol>
       </div></section>
-      <section class="i-cierre"><div class="i-wrap"><h2>Que la música lleve a <em>Dios.</em></h2><p>Nosotros nos encargamos de que los acordes estén en orden.</p><a href="#suscribir/basico" class="i-btn">Empezar con mi ministerio</a></div></section>
+
+      <section class="i-cierre reveal"><div class="i-wrap">
+        <h2>Que la música lleve a <em>Dios.</em></h2>
+        <p>Nosotros nos encargamos de que los acordes estén en orden.</p>
+        <a href="#suscribir/basico" class="i-btn lg">Empezar con mi ministerio</a>
+      </div></section>
+
       <footer class="i-pie"><div class="i-wrap">${LOGO}<span>CifraDios · hecho con ♥ por Tiempo de Dios</span><span class="sp"></span><a href="#entrar">Entrar</a></div></footer>
     </div>`;
   }
@@ -150,7 +222,13 @@
 
   function enlazar(r) {
     window.scrollTo(0, 0);
-    if (r.v === "planes") { const pl = $("#planes"); if (pl) requestAnimationFrame(() => pl.scrollIntoView()); }
+    if (r.v === "planes") { const pl = $("#planes"); if (pl) requestAnimationFrame(() => pl.scrollIntoView({ behavior: "smooth" })); }
+    // scroll reveal (Apple-style)
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visible"); obs.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    $$(".reveal").forEach(el => obs.observe(el));
+
     $$("[data-periodo]").forEach(b => b.onclick = () => { est.anual = b.dataset.periodo === "anual"; ss.set("ini-anual", est.anual); const y = scrollY; window.render(); requestAnimationFrame(() => scrollTo(0, y)); });
     const f1 = $("#ipaso1");
     if (f1) f1.onsubmit = e => {
