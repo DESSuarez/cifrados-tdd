@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
 
   const { data: yo, error: eYo } = await admin.from("cif_perfiles").select("superadmin,nombre").eq("id", user.id).maybeSingle();
   if (eYo) return json({ error: /permission denied/i.test(eYo.message) ? "La función no tiene permiso para leer las tablas: corre supabase/migraciones/004_permisos_service_role.sql en SQL Editor." : "No pude leer tu perfil: " + eYo.message }, 500);
-  if (!yo) return json({ error: "Tu cuenta no tiene perfil en Cifrados todavía." }, 403);
+  if (!yo) return json({ error: "Tu cuenta no tiene perfil en CifraDios todavía." }, 403);
   const soyDev = !!yo?.superadmin;
   const soyAdminDe = async (m?: string) => {
     if (!m) return false;
@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
         if (s.persona_id !== user.id && !soyDev) return json({ error: "Solo quien pidió entrar avisa de su solicitud." }, 403);
         const { data: admins } = await admin.from("cif_miembros").select("persona_id").eq("ministerio_id", s.ministerio_id).eq("rol", "admin");
         para = (admins || []).map((a) => correoDe(a.persona_id)).filter(Boolean) as string[];
-        asunto = `${p?.nombre || "Alguien"} quiere entrar a ${m?.nombre} · Cifrados`;
+        asunto = `${p?.nombre || "Alguien"} quiere entrar a ${m?.nombre} · CifraDios`;
         titulo = "Nueva solicitud para tu ministerio";
         texto = `<b>${esc(p?.nombre || "Alguien")}</b> pidió unirse a <b>${esc(m?.nombre || "")}</b>.${s.mensaje ? `<br><br>«${esc(s.mensaje)}»` : ""}<br><br>Acepta o rechaza en Ministerios.`;
         boton = "Revisar solicitud";
@@ -146,17 +146,20 @@ Deno.serve(async (req) => {
         if (!soyDev && !(await soyAdminDe(s.ministerio_id))) return json({ error: "Solo un admin del ministerio responde." }, 403);
         para = [correoDe(s.persona_id)].filter(Boolean) as string[];
         const ok = s.estado === "aceptada";
-        asunto = ok ? `Ya eres parte de ${m?.nombre} · Cifrados` : `Tu solicitud a ${m?.nombre} · Cifrados`;
+        asunto = ok ? `Ya eres parte de ${m?.nombre} · CifraDios` : `Tu solicitud a ${m?.nombre} · CifraDios`;
         titulo = ok ? `¡Bienvenido a ${m?.nombre}!` : "Sobre tu solicitud";
         texto = ok ? `Un admin aceptó tu solicitud. Ya ves los sets de <b>${esc(m?.nombre || "")}</b> y puedes guardar tus tonos para el equipo.` : `Por ahora no se aceptó tu solicitud a <b>${esc(m?.nombre || "")}</b>. Si crees que es un error, habla con tu líder.`;
-        boton = "Abrir Cifrados";
+        boton = "Abrir CifraDios";
       }
       if (!para.length) return json({ ok: true, enviados: 0, nota: "No hay a quién avisar." });
       const smtpUser = Deno.env.get("SMTP_USER"), smtpPass = Deno.env.get("SMTP_PASS");
       if (!smtpUser || !smtpPass) return json({ ok: true, enviados: 0, nota: "Faltan los secretos SMTP_USER y SMTP_PASS: no se mandó correo." });
       const puerto = Number(Deno.env.get("SMTP_PORT") || 465);
       const smtp = nodemailer.createTransport({ host: Deno.env.get("SMTP_HOST") || "smtp.hostinger.com", port: puerto, secure: puerto === 465, auth: { user: smtpUser, pass: smtpPass } });
-      await smtp.sendMail({ from: `Cifrados Tiempo de Dios <${smtpUser}>`, to: para.join(","), subject: asunto, html: plantilla(titulo, texto, boton, APP + "/#ministerios") });
+      // el logo va incrustado (cid:logo): así se ve aunque el buzón bloquee imágenes externas
+      const attachments: { filename: string; content: Uint8Array; cid: string; contentType: string }[] = [];
+      try { const r = await fetch(APP + "/correo-logo.png"); if (r.ok) attachments.push({ filename: "cifradios.png", content: new Uint8Array(await r.arrayBuffer()), cid: "logo", contentType: "image/png" }); } catch (_) { /* sin logo, el correo igual sale */ }
+      await smtp.sendMail({ from: `CifraDios · Tiempo de Dios <${smtpUser}>`, to: para.join(","), subject: asunto, html: plantilla(titulo, texto, boton, APP + "/#ministerios", attachments.length > 0), attachments });
       return json({ ok: true, enviados: para.length });
     }
 
@@ -166,16 +169,17 @@ Deno.serve(async (req) => {
   }
 });
 
-function plantilla(titulo: string, texto: string, boton: string, liga: string) {
+function plantilla(titulo: string, texto: string, boton: string, liga: string, conLogo = false) {
   return `<!doctype html><html lang="es"><body style="margin:0;padding:0;background:#F4F7F7;font-family:Arial,Helvetica,sans-serif;color:#1B1C1A">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F7F7;padding:32px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border-radius:16px;overflow:hidden;border:1px solid #DDE5E5">
 <tr><td style="background:#1B1C1A;padding:28px 32px 24px;border-bottom:6px solid #FF3D1A">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#A3ADAC;font-weight:bold">Tiempo de Dios · Cifrados</div>
+<img src="${conLogo ? "cid:logo" : APP + "/correo-logo.png"}" width="48" height="48" alt="CifraDios" style="display:block;border-radius:10px;margin-bottom:14px">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#A3ADAC;font-weight:bold">Tiempo de Dios · CifraDios</div>
 <div style="font-size:24px;line-height:1.2;font-weight:900;color:#FFFFFF;margin-top:6px">${esc(titulo)}</div></td></tr>
 <tr><td style="padding:28px 32px 8px;font-size:15px;line-height:1.6"><p style="margin:0">${texto}</p>
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:26px 0"><tr><td style="background:#FF3D1A;border-radius:10px">
 <a href="${liga}" style="display:inline-block;padding:14px 26px;color:#FFFFFF;font-weight:bold;font-size:15px;text-decoration:none">${esc(boton)}</a></td></tr></table></td></tr>
-<tr><td style="padding:16px 32px 24px;border-top:1px solid #DDE5E5;font-size:12px;color:#5E6766">Cifrados · Tiempo de Dios · <a href="${APP}" style="color:#5E6766">${APP.replace("https://", "")}</a></td></tr>
+<tr><td style="padding:16px 32px 24px;border-top:1px solid #DDE5E5;font-size:12px;color:#5E6766">CifraDios · Tiempo de Dios · <a href="${APP}" style="color:#5E6766">${APP.replace("https://", "")}</a></td></tr>
 </table></td></tr></table></body></html>`;
 }
