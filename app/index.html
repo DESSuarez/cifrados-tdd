@@ -53,7 +53,7 @@ if(localStorage.getItem("cifrados-lateral")==="oculta")document.documentElement.
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;margin:0}
+body{overscroll-behavior:none;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;margin:0}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 a{color:var(--area-ink)}
@@ -70,7 +70,7 @@ a{color:var(--area-ink)}
 .sbrand small{display:block;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
 .sideclose,.hamb{display:none;width:40px;height:40px;border-radius:10px;border:0;background:transparent;place-items:center;padding:0;color:inherit}
 .sideclose svg,.hamb svg{width:22px;height:22px}
-.areanav{display:flex;flex-direction:column;gap:2px;flex:1;min-height:0;overflow-y:auto;margin:0 -6px;padding:0 6px;scrollbar-width:thin}
+.areanav{overscroll-behavior:contain;display:flex;flex-direction:column;gap:2px;flex:1;min-height:0;overflow-y:auto;margin:0 -6px;padding:0 6px;scrollbar-width:thin}
 .sidesec{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);padding:16px 10px 6px}
 .areanav a{position:relative;display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;color:var(--fg);text-decoration:none;font-weight:700;font-size:14.5px}
 .areanav a:hover{background:color-mix(in srgb,var(--fg) 7%,transparent)}
@@ -326,7 +326,7 @@ a.ctl{text-decoration:none;color:var(--fg)}
   .secchips button{flex:none}
 }
 /* sin zoom: se ve y se usa como app */
-html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html{overscroll-behavior:none;touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .setflechas{display:inline-flex;gap:8px}
 .setflechas .flt{display:none}
 .setinfo .setvoz{white-space:nowrap}
@@ -861,11 +861,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=54"></script>
-<script src="cifrado.js?v=54"></script>
-<script src="senas.js?v=54"></script>
-<script src="datos.js?v=54"></script>
-<script src="pdf.js?v=54"></script>
+<script src="config.publico.js?v=55"></script>
+<script src="cifrado.js?v=55"></script>
+<script src="senas.js?v=55"></script>
+<script src="datos.js?v=55"></script>
+<script src="pdf.js?v=55"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
