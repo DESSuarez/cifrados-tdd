@@ -736,7 +736,7 @@ select.ivoz.on{border-color:var(--flame);font-weight:800}
 .mtarj{border:1.5px solid var(--line);border-top:6px solid var(--c);border-radius:16px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;background:var(--bg);cursor:pointer;transition:border-color .15s,transform .15s}
 .mtarj:hover,.mtarj:focus-visible{border-color:var(--c);outline:none;transform:translateY(-2px)}
 .mtarj b{font-size:17px;font-weight:800}
-.mtarj>span{font-size:13px;color:var(--muted)}
+.mtarj>span:not(.mlogoxl){font-size:13px;color:var(--muted)}
 .mtarj .u,.mtarj .n{font-family:var(--mono);font-size:12.5px}
 .mtarj .bio{margin:0;font-size:12.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4}
 .mtarj .chip{margin-top:2px}
@@ -840,6 +840,11 @@ select.fsel{padding:0 34px 0 14px;
 .arroba b{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700}
 .arroba .field{padding-left:32px}
 .perfilcampos .lb small{font-size:12.5px;margin-top:-2px}
+/* canción que no se encuentra */
+.noesta{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start}
+.noesta-ic{width:64px;height:64px;border-radius:18px;background:color-mix(in srgb,var(--flame) 14%,transparent);color:var(--flame);display:grid;place-items:center;font:900 24px var(--display)}
+.noesta h3{margin:0}
+@media (max-width:640px){.noesta{grid-template-columns:1fr}}
 /* ---------- Vista minimalista de la canción ---------- */
 html[data-vista="minimal"][data-ruta="cancion"] :is(.tonosbar,.secchips,.panelx,.band .subarts,.band .areatag){display:none!important}
 html[data-vista="minimal"][data-ruta="cancion"] .ctrls .masbtn{display:inline-flex}
@@ -888,11 +893,11 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=58"></script>
-<script src="cifrado.js?v=58"></script>
-<script src="senas.js?v=58"></script>
-<script src="datos.js?v=58"></script>
-<script src="pdf.js?v=58"></script>
+<script src="config.publico.js?v=59"></script>
+<script src="cifrado.js?v=59"></script>
+<script src="senas.js?v=59"></script>
+<script src="datos.js?v=59"></script>
+<script src="pdf.js?v=59"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -955,6 +960,14 @@ function guardarEstilo() {
 const yo = () => D.estado.usuario;
 const miPerfil = () => yo() && D.uno("cif_perfiles", yo().id);
 const nombreDe = id => { const p = D.uno("cif_perfiles", id); return p ? p.nombre || "Sin nombre" : "Alguien"; };
+/** Blanco sobre colores medios y oscuros (como los botones naranjas); casi negro sobre colores claros. */
+function tintaSobre(c) {
+  const m = String(c || "").match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i); if (!m) return "#fff";
+  let h = m[1]; if (h.length === 3) h = h.split("").map(x => x + x).join("");
+  const [r, g, b] = [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(v => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+  const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return 1.05 / (L + 0.05) >= 3 ? "#fff" : "#1B1C1A"; // las iniciales van grandes y gruesas: con 3:1 ya se leen bien en blanco
+}
 const iniciales = n => String(n || "?").trim().split(/\s+/).slice(0, 2).map(x => x[0]).join("").toUpperCase();
 /** Foto de la persona (o sus iniciales). x = perfil o id. */
 function avatar(x, respaldo, clase = "") {
@@ -1185,7 +1198,7 @@ function artistasHTML(c, links = true) {
   return `<span class="arts">${as.map(a => {
     const m = minDeArtista(a);
     if (!m) return `<span class="art">${esc(a)}</span>`;
-    const ico = m.logo ? `<img src="${esc(m.logo)}" alt="">` : `<i style="background:${esc(m.color)}">${esc(iniciales(m.nombre))}</i>`;
+    const ico = m.logo ? `<img src="${esc(m.logo)}" alt="">` : `<i style="background:${esc(m.color)};color:${tintaSobre(m.color)}">${esc(iniciales(m.nombre))}</i>`;
     const tipo = m.tdd ? "Colectivo" : m.solista ? "Solista" : "Ministerio";
     const inner = `${ico}${esc(m.nombre)}<small>${tipo}</small>`;
     return links && m.id ? `<a class="art min" href="#ministerio/${m.id}" style="--c:${esc(m.color)}" title="Ver el perfil de ${esc(m.nombre)}">${inner}</a>` : `<span class="art min" style="--c:${esc(m.color)}">${inner}</span>`;
@@ -1657,10 +1670,31 @@ const claveVista = c => (ctxSet ? `set:${ctxSet.s.id}:${ctxSet.i}` : c.id);
 /** El tono original solo lo cambia quien subió la canción (o el desarrollador). */
 const puedeTonoOriginal = c => !c || !c.id || esSuper() || !!(yo() && c.creada_por === yo().id);
 let ctxSet = null, vivo = null;
+/** «404» de canciones: explica qué pudo pasar, sugiere parecidas por el nombre de la dirección y lleva a la librería o al banco. */
+function vCancionNoEsta(x, borrada) {
+  const palabras = String(x || "").replace(/-[0-9a-f]{4}$/, "").split("-").filter(w => w.length > 2 && !/^[0-9a-f]{8,}$/.test(w));
+  const q = palabras.join(" ");
+  const pts = c => { const t = slugTexto(c.titulo + " " + (c.autor || "")); return palabras.reduce((n, w) => n + (t.includes(w) ? 1 : 0), 0); };
+  const parecidas = palabras.length ? canciones().map(c => [c, pts(c)]).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1] || a[0].titulo.localeCompare(b[0].titulo, "es")).slice(0, 6).map(([c]) => c) : [];
+  const cargando = D.nube && !D.lista("cif_canciones").length;
+  return {
+    band: bandHTML({ tag: "Canción", titulo: cargando ? "Cargando…" : borrada ? "Esta canción se <em>borró</em>" : "No encontré esta <em>canción</em>",
+      sub: `<span>${cargando ? "Trayendo tus canciones de la nube" : borrada ? `«${esc(borrada.titulo)}» ya no está en el banco` : "Puede que le hayan cambiado el nombre, que la hayan borrado o que no sea de tus ministerios"}</span>` }),
+    main: cargando ? `<p class="status">Un momento…</p>` : `
+      <section class="caja noesta">
+        <div class="noesta-ic" aria-hidden="true">♫?</div>
+        <div><h3>${borrada ? "Ya no está disponible" : "La liga no lleva a ninguna canción"}</h3>
+          <p class="status" style="margin:4px 0 14px">${q ? `Buscaste <b>«${esc(q)}»</b>.` : ""} ${parecidas.length ? "Quizá era alguna de estas:" : "Búscala en tu librería o en el banco de canciones."}</p>
+          ${parecidas.length ? `<ul class="songs">${parecidas.map(c => `<li><a class="srow" href="${urlCan(c)}"><div><b>${esc(c.titulo)}</b><small>${artistasHTML(c, false) || "—"}</small></div><span class="chips">${c.tono ? `<span class="chip tono">${esc(c.tono)}</span>` : ""}</span></a></li>`).join("")}</ul>` : ""}
+          <div class="row" style="margin-top:14px"><a class="btn" href="#libreria">Ir a la librería</a>${q ? `<button class="btn ghost" id="nobanco">Buscar «${esc(q)}» en el banco</button>` : `<a class="btn ghost" href="#banco">Ir al banco</a>`}</div></div>
+      </section>`,
+    after() { const b = $("#nobanco"); if (b) b.onclick = () => { banco.q = q; banco.res = null; location.hash = "#banco"; }; },
+  };
+}
 function vCancion(p) {
   const c = cancionDeRuta(p[0]);
   if (c) { const limpia = urlCan(c).slice(9); if (p[0] !== limpia) history.replaceState(null, "", "#cancion/" + [limpia, ...p.slice(1)].map(encodeURIComponent).join("/")); }
-  if (!c || c.borrada) return { band: bandHTML({ titulo: "No encontré esa canción" }), main: `<a class="btn ghost" href="#libreria">← A la librería</a>` };
+  if (!c || c.borrada) return vCancionNoEsta(p[0], c);
   // contexto de set: #cancion/<id>/set/<setId>/<i>
   ctxSet = null;
   if (p[1] === "set") {
@@ -2953,7 +2987,7 @@ function vMinisterios() {
     const nS = D.lista("cif_sets").filter(x => !x.borrada && x.ministerio_id === m.id).length;
     const mio = membresias().find(x => x.ministerio_id === m.id), c = m.color_primario || "#FF3D1A", lg = logoSrc(m.logo);
     return `<div class="mtarj" data-ir="${m.id}" role="link" tabindex="0" style="--c:${esc(c)}">
-      ${lg ? `<img class="mlogoxl" src="${esc(lg)}" alt="">` : `<span class="mlogoxl" style="background:${esc(c)}">${esc(iniciales(m.nombre))}</span>`}
+      ${lg ? `<img class="mlogoxl" src="${esc(lg)}" alt="">` : `<span class="mlogoxl" style="background:${esc(c)};color:${tintaSobre(c)}">${esc(iniciales(m.nombre))}</span>`}
       <b>${esc(m.nombre)}</b><span class="u">${sol ? "🎤 Solista" : "Ministerio"}${m.colectivo ? " · Colectivo TDD" : ""}</span>
       <span>${admins.length ? (sol ? "Artista: " : "Admin: ") + esc(admins.join(", ")) : "Sin admin todavía"}</span>
       ${m.descripcion ? `<p class="bio">${esc(m.descripcion)}</p>` : ""}
@@ -3589,10 +3623,10 @@ function vAjustes() {
     main: `
       <section class="caja"><h3>Vista de la canción</h3><p class="status" style="margin:0 0 12px">Elige cuánta información ves al abrir una canción. Se guarda en tu perfil y lo puedes cambiar cuando quieras, también desde «⋯ Más» dentro de la canción.</p>
         <div class="vistas" role="radiogroup" aria-label="Vista de la canción">
-          <button type="button" role="radio" aria-checked="${!e.minimal}" class="vistaop ${!e.minimal ? "on" : ""}" data-vista="completa">
+          <button type="button" role="radio" aria-checked="${!e.minimal}" class="vistaop ${!e.minimal ? "on" : ""}" data-vistaop="completa">
             <span class="vmuestra"><i class="vm-band"><b></b><s></s><s class="c"></s></i><i class="vm-ctl"></i><i class="vm-chips"><s></s><s></s><s></s></i><i class="vm-letra"></i><i class="vm-letra c"></i><i class="vm-panel"></i></span>
             <span class="vtxt"><b>Completa</b><small>Artistas y ministerio, tonos de cada quien, secciones, pistas y notas.</small></span></button>
-          <button type="button" role="radio" aria-checked="${!!e.minimal}" class="vistaop ${e.minimal ? "on" : ""}" data-vista="minimal">
+          <button type="button" role="radio" aria-checked="${!!e.minimal}" class="vistaop ${e.minimal ? "on" : ""}" data-vistaop="minimal">
             <span class="vmuestra min"><i class="vm-band"><b></b><s class="c"></s></i><i class="vm-ctl"></i><i class="vm-letra"></i><i class="vm-letra c"></i><i class="vm-letra"></i><i class="vm-letra c"></i></span>
             <span class="vtxt"><b>Minimalista</b><small>Solo el título, el tono, capo y BPM, y luego la letra con sus acordes.</small></span></button>
         </div></section>
@@ -3620,7 +3654,7 @@ function vAjustes() {
       $$("[data-not]").forEach(b => b.onclick = () => { st.estilo.notacion = b.dataset.not; guardarEstilo(); render(); });
       $$("[data-tog]").forEach(b => b.onclick = () => { const k = b.dataset.tog; if (k === "cols") st.estilo.cols = st.estilo.cols === 2 ? 1 : 2; else st.estilo[k] = !st.estilo[k]; guardarEstilo(); render(); });
       $$("[data-tema]").forEach(b => b.onclick = () => aplicarTema(b.dataset.tema));
-      $$("[data-vista]").forEach(b => b.onclick = () => { st.estilo.minimal = b.dataset.vista === "minimal"; guardarEstilo(); render(); toast(st.estilo.minimal ? "Listo: las canciones se abren en vista minimalista." : "Listo: las canciones se abren en vista completa."); });
+      $$("button[data-vistaop]").forEach(b => b.onclick = () => { st.estilo.minimal = b.dataset.vistaop === "minimal"; guardarEstilo(); render(); toast(st.estilo.minimal ? "Listo: las canciones se abren en vista minimalista." : "Listo: las canciones se abren en vista completa."); });
       const di = $("#dimp"); if (di) di.onclick = abrirImportar;
       const de = $("#dexp"); if (de) de.onclick = exportar;
       $("#dsal").onclick = async () => { if (await confirmar(D.nube ? "¿Cerrar sesión?" : "¿Borrar todo lo de este dispositivo?", D.nube ? "Se borra la copia local; tus datos siguen en la nube." : "No se puede deshacer.")) D.salir(); };
