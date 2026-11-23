@@ -1,7 +1,7 @@
 /* Service worker: guarda la app y las librerías para abrirla sin internet.
    Sube VERSION cuando cambie cualquier archivo de la app. */
-const VERSION = "cifrados-v46";
-const APP = ["./", "index.html", "cifrado.js", "datos.js", "senas.js", "pdf.js", "config.publico.js", "manifest.webmanifest", "favicon.png", "apple-touch-icon.png", "icono-512.png", "app-favicon.png", "app-touch-180.png", "app-icono-512.png",
+const VERSION = "cifrados-v47";
+const APP = ["./", "index.html", "cifrado.js", "datos.js", "senas.js", "pdf.js", "config.publico.js", "manifest.webmanifest", "favicon.png", "apple-touch-icon.png", "icono-512.png", "app-favicon.png", "app-touch-180.png", "app-icono-512.png", "app-icono-192.png", "icono-app.svg", "favicon.ico",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"];
 const CDN = /^https:\/\/(cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|fonts\.(googleapis|gstatic)\.com)\//;
 self.addEventListener("install", e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(APP)).then(() => self.skipWaiting())); });
