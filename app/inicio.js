@@ -64,6 +64,25 @@
     <div class="i-m-sena"><span>✊</span><div><b>Coro</b><small>Puño cerrado</small></div></div>
     <div class="i-m-sena"><span>🤚</span><div><b>Terminar</b><small>Palma abierta</small></div></div></div>`;
 
+  // ---------- Mockup del celular 3D ----------
+  const mockPhone = `<div class="i-phone-wrap"><div class="i-phone">
+    <div class="i-phone-notch"></div>
+    <div class="i-phone-screen">
+      <div class="i-ps-bar"><b>CifraDios</b><span class="i-ps-ic">🔍</span></div>
+      <div class="i-ps-tabs"><span class="on">Tiempo de Dios</span><span>Otras</span><span>Litúrgicas</span></div>
+      <div class="i-ps-songs">
+        <div class="i-ps-row"><span class="dot" style="background:var(--flame)"></span><div><b>Tu bondad</b><small>KAYRÓS · G</small></div></div>
+        <div class="i-ps-row"><span class="dot" style="background:var(--baby)"></span><div><b>Confiaré</b><small>Zamar · A</small></div></div>
+        <div class="i-ps-row"><span class="dot" style="background:var(--lav)"></span><div><b>Santo, santo</b><small>Surgit Iglessia · D</small></div></div>
+        <div class="i-ps-row"><span class="dot" style="background:var(--sol)"></span><div><b>Piedad, piedad</b><small>KAYRÓS · Em</small></div></div>
+        <div class="i-ps-row"><span class="dot" style="background:var(--rosa)"></span><div><b>Ven Espíritu</b><small>Zamar · C</small></div></div>
+        <div class="i-ps-row"><span class="dot" style="background:var(--sea)"></span><div><b>Jesús, yo creo</b><small>Tiempo de Dios · F</small></div></div>
+        <div class="i-ps-row"><span class="dot" style="background:var(--flame)"></span><div><b>Gloria a Dios</b><small>KAYRÓS · Bb</small></div></div>
+      </div>
+      <div class="i-ps-mini"><small>▶ Tu bondad · G</small><div class="i-ps-prog"><span></span></div><small>2:14</small></div>
+    </div>
+  </div></div>`;
+
   // ---------- Tarjetas y funciones extra ----------
   const FUNCIONES_EXTRA = [
     ["📶", "Funciona sin internet", "Tu música guardada en el celular. Toca aunque no haya señal."],
@@ -95,7 +114,9 @@
         <p class="i-hero-sub">La app para que tu ministerio toque cada canción en el tono correcto: acordes, letras y sets para la misa y el ensayo, sincronizados en el celular de todos.</p>
         <div class="i-ctas"><a href="#suscribir/gratis" class="i-btn lg">Empieza gratis</a><a href="#planes" class="i-btn ghost claro">Ver planes</a></div>
         <p class="i-mini">Sin tarjeta · Celular, tablet y computadora</p>
-      </div></section>
+      </div>
+      ${mockPhone}
+      </section>
 
       <div class="i-chips" aria-hidden="true"><div class="i-chips-row">
         ${[["🎚️","Tonos por artista"],["⛪","Sets litúrgicos"],["📡","En vivo"],["🎤","Voces"],["🖨️","PDF con tu marca"],["📶","Sin internet"],["🤝","Banco del colectivo"],["🤙","Señas"]].map(([ic,t])=>`<span class="i-chip">${ic} ${esc(t)}</span>`).join("")}
@@ -228,6 +249,15 @@
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visible"); obs.unobserve(e.target); } });
     }, { threshold: 0.12 });
     $$(".reveal").forEach(el => obs.observe(el));
+    // GSAP: animar el iPhone 3D al hacer scroll
+    if (typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
+      gsap.registerPlugin(ScrollTrigger);
+      const phone = $(".i-phone");
+      if (phone) {
+        gsap.fromTo(phone, { rotateY: -12, rotateX: 5, scale: 0.95 }, { rotateY: 0, rotateX: 0, scale: 1, ease: "power2.out", scrollTrigger: { trigger: ".i-phone-wrap", start: "top 85%", end: "top 25%", scrub: 1 } });
+        gsap.fromTo(phone, { boxShadow: "0 0 0 2px #222, 0 40px 80px rgba(0,0,0,.55), 0 0 120px rgba(255,61,26,.08)" }, { boxShadow: "0 0 0 2px #222, 0 60px 120px rgba(0,0,0,.4), 0 0 200px rgba(255,61,26,.15)", ease: "power2.out", scrollTrigger: { trigger: ".i-phone-wrap", start: "top 85%", end: "top 25%", scrub: 1 } });
+      }
+    }
 
     $$("[data-periodo]").forEach(b => b.onclick = () => { est.anual = b.dataset.periodo === "anual"; ss.set("ini-anual", est.anual); const y = scrollY; window.render(); requestAnimationFrame(() => scrollTo(0, y)); });
     const f1 = $("#ipaso1");
