@@ -846,11 +846,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=47"></script>
-<script src="cifrado.js?v=47"></script>
-<script src="senas.js?v=47"></script>
-<script src="datos.js?v=47"></script>
-<script src="pdf.js?v=47"></script>
+<script src="config.publico.js?v=48"></script>
+<script src="cifrado.js?v=48"></script>
+<script src="senas.js?v=48"></script>
+<script src="datos.js?v=48"></script>
+<script src="pdf.js?v=48"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1440,6 +1440,10 @@ function vLibreria() {
 }
 
 // ================= CANCIÓN =================
+/** Llave del tono que estás viendo: la canción sola, o esa canción en ese lugar de ese set. */
+const claveVista = c => (ctxSet ? `set:${ctxSet.s.id}:${ctxSet.i}` : c.id);
+/** El tono original solo lo cambia quien subió la canción (o el desarrollador). */
+const puedeTonoOriginal = c => !c || !c.id || esSuper() || !!(yo() && c.creada_por === yo().id);
 let ctxSet = null, vivo = null;
 function vCancion(p) {
   const c = D.uno("cif_canciones", p[0]);
@@ -1452,8 +1456,11 @@ function vCancion(p) {
   }
   const original = c.tono || C.adivinaTono(c.contenido) || "C";
   const mt = miTono(c.id);
-  const tono = st.tonoVista[c.id] || (ctxSet && ctxSet.item && ctxSet.item.tono) || (mt && mt.tono) || original;
-  const capo = st.capo[c.id] ?? (ctxSet ? (ctxSet.item && ctxSet.item.capo) || 0 : (mt && mt.capo) || 0);
+  // Tres tonos que no se mezclan: el original (de la canción), el tuyo (cif_tonos) y el del set (su item, igual para todos en el set).
+  // Lo que mueves con − / + es solo para verla aquí: en la librería no cambia el set y en el set no cambia la librería.
+  const kv = claveVista(c);
+  const tono = st.tonoVista[kv] || (ctxSet ? (ctxSet.item && ctxSet.item.tono) || original : (mt && mt.tono) || original);
+  const capo = st.capo[kv] ?? (ctxSet ? (ctxSet.item && ctxSet.item.capo) || 0 : (mt && mt.capo) || 0);
   const semis = C.distancia(original, tono) - capo;
   const forma = C.transportaTono(tono, -capo);
   const e = st.estilo;
@@ -1530,13 +1537,13 @@ function vCancion(p) {
     band: bandHTML({ tag: ctxSet ? "En vivo" : "Canción", titulo: esc(c.titulo), sub, extra: setbar }),
     main,
     after() {
-      const ponTono = t => { st.tonoVista[c.id] = t; render(); if (rep.track && rep.auto) ajustarPitch(); };
+      const ponTono = t => { st.tonoVista[kv] = t; render(); if (rep.track && rep.auto) ajustarPitch(); };
       $("#tsel").onchange = ev => { ev.target.blur(); ponTono(ev.target.value); };
       $("#tmenos").onclick = () => ponTono(C.transportaTono(tono, -1));
       $("#tmas").onclick = () => ponTono(C.transportaTono(tono, 1));
       const cbar = $(".ctrls");
       if (cbar) { const pega = () => { const t = parseFloat(getComputedStyle(cbar).top) || 0; cbar.classList.toggle("pegado", scrollY > 0 && cbar.getBoundingClientRect().top <= t + 1); }; window.removeEventListener("scroll", window.__pega || (() => {})); window.__pega = pega; addEventListener("scroll", pega, { passive: true }); pega(); }
-      $("#capo").onchange = ev => { ev.target.blur(); st.capo[c.id] = +ev.target.value; render(); };
+      $("#capo").onchange = ev => { ev.target.blur(); st.capo[kv] = +ev.target.value; render(); };
       $$("[data-not]").forEach(b => b.onclick = () => {
         const k = b.dataset.not;
         if (k === "letra") st.estilo.sinAcordes = !st.estilo.sinAcordes; else { st.estilo.notacion = k; st.estilo.sinAcordes = false; }
@@ -1553,7 +1560,7 @@ function vCancion(p) {
       $("#tprint").onclick = () => abrirExportar({ items: [{ c, tono, capo, orden, voces: ctxSet ? vocesPDF(ctxSet.item) : null }], titulo: c.titulo, minId: ctxSet ? ctxSet.s.ministerio_id : (minActual() || {}).id });
       const tc = $("#tcomp"); if (tc) tc.onclick = () => compartirCancion(c);
       $$("[data-ir]").forEach(b => b.onclick = () => { irSeccion(b.dataset.ir); if (st.dirigir && vivo) vivo.enviar({ i: ctxSet.i, sec: b.dataset.ir }); });
-      $$("[data-tono]").forEach(b => b.onclick = () => { st.tonoVista[c.id] = b.dataset.tono; st.capo[c.id] = +b.dataset.capo; render(); if (rep.track && rep.auto) ajustarPitch(); });
+      $$("[data-tono]").forEach(b => b.onclick = () => { st.tonoVista[kv] = b.dataset.tono; st.capo[kv] = +b.dataset.capo; render(); if (rep.track && rep.auto) ajustarPitch(); });
       const vo = $("#votros"); if (vo) vo.onclick = () => { st.verOtros = true; render(); };
       const g = $("#gmio"); if (g) g.onclick = async () => {
         await D.guardar("cif_tonos", { cancion_id: c.id, persona_id: yo().id, tono, capo });
@@ -2044,7 +2051,7 @@ function vSet(id) {
         // voz principal: si tiene su tono guardado para esta canción, el set se pone en ese tono (y capo)
         const i = +x.dataset.iper, it = itemsAct(), cid = it[i].cancion_id, t = x.value && D.uno("cif_tonos", cid + "|" + x.value);
         ponItem(i, { persona_id: x.value || null, ...(t ? { tono: t.tono, capo: t.capo || 0 } : {}) });
-        if (t) { delete st.tonoVista[cid]; delete st.capo[cid]; }
+        if (t) { const k = "set:" + id + ":" + i; delete st.tonoVista[k]; delete st.capo[k]; }
         x.blur();
         if (t) toast(`Voz principal: ${nombreDe(x.value)} · la canción queda en su tono, ${t.tono}${t.capo ? " con capo " + t.capo : ""}.`);
         else if (x.value) toast(`${nombreDe(x.value)} aún no guarda su tono en esta canción; se queda en ${it[i].tono || "el original"}.`);
@@ -2150,7 +2157,7 @@ function vEditor(id) {
     ${ed.tonoGuardar && c.tono !== ed.tonoGuardar ? `<div class="avisoton">🎤 Estás editando en <b>tu tono, ${esc(c.tono)}</b>. Al guardar, la canción se queda en su tono original (<b>${esc(ed.tonoGuardar)}</b>) y cada quien la sigue viendo en el suyo.</div>` : ""}
     <div class="grid2">
       <label class="lb">Título<input class="field" id="etit" value="${esc(c.titulo)}" placeholder="Nombre de la canción"></label>
-      <label class="lb">Tono en que la escribes<select class="field" id="eton">${C.TONOS.map(t => `<option ${t === c.tono ? "selected" : ""}>${t}</option>`).join("")}</select></label>
+      <label class="lb">Tono en que la escribes${base && !puedeTonoOriginal(base) ? ` <small>Original: ${esc(base.tono || "—")} · solo lo cambia quien la subió</small>` : ""}<select class="field" id="eton" ${base && !puedeTonoOriginal(base) ? "disabled" : ""}>${C.TONOS.map(t => `<option ${t === c.tono ? "selected" : ""}>${t}</option>`).join("")}</select></label>
       <label class="lb">BPM<input class="field" id="ebpm" type="number" min="30" max="260" value="${c.bpm || ""}"></label>
       <label class="lb">Compás<input class="field" id="ecom" value="${esc(c.compas || "")}" placeholder="4/4"></label>
       <label class="lb">Liga de referencia<input class="field" id="elig" value="${esc(c.liga || "")}" placeholder="Spotify o YouTube"></label>
