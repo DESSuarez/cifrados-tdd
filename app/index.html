@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Cifrados Tiempo de Dios</title>
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
@@ -277,6 +277,41 @@ h1 em{font-style:normal;color:var(--area)}
   .maincol{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
 }
 .setbar .sp{flex:1}
+/* Controles de la canción: en computadora todo a la vista; en el celular, «⋯ Más» y «Tonos» se despliegan */
+.ctlmas{display:contents}
+a.ctl{text-decoration:none;color:var(--fg)}
+.masbtn,.tonosres{display:none}
+@media (max-width:640px){
+  .ctrls{display:grid!important;grid-template-columns:1fr auto;gap:8px;align-items:center}
+  .ctrls .tonobox{grid-column:1;grid-row:1;display:flex;min-width:0}
+  .ctrls .tonobox select{flex:1;min-width:0}
+  .ctrls>label.ctl{grid-column:2;grid-row:1}
+  .ctrls .autobox{grid-column:1;grid-row:2;display:flex;min-width:0}
+  .ctrls .autobox #tauto{flex:1}
+  .ctrls .sp{display:none}
+  .masbtn{display:inline-flex;grid-column:2;grid-row:2;white-space:nowrap;justify-content:center}
+  .ctlmas{display:none}
+  .ctrls.abierta .ctlmas{display:flex;flex-wrap:wrap;gap:8px;grid-column:1/-1;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+  .ctrls.abierta .ctlmas .seg{flex-basis:100%;width:100%}
+  .ctrls.abierta .ctlmas .seg button{flex:1}
+  .ctrls.abierta .ctlmas .ctl{flex:1 1 auto;justify-content:center}
+  .tonosbar{padding:0!important;gap:0!important;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .tonosbar>*:not(.tonosres){display:none!important}
+  .tonosbar.abierta{padding:0 10px 10px!important;gap:8px!important}
+  .tonosbar.abierta>*:not(.tonosres):not(.tbl):not(.sp){display:inline-flex!important}
+  .tonosres{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;border:0;background:none;color:var(--fg);font:inherit;cursor:pointer;text-align:left}
+  .tonosbar.abierta .tonosres{margin:0 -10px;width:calc(100% + 20px);border-bottom:1px solid var(--line)}
+  .tonosres span{font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .tonosres b{font:900 16px var(--display);color:var(--acorde)}
+  .tonosres small{color:var(--muted);font-size:12.5px;flex:1}
+  .tonosres i{font-style:normal;color:var(--muted);transition:transform .2s}
+  .tonosbar.abierta .tonosres i{transform:rotate(180deg)}
+  .secchips{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+  .secchips::-webkit-scrollbar{display:none}
+  .secchips button{flex:none}
+}
+/* sin zoom: se ve y se usa como app */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .setflechas{display:inline-flex;gap:8px}
 .setflechas .flt{display:none}
 .setinfo .setvoz{white-space:nowrap}
@@ -767,11 +802,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=41"></script>
-<script src="cifrado.js?v=41"></script>
-<script src="senas.js?v=41"></script>
-<script src="datos.js?v=41"></script>
-<script src="pdf.js?v=41"></script>
+<script src="config.publico.js?v=42"></script>
+<script src="cifrado.js?v=42"></script>
+<script src="senas.js?v=42"></script>
+<script src="datos.js?v=42"></script>
+<script src="pdf.js?v=42"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1087,6 +1122,13 @@ let scrollLib = 0;
 window.addEventListener("scroll", () => { if (ruta().v === "libreria") scrollLib = window.scrollY; }, { passive: true });
 // Acentos y ñ (´ + a en Mac, teclados del celular): mientras se compone la letra no se avisa a los buscadores,
 // porque redibujar a media tecla rompía el acento. Al terminar de componer, se avisa una sola vez.
+// Sin zoom (se ve y se usa como app): pellizcar en iPhone, Ctrl/⌘ + rueda o + / − / 0 en la computadora.
+// Para la letra están A− y A+ en la canción.
+["gesturestart", "gesturechange", "gestureend"].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
+document.addEventListener("touchmove", e => { if (e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
+window.addEventListener("wheel", e => { if (e.ctrlKey || e.metaKey) e.preventDefault(); }, { passive: false });
+window.addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && ["+", "-", "=", "0", "_"].includes(e.key)) e.preventDefault(); });
+// el doble toque ya no hace zoom por `touch-action: manipulation` en <html>
 let componiendo = false;
 document.addEventListener("compositionstart", () => { componiendo = true; }, true);
 document.addEventListener("compositionend", e => { componiendo = false; const t = e.target; if (t && /^(INPUT|TEXTAREA)$/.test(t.tagName)) setTimeout(() => t.dispatchEvent(new Event("input", { bubbles: true })), 0); }, true);
@@ -1380,11 +1422,13 @@ function vCancion(p) {
 
   const main = `
   <div class="printhead"><h2>${esc(c.titulo)}</h2><div>${esc(c.autor || "")} · Tono ${esc(tono)}${capo ? " · Capo " + capo : ""}${c.bpm ? " · " + c.bpm + " bpm" : ""}</div></div>
-  <div class="ctrls">
+  <div class="ctrls ${st.ctlAbierta ? "abierta" : ""}">
     <div class="tonobox" title="Tono"><button id="tmenos" aria-label="Bajar medio tono">−</button><select id="tsel" aria-label="Tono">${opTonos}</select><button id="tmas" aria-label="Subir medio tono">+</button></div>
     <label class="ctl" title="Capo">Capo <select id="capo">${[0, 1, 2, 3, 4, 5, 6, 7].map(n => `<option ${n === capo ? "selected" : ""}>${n}</option>`).join("")}</select></label>
-    <div class="seg" role="radiogroup" aria-label="Notación">${NOTACIONES.map(([k, l]) => `<button role="radio" aria-checked="${e.notacion === k}" class="${e.notacion === k && !e.sinAcordes ? "on" : ""}" data-not="${k}">${l}</button>`).join("")}<button role="radio" aria-checked="${!!e.sinAcordes}" class="${e.sinAcordes ? "on" : ""}" data-not="letra" title="Solo letra (para voces)">Letra</button></div>
     <div class="ctl autobox" title="Desplazamiento automático (barra espaciadora; + y − cambian la velocidad)"><button id="tauto" class="${autoscroll.on ? "on" : ""}">${autoscroll.on ? "❚❚" : "▼"} Auto</button><button id="vmenos" aria-label="Más lento">−</button><output id="vval">${nivelVel()}</output><button id="vmas" aria-label="Más rápido">+</button></div>
+    <button class="ctl masbtn ${st.ctlAbierta ? "on" : ""}" id="tmasopc" type="button" aria-expanded="${!!st.ctlAbierta}" aria-label="Más opciones">⋯ Más</button>
+    <div class="ctlmas">
+    <div class="seg" role="radiogroup" aria-label="Notación">${NOTACIONES.map(([k, l]) => `<button role="radio" aria-checked="${e.notacion === k}" class="${e.notacion === k && !e.sinAcordes ? "on" : ""}" data-not="${k}">${l}</button>`).join("")}<button role="radio" aria-checked="${!!e.sinAcordes}" class="${e.sinAcordes ? "on" : ""}" data-not="letra" title="Solo letra (para voces)">Letra</button></div>
     <button class="ctl" id="amenos" title="Letra más chica">A−</button><button class="ctl" id="amas" title="Letra más grande">A+</button>
     <button class="ctl ${e.cols === 2 ? "on" : ""}" id="tcols" title="Dos columnas">▥</button>
     <button class="ctl" id="tesc" title="Modo escenario">⤢</button>
@@ -1395,8 +1439,10 @@ function vCancion(p) {
     ${esMusico() && puedeEditarCancion(c) ? `<a class="ctl noesc" href="#editar/${c.id}">✎ Editar</a>` : ""}
     <button class="ctl noesc" id="tprint" title="Exportar PDF (1 o 2 columnas)">⎙ PDF</button>
     ${ctxSet ? `<button class="ctl noesc ${st.modoVoces ? "on" : ""}" id="tvoces" title="Mostrar u ocultar la voz principal y los coros junto a cada parte de la letra (solo en sets)">🎤 Voces</button>` : ""}
+    </div>
   </div>
-  <div class="tonosbar noesc">
+  <div class="tonosbar noesc ${st.tonosAbiertos ? "abierta" : ""}">
+    <button class="tonosres" id="ttonos" type="button" aria-expanded="${!!st.tonosAbiertos}"><span>Tonos</span><b>${esMio ? "★ " : ""}${esc(tono)}${capo ? " · capo " + capo : ""}</b><small>${tonos.length ? tonos.length + " guardado" + (tonos.length === 1 ? "" : "s") : "ninguno guardado"}</small><i>▾</i></button>
     <span class="tbl">Tonos</span>
     <button class="tchip ${tono === original && !capo ? "on" : ""}" data-tono="${esc(original)}" data-capo="0">Original <small>${esc(original)}</small></button>
     ${tonosCerca.map(chipTono).join("")}
@@ -1461,6 +1507,8 @@ function vCancion(p) {
         $$("[data-cvoz]").forEach(b => b.onclick = ev => { ev.stopPropagation(); elegirVoces(ctxSet.s.id, ctxSet.i, b.dataset.cvoz); });
       }
       // canción que trajo otro ministerio (p. ej. a un set compartido): enlazarla a mi librería
+      $("#tmasopc").onclick = () => { st.ctlAbierta = !st.ctlAbierta; render(); };
+      $("#ttonos").onclick = () => { st.tonosAbiertos = !st.tonosAbiertos; render(); };
       const tv = $("#tvoces"); if (tv) tv.onclick = () => { st.modoVoces = !st.modoVoces; ls.set("cifrados-voces2", st.modoVoces); render(); };
       $$("[data-pvoz]").forEach(b => b.onclick = () => elegirVoces(ctxSet.s.id, ctxSet.i, b.dataset.pvoz));
       const ca = $("#cadd"); if (ca) ca.onclick = async () => {
