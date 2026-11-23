@@ -1028,15 +1028,9 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 .ualtainst .rolchips{margin:4px 0 2px}
 .ualta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
 
-/* ---------- Transiciones entre pantallas ---------- */
-@keyframes vistain{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.trans-in{animation:vistain .18s cubic-bezier(.22,.8,.24,1) both}
-.trans-in .band .wrap{animation:vistain .14s ease both}
 @media (prefers-reduced-motion:reduce){
   .srow,.setcard,.item{transition:none!important}
   .srow:hover,.setcard:hover,.item:hover{transform:none!important}
-  @keyframes vistain{from{opacity:0}to{opacity:1}}
-  .trans-in{animation-duration:.08s}
 }
 
 /* ---------- Búsqueda rápida ⌘K ---------- */
@@ -1070,12 +1064,12 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=64"></script>
-<script src="cifrado.js?v=64"></script>
-<script src="senas.js?v=64"></script>
-<script src="datos.js?v=64"></script>
-<script src="pdf.js?v=64"></script>
-<script src="inicio.js?v=64"></script>
+<script src="config.publico.js?v=65"></script>
+<script src="cifrado.js?v=65"></script>
+<script src="senas.js?v=65"></script>
+<script src="datos.js?v=65"></script>
+<script src="pdf.js?v=65"></script>
+<script src="inicio.js?v=65"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1678,7 +1672,6 @@ function tabsHTML(lista, actual, attr = "data-tab") {
   return lista.map(([k, l, n]) => `<button class="tab" ${attr}="${k}" aria-selected="${k === actual}">${esc(l)}${n !== undefined ? `<span class="count">${n}</span>` : ""}</button>`).join("");
 }
 
-let _vistaAnt = "";
 function render() {
   renderPend = false;
   aplicarEstilo();
@@ -1703,13 +1696,11 @@ function render() {
       r.v === "senas" ? vSenas() : r.v === "ministerios" ? vMinisterios() : r.v === "ajustes" ? vAjustes() : r.v === "perfil" ? vPerfil() : r.v === "amigos" ? vAmigos() : r.v === "usuarios" ? vUsuarios() : r.v === "persona" ? vPersona(r.p[0]) : r.v === "ministerio" ? vMinisterio(r.p[0]) : r.v === "banco" ? vBanco() : vLibreria();
   } catch (e) { console.error(e); out = { band: bandHTML({ titulo: "Algo falló" }), main: `<p class="status">${esc(e.message)}</p>`, }; }
   const y = window.scrollY;
-  const cambioVista = r.v !== _vistaAnt; _vistaAnt = r.v;
   // el menú lateral se dibuja de nuevo con cada pantalla: se guarda y se regresa su scroll para que no salte hasta arriba
   const navAntes = $(".areanav"), sideAntes = $(".side");
   const scNav = navAntes ? navAntes.scrollTop : 0, scSide = sideAntes ? sideAntes.scrollTop : 0;
   app.innerHTML = shell(out.band, out.main);
   { const n = $(".areanav"), sd = $(".side"); if (n) n.scrollTop = scNav; if (sd) sd.scrollTop = scSide; }
-  if (cambioVista) { const mc = $(".maincol"); if (mc) { mc.classList.remove("trans-in"); void mc.offsetWidth; mc.classList.add("trans-in"); } }
   enlazarShell();
   if (out.after) out.after();
   if (r.v === "cancion" || r.v === "set") window.scrollTo(0, y);
