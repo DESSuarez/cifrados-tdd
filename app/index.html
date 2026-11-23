@@ -840,6 +840,18 @@ select.fsel{padding:0 34px 0 14px;
 .arroba b{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700}
 .arroba .field{padding-left:32px}
 .perfilcampos .lb small{font-size:12.5px;margin-top:-2px}
+/* indicador de «trabajando» */
+@keyframes girar{to{transform:rotate(360deg)}}
+@keyframes entraPill{from{opacity:0;transform:translateY(-4px) scale(.96)}to{opacity:1;transform:none}}
+.btn.cargando,button.cargando{cursor:progress;opacity:.92}
+.giro{display:inline-block;width:15px;height:15px;margin-right:8px;vertical-align:-2px;border-radius:50%;border:2.5px solid currentColor;border-right-color:transparent;animation:girar .7s linear infinite;flex:none}
+.conpill{position:relative}
+.cargapill{position:absolute;top:14px;right:16px;z-index:5;display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 8px;border-radius:99px;background:var(--bg);border:1.5px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.12);font:800 13px var(--body);color:var(--fg);animation:entraPill .22s ease-out;transition:opacity .3s,transform .3s}
+.cargapill .anillo{width:20px;height:20px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 20%,var(--flame) 70%,var(--sol));-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3.5px));animation:girar .8s linear infinite}
+.cargapill.listo{border-color:#1DB954}
+.cargapill .palomita{width:20px;height:20px;border-radius:50%;background:#1DB954;color:#fff;display:grid;place-items:center;font-size:12px}
+.cargapill.sale{opacity:0;transform:translateY(-4px)}
+@media (prefers-reduced-motion:reduce){.giro,.cargapill .anillo{animation-duration:2s}}
 .ualtainst{grid-column:1/-1;display:flex;flex-direction:column;gap:2px;font-weight:700;font-size:14px}
 .ualtainst small{font-weight:500;color:var(--muted);margin-left:6px}
 .ualtainst .rolchips{margin:4px 0 2px}
@@ -849,11 +861,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=52"></script>
-<script src="cifrado.js?v=52"></script>
-<script src="senas.js?v=52"></script>
-<script src="datos.js?v=52"></script>
-<script src="pdf.js?v=52"></script>
+<script src="config.publico.js?v=53"></script>
+<script src="cifrado.js?v=53"></script>
+<script src="senas.js?v=53"></script>
+<script src="datos.js?v=53"></script>
+<script src="pdf.js?v=53"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1225,6 +1237,57 @@ function escribiendo() {
 // al guardar con éxito, lo escrito ya está a salvo (menos el campo donde sigues escribiendo)
 const _guardarD = D.guardar;
 D.guardar = (...args) => _guardarD(...args).then(r => { const f = document.activeElement; for (const el of tocados) if (el !== f) tocados.delete(el); return r; });
+// ---------- Indicador de «trabajando» ----------
+// Cuando un botón (o el envío de un formulario) manda algo a la base, el botón se bloquea (no se puede picar dos veces)
+// y muestra un giro; a la derecha de su recuadro sale «Enviando… / Guardando…» y al terminar «✓ Listo».
+let ultimoClic = null;
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("button, a.btn"); if (b) ultimoClic = { b, t: Date.now() }; }, true);
+document.addEventListener("submit", e => { const b = e.submitter || e.target.querySelector("button:not([type=button])"); if (b) ultimoClic = { b, t: Date.now() }; }, true);
+const verboCarga = b => {
+  const t = (b.textContent || "").toLowerCase();
+  return /enviar|invit|reenv/.test(t) ? "Enviando…" : /crear|nuev|alta/.test(t) ? "Creando…" : /borrar|quitar|eliminar/.test(t) ? "Borrando…" : /añadir|agregar|pasar|copiar/.test(t) ? "Añadiendo…" : /aceptar|acept/.test(t) ? "Aceptando…" : /subir/.test(t) ? "Subiendo…" : "Guardando…";
+};
+function trabajando(btn, promesa) {
+  if (!btn || !btn.isConnected || btn.dataset.cargando) return;
+  btn.dataset.cargando = "1";
+  const estabaDesact = btn.disabled; btn.disabled = true; btn.setAttribute("aria-busy", "true");
+  const caja = btn.closest("dialog .dlg, .caja, form, section") || btn.parentElement;
+  let pill = null, vis = false;
+  const mostrar = setTimeout(() => { // solo si tarda: lo instantáneo no parpadea
+    if (!btn.isConnected) return; vis = true;
+    btn.classList.add("cargando"); btn.insertAdjacentHTML("afterbegin", '<span class="giro" aria-hidden="true"></span>');
+    if (caja && caja.isConnected) {
+      if (getComputedStyle(caja).position === "static") caja.classList.add("conpill");
+      pill = document.createElement("div"); pill.className = "cargapill"; pill.setAttribute("role", "status");
+      pill.innerHTML = `<span class="anillo" aria-hidden="true"></span><span>${verboCarga(btn)}</span>`;
+      caja.appendChild(pill);
+      // a la derecha del recuadro, a la altura del botón que se tocó (así se ve aunque el recuadro sea largo)
+      const rc = caja.getBoundingClientRect(), rb = btn.getBoundingClientRect();
+      pill.style.top = Math.max(10, rb.top - rc.top + caja.scrollTop + (rb.height - pill.offsetHeight) / 2) + "px";
+    }
+  }, 140);
+  const fin = ok => {
+    clearTimeout(mostrar);
+    delete btn.dataset.cargando; btn.removeAttribute("aria-busy");
+    if (btn.isConnected) { btn.disabled = estabaDesact; btn.classList.remove("cargando"); const g = btn.querySelector(".giro"); if (g) g.remove(); }
+    if (!pill) return;
+    if (ok && vis && pill.isConnected) {
+      pill.classList.add("listo"); pill.innerHTML = `<span class="palomita" aria-hidden="true">✓</span><span>Listo</span>`;
+      setTimeout(() => { pill.classList.add("sale"); setTimeout(() => pill.remove(), 300); }, 1100);
+    } else pill.remove();
+  };
+  Promise.resolve(promesa).then(() => fin(true), () => fin(false));
+}
+// toda llamada a la base que nace de un clic o un envío reciente se muestra en ese botón
+["fn", "rpc", "consulta", "traer", "guardar", "borrar", "subirAudio"].forEach(nom => {
+  const f = D[nom]; if (typeof f !== "function") return;
+  D[nom] = (...args) => {
+    const r = f(...args);
+    const c = ultimoClic && Date.now() - ultimoClic.t < 600 ? ultimoClic.b : null;
+    if (c && r && typeof r.then === "function") trabajando(c, r);
+    return r;
+  };
+});
 const ocupado = () => st.editando || st.arrastrando || escribiendo() || hayDatosSinGuardar() || !!document.querySelector("dialog[open]");
 let renderPend = false, recargaPend = false;
 D.alCambiar(() => {
