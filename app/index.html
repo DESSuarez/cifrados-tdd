@@ -846,11 +846,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=50"></script>
-<script src="cifrado.js?v=50"></script>
-<script src="senas.js?v=50"></script>
-<script src="datos.js?v=50"></script>
-<script src="pdf.js?v=50"></script>
+<script src="config.publico.js?v=51"></script>
+<script src="cifrado.js?v=51"></script>
+<script src="senas.js?v=51"></script>
+<script src="datos.js?v=51"></script>
+<script src="pdf.js?v=51"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1196,19 +1196,47 @@ document.addEventListener("compositionstart", () => { componiendo = true; }, tru
 document.addEventListener("compositionend", e => { componiendo = false; const t = e.target; if (t && /^(INPUT|TEXTAREA)$/.test(t.tagName)) setTimeout(() => t.dispatchEvent(new Event("input", { bubbles: true })), 0); }, true);
 document.addEventListener("input", e => { if (e.isComposing || componiendo) e.stopImmediatePropagation(); }, true);
 window.addEventListener("hashchange", () => {
+  if (recargaPend && !st.editando) { location.reload(); return; }
   vengoDeApp = true; cerrarMenu(); st.editando = false; favEd = null; marcaEd = null; render();
   if (ruta().v === "libreria") { const y = scrollLib; window.scrollTo(0, y); requestAnimationFrame(() => window.scrollTo(0, y)); }
   else window.scrollTo(0, 0);
 });
 
-let renderPend = false;
-D.alCambiar(() => {
-  // no redibujar mientras alguien escribe (como en la Bitácora)
+// ---------- Lo que estás escribiendo nunca se borra ----------
+// Ni los cambios que llegan de otros (sincronización) ni una versión nueva de la app redibujan o recargan
+// mientras hay un campo con foco o algo escrito sin guardar: esperan a que guardes, cambies de pantalla o salgas.
+const CAMPO_TEXTO = 'input:not([type=search]):not([type=range]):not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]), textarea';
+const tocados = new Set();
+document.addEventListener("input", e => { const el = e.target; if (el && el.matches && el.matches(CAMPO_TEXTO)) tocados.add(el); }, true);
+function hayDatosSinGuardar() {
+  for (const el of tocados) {
+    if (!el.isConnected) { tocados.delete(el); continue; }
+    if (el.value !== el.defaultValue) return true;
+  }
+  return false;
+}
+function escribiendo() {
   const a = document.activeElement;
-  if (st.editando || st.arrastrando || (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && a.closest("main"))) { renderPend = true; return; }
+  return !!(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && !a.matches("[type=search]") && a.closest("#app, dialog"));
+}
+// al guardar con éxito, lo escrito ya está a salvo (menos el campo donde sigues escribiendo)
+const _guardarD = D.guardar;
+D.guardar = (...args) => _guardarD(...args).then(r => { const f = document.activeElement; for (const el of tocados) if (el !== f) tocados.delete(el); return r; });
+const ocupado = () => st.editando || st.arrastrando || escribiendo() || hayDatosSinGuardar() || !!document.querySelector("dialog[open]");
+let renderPend = false, recargaPend = false;
+D.alCambiar(() => {
+  if (ocupado()) { renderPend = true; return; }
   render();
 });
-document.addEventListener("focusout", () => setTimeout(() => { if (renderPend && !st.editando) { const a = document.activeElement; if (!(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && a.closest("main"))) { renderPend = false; render(); } } }, 200));
+/** Si quedó algo pendiente (redibujar o una versión nueva), se aplica en cuanto ya no estás escribiendo. */
+function aplicarPendientes() {
+  if (!(renderPend || recargaPend) || ocupado()) return;
+  if (recargaPend) { location.reload(); return; }
+  renderPend = false; render();
+}
+document.addEventListener("focusout", () => setTimeout(aplicarPendientes, 250));
+setInterval(aplicarPendientes, 4000);
+document.addEventListener("visibilitychange", () => { if (document.hidden && recargaPend && !hayDatosSinGuardar() && !st.editando) location.reload(); });
 
 // ---------- Armazón ----------
 function shell(band, main) {
@@ -1277,6 +1305,7 @@ function tabsHTML(lista, actual, attr = "data-tab") {
 }
 
 function render() {
+  renderPend = false;
   aplicarEstilo();
   const app = $("#app");
   if (D.modo === "red" && (!D.pinRed() || !yo() || !miPerfil())) { app.innerHTML = vRedEntrar(); enlazarRedEntrar(); return; }
@@ -3724,13 +3753,13 @@ function enlazarLogin() {
     delete st.estilo.nashville; delete st.estilo.latina;
   }
   render();
-  D.alEstado(() => { if (D.modo !== "local" && yo() && miPerfil() && $(".login")) render(); });
+  D.alEstado(() => { if (D.modo !== "local" && yo() && miPerfil() && $(".login") && !escribiendo()) render(); });
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     // cuando se instala una versión nueva de la app, se recarga sola (salvo si alguien está editando)
     const habia = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (!habia) return;
-      if (st.editando) toast("Hay una versión nueva de Cifrados: recarga al terminar de editar.");
+      if (ocupado()) { recargaPend = true; toast("Hay una versión nueva de Cifrados: se pone sola cuando termines de escribir."); }
       else location.reload();
     });
     navigator.serviceWorker.register("sw.js").catch(() => {});
