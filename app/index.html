@@ -454,16 +454,41 @@ dialog::backdrop{background:rgba(0,0,0,.5)}
 .escx{display:none}.escenario .escx{display:inline-flex}
 
 /* Reproductor de pistas */
-.player{display:flex;flex-direction:column;gap:10px}
-.pl-top{display:flex;align-items:center;gap:10px}
-.playbtn{width:48px;height:48px;border-radius:50%;border:0;background:var(--area);color:#fff;display:grid;place-items:center;flex:none}
-.playbtn svg{width:20px;height:20px}
-.pl-top>div{flex:1;min-width:0}
-.pl-top b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pl-top small{font:500 12px var(--mono);color:var(--muted)}
+.player{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.pl-top{display:flex;align-items:center;gap:8px}
+.playbtn{width:52px;height:52px;border-radius:50%;border:0;background:var(--area);color:#fff;display:grid;place-items:center;flex:none;cursor:pointer}
+.playbtn svg{width:22px;height:22px}
+.pl-salto{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);font:800 12px var(--mono);flex:none;cursor:pointer}
+.pl-nom{flex:1;min-width:0;margin-left:4px}
+.pl-nom b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-nom small{font:500 12px var(--mono);color:var(--muted)}
 input[type=range]{width:100%;accent-color:var(--area)}
-.pl-ctl{display:grid;grid-template-columns:auto 1fr auto;gap:8px 10px;align-items:center;font-size:13px;font-weight:700}
-.pl-ctl output{font:500 12px var(--mono);min-width:64px;text-align:right}
+.player input[type=range]{height:28px;margin:0;touch-action:pan-y}
+.pl-ctl{display:grid;gap:10px}
+.pl-fila{display:grid;grid-template-columns:84px 1fr;grid-template-areas:"lb val" "sl sl";align-items:center;gap:2px 10px;font-size:13px;font-weight:700}
+.pl-fila>span{grid-area:lb}
+.pl-fila>.pl-val,.pl-fila>.pl-paso{grid-area:val;justify-self:end}
+.pl-fila>input{grid-area:sl}
+@media (min-width:641px){.pl-fila{grid-template-columns:84px 1fr auto;grid-template-areas:"lb sl val"}}
+.pl-val{font:600 12.5px var(--mono);min-width:64px;text-align:right;background:none;border:0;color:var(--fg);padding:4px 0}
+button.pl-val{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.pl-paso{display:flex;align-items:center;gap:6px}
+.pl-paso button{width:40px;height:40px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);font:800 20px var(--body);cursor:pointer}
+.pl-paso output{min-width:64px;text-align:center;display:flex;flex-direction:column;line-height:1.1}
+.pl-paso output b,.pl-val b{font:900 16px var(--display)}
+.pl-paso output small{font:500 11px var(--mono);color:var(--muted)}
+.pl-auto{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600}
+.pl-auto input{width:18px;height:18px}
+.pl-nota{margin:0;font-size:12.5px;color:var(--muted)}
+.minipl{display:none}.minipl.tapado{visibility:hidden}
+@media (max-width:900px){
+  .minipl:not([hidden]){display:flex;align-items:center;gap:10px;position:sticky;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:30;margin:12px 0;padding:8px 10px;border-radius:16px;background:var(--night);color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.3);overflow:hidden}
+  .mpl-bar{position:absolute;left:0;right:0;top:0;height:3px;background:rgba(255,255,255,.15)}.mpl-bar i{display:block;height:100%;width:0;background:var(--area)}
+  .mpl-play{width:42px;height:42px;border-radius:50%;border:0;background:var(--area);color:#fff;display:grid;place-items:center;flex:none}.mpl-play svg{width:18px;height:18px}
+  .mpl-info{flex:1;min-width:0;text-align:left;background:none;border:0;color:#fff;padding:0}
+  .mpl-info b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mpl-info small{font:500 11.5px var(--mono);opacity:.7}
+  .mpl-x{width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;flex:none}
+}
 .tracks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .tracks li{display:flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
 .tracks li.on{border-color:var(--area)}
@@ -802,11 +827,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=42"></script>
-<script src="cifrado.js?v=42"></script>
-<script src="senas.js?v=42"></script>
-<script src="datos.js?v=42"></script>
-<script src="pdf.js?v=42"></script>
+<script src="config.publico.js?v=43"></script>
+<script src="cifrado.js?v=43"></script>
+<script src="senas.js?v=43"></script>
+<script src="datos.js?v=43"></script>
+<script src="pdf.js?v=43"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1455,6 +1480,7 @@ function vCancion(p) {
   </div>
   ${secs.length > 1 ? `<div class="secchips noesc">${secs.map(s => `<button data-ir="${esc(s)}" style="--sc:var(${C.colorSeccion(s)})">${esc(s)}</button>`).join("")}</div>` : ""}
   <article class="cuerpo ${e.cols === 2 ? "dos" : ""} ${e.sinAcordes ? "sinacordes" : ""}" id="cuerpo">${html}</article>
+  <div class="minipl noesc" id="minipl" hidden></div>
   <div class="panelx">
     <section class="caja"><h3>Pistas</h3>
       ${tracks.length ? `<ul class="tracks">${tracks.map(t => `<li class="${rep.track && rep.track.id === t.id ? "on" : ""}"><button class="btn xs" data-pista="${t.id}">${rep.track && rep.track.id === t.id && rep.sonando ? "❚❚" : "▶"}</button><span><b>${esc(t.nombre)}</b><br><small>${esc(t.tipo)}${t.tono ? " · grabada en " + esc(t.tono) : ""}${t.subido_por ? " · subió " + esc(nombreDe(t.subido_por)) : ""}</small></span>${esMusico() ? `<button class="btn xs ghost" data-bpista="${t.id}" title="Quitar">✕</button>` : ""}</li>`).join("")}</ul>` : `<p>Sin pistas. Las pistas que suba cualquier músico le aparecen a todos y siguen el tono que estás viendo.</p>`}
@@ -1520,6 +1546,7 @@ function vCancion(p) {
         } catch (e) { ca.disabled = false; toast(/cif_agregar_de_set|function/i.test(e.message || "") ? "Falta correr la migración 015 en Supabase." : e.message || String(e)); }
       };
       const gs = $("#gset"); if (gs) gs.onclick = () => { const s = ctxSet.s; const items = s.items.map((x, k) => k === ctxSet.i ? { ...x, tono } : x); D.guardar("cif_sets", { ...s, items }); toast("Tono actualizado en el set para todos."); };
+      if (tracks.length) cargarTone().catch(() => {}); // listo antes del primer toque (iPhone)
       $$("[data-pista]").forEach(b => b.onclick = () => { const t = D.uno("cif_tracks", b.dataset.pista); if (rep.track && rep.track.id === t.id) { alternarPlay(); } else abrirPista(t, c, tono); });
       $$("[data-bpista]").forEach(b => b.onclick = async () => { const t = D.uno("cif_tracks", b.dataset.bpista); if (!(await confirmar(`¿Quitar la pista «${t.nombre}»?`, "Se borra para todo el equipo."))) return; if (rep.track && rep.track.id === t.id) cerrarPista(); D.borrar("cif_tracks", t); D.borrarAudio(t.ruta).catch(() => {}); });
       const sp = $("#subpista"); if (sp) sp.onchange = () => subirPista(sp.files[0], c, original);
@@ -1597,65 +1624,152 @@ document.addEventListener("keydown", e => {
 });
 
 // ---------- Pistas: cambiar tono sin cambiar velocidad (Tone.js GrainPlayer) ----------
-const rep = { player: null, track: null, sonando: false, inicio: 0, offset: 0, dur: 0, rate: 1, ajuste: 0, auto: true, vol: 0, raf: 0, url: "" };
+const rep = { player: null, el: null, track: null, sonando: false, inicio: 0, offset: 0, dur: 0, rate: 1, ajuste: 0, auto: true, vol: 0, raf: 0, url: "" };
 let toneP = null;
 function cargarTone() {
   if (window.Tone) return Promise.resolve();
   if (!toneP) toneP = new Promise((res, rej) => { const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"; s.onload = res; s.onerror = () => { toneP = null; rej(new Error("No se pudo cargar el reproductor (sin internet la primera vez).")); }; document.head.appendChild(s); });
   return toneP;
 }
+/** iPhone/iPad: el audio solo se activa dentro del toque del usuario (antes de cualquier espera) y con «playback» suena aunque el switch de silencio esté puesto. */
+function desbloquearAudio() {
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+  try { if (window.Tone && Tone.context.state !== "running") Tone.context.resume(); } catch (e) {}
+}
+document.addEventListener("touchend", () => { if (rep.track) desbloquearAudio(); }, { capture: true, passive: true });
+const conTiempo = (pr, ms) => Promise.race([pr, new Promise((_, rej) => setTimeout(() => rej(new Error("tardó demasiado")), ms))]);
 const semisPista = () => rep.auto && rep.track && rep.track.tono ? C.distancia(rep.track.tono, rep.tonoVista) + rep.ajuste : rep.ajuste;
 async function abrirPista(t, c, tono) {
+  desbloquearAudio(); // primero, mientras dura el toque
+  const tone = cargarTone().catch(() => null);
   try {
     toast("Cargando pista…");
-    await cargarTone(); await Tone.start();
     const blob = await D.audio(t.ruta);
     if (!blob) return toast("La pista no está en este dispositivo y no hay nube.");
     cerrarPista();
     rep.url = URL.createObjectURL(blob);
-    const buf = await Tone.ToneAudioBuffer.fromUrl(rep.url);
-    rep.player = new Tone.GrainPlayer({ url: buf, grainSize: 0.12, overlap: 0.06 }).toDestination();
-    rep.track = t; rep.dur = buf.duration; rep.offset = 0; rep.ajuste = 0; rep.rate = 1; rep.tonoVista = tono;
-    ajustarPitch(); render(); alternarPlay();
+    rep.track = t; rep.offset = 0; rep.ajuste = 0; rep.rate = 1; rep.tonoVista = tono;
+    // 1) con cambio de tono (Web Audio). 2) si el celular no puede decodificarla, reproductor normal del navegador.
+    try {
+      await tone; if (!window.Tone) throw new Error("sin reproductor");
+      const buf = await conTiempo(Tone.ToneAudioBuffer.fromUrl(rep.url), 45000);
+      rep.player = new Tone.GrainPlayer({ url: buf, grainSize: 0.12, overlap: 0.06 }).toDestination();
+      rep.player.volume.value = rep.vol; rep.dur = buf.duration;
+    } catch (e) {
+      console.warn("Pista sin cambio de tono:", e);
+      rep.player = null; await elementoAudio();
+    }
+    ajustarPitch(); render();
+    if (rep.player && Tone.context.state !== "running") { pintarPlayer(); return toast("Toca ▶ para reproducir."); }
+    alternarPlay();
   } catch (e) { console.error(e); toast("No se pudo abrir la pista: " + (e.message || e)); }
 }
-function posPista() { return rep.sonando ? Math.min(rep.dur, rep.offset + (Tone.now() - rep.inicio) * rep.rate) : rep.offset; }
+function elementoAudio() {
+  const el = rep.el = new Audio();
+  el.preload = "auto"; el.playsInline = true; el.setAttribute("playsinline", ""); el.preservesPitch = el.webkitPreservesPitch = true;
+  el.volume = Math.min(1, Math.pow(10, rep.vol / 20));
+  el.onplay = () => { rep.sonando = true; refrescarPlay(); };
+  el.onpause = () => { rep.sonando = false; refrescarPlay(); };
+  el.onended = () => { rep.sonando = false; el.currentTime = 0; refrescarPlay(); };
+  el.ondurationchange = () => { if (isFinite(el.duration)) { rep.dur = el.duration; const r = $("#plpos"); if (r) r.max = rep.dur; } };
+  el.src = rep.url;
+  return conTiempo(new Promise((res, rej) => { el.onloadedmetadata = () => { rep.dur = isFinite(el.duration) ? el.duration : 0; res(); }; el.onerror = () => rej(new Error("este celular no puede leer el formato de la pista")); }), 20000).catch(e => { if (!rep.dur) throw e; });
+}
+function posPista() {
+  if (rep.el) return rep.el.currentTime || 0;
+  return rep.sonando ? Math.min(rep.dur, rep.offset + (Tone.now() - rep.inicio) * rep.rate) : rep.offset;
+}
+function refrescarPlay() {
+  pintarPlayer();
+  $$("[data-pista]").forEach(b => b.textContent = rep.track && b.dataset.pista === rep.track.id && rep.sonando ? "❚❚" : "▶");
+}
 function alternarPlay() {
+  desbloquearAudio();
+  if (rep.el) {
+    if (rep.el.paused) rep.el.play().catch(e => { console.warn(e); toast("Toca ▶ para reproducir."); });
+    else rep.el.pause();
+    return;
+  }
   if (!rep.player) return;
   if (rep.sonando) { rep.offset = posPista(); rep.player.stop(); rep.sonando = false; }
   else { if (rep.offset >= rep.dur - .05) rep.offset = 0; rep.player.start(undefined, rep.offset); rep.inicio = Tone.now(); rep.sonando = true; }
-  pintarPlayer(); $$("[data-pista]").forEach(b => b.textContent = rep.track && b.dataset.pista === rep.track.id && rep.sonando ? "❚❚" : "▶");
+  refrescarPlay();
 }
-function buscarPista(seg) { const s = rep.sonando; if (s) { rep.player.stop(); rep.sonando = false; } rep.offset = Math.max(0, Math.min(rep.dur, seg)); if (s) alternarPlay(); else pintarPlayer(); }
-function ajustarPitch() { if (!rep.player) return; rep.player.detune = semisPista() * 100; const o = $("#plsemis"); if (o) pintarPlayer(); }
-function cerrarPista() { if (rep.player) { try { rep.player.stop(); rep.player.dispose(); } catch (e) {} } if (rep.url) URL.revokeObjectURL(rep.url); rep.player = null; rep.track = null; rep.sonando = false; clearInterval(rep.raf); }
+function buscarPista(seg) {
+  seg = Math.max(0, Math.min(rep.dur, seg));
+  if (rep.el) { rep.el.currentTime = seg; return pintarTiempo(); }
+  const s = rep.sonando; if (s) { rep.player.stop(); rep.sonando = false; } rep.offset = seg; if (s) alternarPlay(); else pintarTiempo();
+}
+function ajustarPitch() {
+  if (rep.player) rep.player.detune = semisPista() * 100;
+  const o = $("#plsemis"); if (o) o.innerHTML = semisTxt();
+}
+function cerrarPista() {
+  if (rep.player) { try { rep.player.stop(); rep.player.dispose(); } catch (e) {} }
+  if (rep.el) { try { rep.el.pause(); rep.el.removeAttribute("src"); rep.el.load(); } catch (e) {} }
+  if (rep.url) URL.revokeObjectURL(rep.url);
+  rep.player = null; rep.el = null; rep.track = null; rep.sonando = false; clearInterval(rep.raf);
+}
 const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+function semisTxt() {
+  if (rep.el) return `<b>Original</b>`;
+  const sm = semisPista(), suena = rep.track && rep.track.tono ? C.transportaTono(rep.track.tono, sm) : null;
+  return `<b>${suena ? esc(suena) : (sm > 0 ? "+" : "") + sm}</b><small>${suena ? (sm > 0 ? "+" : "") + sm + " st" : "semitonos"}</small>`;
+}
+function pintarTiempo() {
+  const t = $("#pltime"), r = $("#plpos"), m = $("#mpltime");
+  const txt = `${mmss(posPista())} / ${mmss(rep.dur)}`;
+  if (t) t.textContent = txt; if (m) m.textContent = txt;
+  if (r && document.activeElement !== r) r.value = posPista();
+  const b = $("#mplbar"); if (b) b.style.width = (rep.dur ? posPista() / rep.dur * 100 : 0) + "%";
+}
 function pintarPlayer() {
   const box = $("#playerbox"); if (!box || !rep.track) return;
-  const sm = semisPista(), suena = rep.track.tono ? C.transportaTono(rep.track.tono, sm) : null;
-  box.innerHTML = `<div class="player" style="margin-top:12px">
-    <div class="pl-top"><button class="playbtn" id="plplay" aria-label="Reproducir">${rep.sonando ? IC.pausa : IC.play}</button><div><b>${esc(rep.track.nombre)}</b><small id="pltime">${mmss(posPista())} / ${mmss(rep.dur)}</small></div></div>
-    <input type="range" id="plpos" min="0" max="${rep.dur}" step="0.1" value="${posPista()}" aria-label="Posición">
-    <div class="pl-ctl">
-      <span>Tono</span><input type="range" id="plaj" min="-6" max="6" step="1" value="${rep.ajuste}"><output id="plsemis">${sm > 0 ? "+" : ""}${sm} st${suena ? " · " + esc(suena) : ""}</output>
-      <span>Velocidad</span><input type="range" id="plrate" min="0.7" max="1.3" step="0.01" value="${rep.rate}"><output>${Math.round(rep.rate * 100)}%</output>
-      <span>Volumen</span><input type="range" id="plvol" min="-30" max="6" step="1" value="${rep.vol}"><output>${rep.vol} dB</output>
+  box.innerHTML = `<div class="player">
+    <div class="pl-top">
+      <button class="pl-salto" data-salto="-10" aria-label="Atrás 10 segundos">−10</button>
+      <button class="playbtn" id="plplay" aria-label="${rep.sonando ? "Pausa" : "Reproducir"}">${rep.sonando ? IC.pausa : IC.play}</button>
+      <button class="pl-salto" data-salto="10" aria-label="Adelante 10 segundos">+10</button>
+      <div class="pl-nom"><b>${esc(rep.track.nombre)}</b><small id="pltime">${mmss(posPista())} / ${mmss(rep.dur)}</small></div>
     </div>
-    <label class="row" style="font-size:13px;font-weight:600"><input type="checkbox" id="plauto" ${rep.auto ? "checked" : ""}> Seguir el tono de la canción${rep.track.tono ? "" : " (indica en qué tono está grabada la pista)"}</label>
+    <input type="range" class="pl-pos" id="plpos" min="0" max="${rep.dur}" step="0.1" value="${posPista()}" aria-label="Posición">
+    <div class="pl-ctl">
+      <div class="pl-fila"><span>Tono</span>${rep.el ? `<output id="plsemis" class="pl-val">${semisTxt()}</output>` : `<div class="pl-paso"><button data-aj="-1" aria-label="Bajar medio tono">−</button><output id="plsemis">${semisTxt()}</output><button data-aj="1" aria-label="Subir medio tono">+</button></div>`}</div>
+      <div class="pl-fila"><span>Velocidad</span><button class="pl-val" id="plrate0" title="Volver a 100 %">${Math.round(rep.rate * 100)}%</button><input type="range" id="plrate" min="0.7" max="1.3" step="0.01" value="${rep.rate}" aria-label="Velocidad"></div>
+      <div class="pl-fila"><span>Volumen</span><output class="pl-val">${rep.vol > 0 ? "+" : ""}${rep.vol} dB</output><input type="range" id="plvol" min="-30" max="${rep.el ? 0 : 6}" step="1" value="${Math.min(rep.vol, rep.el ? 0 : 6)}" aria-label="Volumen"></div>
+    </div>
+    ${rep.el ? `<p class="pl-nota">En este dispositivo la pista suena en su tono original (no se pudo preparar el cambio de tono).</p>` : `<label class="pl-auto"><input type="checkbox" id="plauto" ${rep.auto ? "checked" : ""}> Seguir el tono de la canción${rep.track.tono ? "" : " (indica en qué tono está grabada la pista)"}</label>`}
   </div>`;
+  const mini = $("#minipl");
+  if (mini) mini.innerHTML = `<div class="mpl-bar"><i id="mplbar"></i></div><button class="mpl-play" id="mplplay" aria-label="${rep.sonando ? "Pausa" : "Reproducir"}">${rep.sonando ? IC.pausa : IC.play}</button><button class="mpl-info" id="mplir"><b>${esc(rep.track.nombre)}</b><small id="mpltime"></small></button><button class="mpl-x" id="mplx" aria-label="Cerrar pista">✕</button>`;
+  if (mini && "IntersectionObserver" in window) { // el mini se esconde cuando el reproductor completo está a la vista
+    if (rep.obs) rep.obs.disconnect();
+    rep.obs = new IntersectionObserver(([en]) => mini.classList.toggle("tapado", en.isIntersecting)); rep.obs.observe(box);
+  }
+  if (mini) { mini.hidden = false; $("#mplplay").onclick = alternarPlay; $("#mplir").onclick = () => box.scrollIntoView({ behavior: "smooth", block: "center" }); $("#mplx").onclick = () => { cerrarPista(); render(); }; }
   $("#plplay").onclick = alternarPlay;
+  $$("[data-salto]").forEach(b => b.onclick = () => buscarPista(posPista() + +b.dataset.salto));
   $("#plpos").oninput = e => buscarPista(+e.target.value);
-  $("#plaj").oninput = e => { rep.ajuste = +e.target.value; ajustarPitch(); };
-  $("#plrate").oninput = e => { const p = posPista(); rep.rate = +e.target.value; rep.player.playbackRate = rep.rate; rep.offset = p; rep.inicio = Tone.now(); e.target.nextElementSibling.textContent = Math.round(rep.rate * 100) + "%"; };
-  $("#plvol").oninput = e => { rep.vol = +e.target.value; rep.player.volume.value = rep.vol; e.target.nextElementSibling.textContent = rep.vol + " dB"; };
-  $("#plauto").onchange = e => { rep.auto = e.target.checked; ajustarPitch(); };
+  $$("[data-aj]").forEach(b => b.onclick = () => { rep.ajuste = Math.max(-6, Math.min(6, rep.ajuste + +b.dataset.aj)); ajustarPitch(); });
+  const ponRate = v => {
+    const p = posPista(); rep.rate = v;
+    if (rep.el) rep.el.playbackRate = v; else { rep.player.playbackRate = v; rep.offset = p; rep.inicio = Tone.now(); }
+    $("#plrate0").textContent = Math.round(v * 100) + "%"; $("#plrate").value = v;
+  };
+  $("#plrate").oninput = e => ponRate(+e.target.value);
+  $("#plrate0").onclick = () => ponRate(1);
+  $("#plvol").oninput = e => {
+    rep.vol = +e.target.value;
+    if (rep.el) rep.el.volume = Math.min(1, Math.pow(10, rep.vol / 20)); else rep.player.volume.value = rep.vol;
+    e.target.previousElementSibling.textContent = (rep.vol > 0 ? "+" : "") + rep.vol + " dB";
+  };
+  const au = $("#plauto"); if (au) au.onchange = e => { rep.auto = e.target.checked; ajustarPitch(); };
   // intervalo (no requestAnimationFrame) para que el final se detecte aunque la pantalla esté apagada o la pestaña en segundo plano
   clearInterval(rep.raf);
   const tick = () => {
     if (!rep.track) return clearInterval(rep.raf);
-    if (rep.sonando && posPista() >= rep.dur - .05) { rep.sonando = false; rep.offset = 0; clearInterval(rep.raf); pintarPlayer(); $$("[data-pista]").forEach(b => (b.textContent = "▶")); return; }
-    const t = $("#pltime"), r = $("#plpos"); if (!t) return;
-    t.textContent = `${mmss(posPista())} / ${mmss(rep.dur)}`; if (document.activeElement !== r) r.value = posPista();
+    if (!rep.el && rep.sonando && posPista() >= rep.dur - .05) { rep.sonando = false; rep.offset = 0; refrescarPlay(); return; }
+    pintarTiempo();
   };
   tick(); rep.raf = setInterval(tick, 250);
 }
