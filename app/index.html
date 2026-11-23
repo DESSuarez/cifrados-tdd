@@ -840,6 +840,37 @@ select.fsel{padding:0 34px 0 14px;
 .arroba b{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700}
 .arroba .field{padding-left:32px}
 .perfilcampos .lb small{font-size:12.5px;margin-top:-2px}
+/* ---------- Vista minimalista de la canción ---------- */
+html[data-vista="minimal"][data-ruta="cancion"] :is(.tonosbar,.secchips,.panelx,.band .subarts,.band .areatag){display:none!important}
+html[data-vista="minimal"][data-ruta="cancion"] .band .wrap{padding-block:22px 0;gap:10px}
+html[data-vista="minimal"][data-ruta="cancion"] .titleblock{gap:6px}
+html[data-vista="minimal"][data-ruta="cancion"] .titleblock h1{font-size:clamp(26px,4.2vw,40px);line-height:1.05}
+html[data-vista="minimal"][data-ruta="cancion"] .band .sub{font-size:14px}
+html[data-vista="minimal"][data-ruta="cancion"] .ctrls .masbtn{display:inline-flex}
+html[data-vista="minimal"][data-ruta="cancion"] .ctrls:not(.abierta) .ctlmas{display:none}
+html[data-vista="minimal"][data-ruta="cancion"] .ctrls.abierta .ctlmas{display:flex;flex-wrap:wrap;gap:8px;flex-basis:100%;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+html[data-vista="minimal"][data-ruta="cancion"] .ctrls.abierta .ctlmas .sp{display:none}
+html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
+/* tarjetas para elegir la vista en Ajustes */
+.vistas{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.vistaop{display:flex;flex-direction:column;gap:12px;text-align:left;padding:14px;border:2px solid var(--line);border-radius:16px;background:var(--bg);color:var(--fg);cursor:pointer;font:inherit;transition:border-color .15s,box-shadow .15s}
+.vistaop:hover{border-color:var(--muted)}
+.vistaop.on{border-color:var(--flame);box-shadow:0 0 0 3px color-mix(in srgb,var(--flame) 18%,transparent)}
+.vtxt b{display:flex;align-items:center;gap:8px;font:900 17px var(--display)}
+.vistaop.on .vtxt b::after{content:"✓";display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--flame);color:#fff;font:800 12px var(--body)}
+.vtxt small{display:block;margin-top:2px;color:var(--muted);font-size:13px;line-height:1.35}
+.vmuestra{display:flex;flex-direction:column;gap:6px;height:150px;padding:0 0 10px;border-radius:10px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+.vmuestra i{display:block;margin:0 12px}
+.vmuestra .vm-band{margin:0;padding:12px;background:#1B1C1A;border-bottom:4px solid var(--flame);display:flex;flex-direction:column;gap:5px}
+.vmuestra .vm-band b{display:block;height:11px;width:62%;border-radius:4px;background:#fff}
+.vmuestra .vm-band s{display:block;height:6px;width:40%;border-radius:4px;background:rgba(255,255,255,.35)}
+.vmuestra .vm-band s.c{width:28%;background:var(--flame)}
+.vmuestra.min .vm-band b{width:50%}
+.vmuestra .vm-ctl{height:12px;width:55%;border-radius:4px;border:1.5px solid var(--line)}
+.vmuestra .vm-chips{display:flex;gap:4px}.vmuestra .vm-chips s{display:block;height:9px;width:22%;border-radius:9px;background:color-mix(in srgb,var(--sea) 35%,transparent)}
+.vmuestra .vm-letra{height:7px;width:70%;border-radius:4px;background:color-mix(in srgb,var(--fg) 30%,transparent)}
+.vmuestra .vm-letra.c{width:45%;background:color-mix(in srgb,var(--flame) 60%,transparent)}
+.vmuestra .vm-panel{height:20px;width:auto;border-radius:6px;border:1.5px dashed var(--line)}
 /* indicador de «trabajando» */
 @keyframes girar{to{transform:rotate(360deg)}}
 @keyframes entraPill{from{opacity:0;transform:translateY(-4px) scale(.96)}to{opacity:1;transform:none}}
@@ -861,11 +892,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=55"></script>
-<script src="cifrado.js?v=55"></script>
-<script src="senas.js?v=55"></script>
-<script src="datos.js?v=55"></script>
-<script src="pdf.js?v=55"></script>
+<script src="config.publico.js?v=56"></script>
+<script src="cifrado.js?v=56"></script>
+<script src="senas.js?v=56"></script>
+<script src="datos.js?v=56"></script>
+<script src="pdf.js?v=56"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -916,6 +947,7 @@ const opNotacion = () => ({ nashville: st.estilo.notacion === "nashville", latin
 const COLORES = { flame: "--flame", sea: "--sea", baby: "--baby-ink", sol: "--sol-ink", lav: "--lav", rosa: "--rosa", fg: "--fg" };
 function aplicarEstilo() {
   const r = document.documentElement.style, e = st.estilo;
+  document.documentElement.dataset.vista = e.minimal ? "minimal" : "completa";
   r.setProperty("--tam", e.tam + "px"); r.setProperty("--inter", e.inter); r.setProperty("--acorde", `var(${COLORES[e.color] || "--flame"})`);
 }
 function guardarEstilo() {
@@ -1373,6 +1405,7 @@ function tabsHTML(lista, actual, attr = "data-tab") {
 function render() {
   renderPend = false;
   aplicarEstilo();
+  document.documentElement.dataset.ruta = ruta().v;
   const app = $("#app");
   if (D.modo === "red" && (!D.pinRed() || !yo() || !miPerfil())) { app.innerHTML = vRedEntrar(); enlazarRedEntrar(); return; }
   if (D.nube && !yo()) { app.innerHTML = vLogin(); enlazarLogin(); return; }
@@ -1596,6 +1629,7 @@ function vCancion(p) {
     <button class="ctl" id="amenos" title="Letra más chica">A−</button><button class="ctl" id="amas" title="Letra más grande">A+</button>
     <button class="ctl ${e.cols === 2 ? "on" : ""}" id="tcols" title="Dos columnas">▥</button>
     <button class="ctl" id="tesc" title="Modo escenario">⤢</button>
+    <button class="ctl ${e.minimal ? "on" : ""}" id="tmin" title="Vista minimalista: solo título, tono y la letra con acordes">◎ Minimalista</button>
     <button class="ctl escx" id="tescx">Salir</button>
     <span class="sp" style="flex:1"></span>
     ${D.nube && comparteCancion(c) ? `<button class="ctl noesc" id="tcomp" title="Elegir qué ministerios ven esta canción">↔ Compartir</button>` : ""}
@@ -1644,6 +1678,7 @@ function vCancion(p) {
         if (k === "letra") st.estilo.sinAcordes = !st.estilo.sinAcordes; else { st.estilo.notacion = k; st.estilo.sinAcordes = false; }
         guardarEstilo(); render();
       });
+      $("#tmin").onclick = () => { st.estilo.minimal = !st.estilo.minimal; st.ctlAbierta = false; guardarEstilo(); render(); toast(st.estilo.minimal ? "Vista minimalista: solo lo esencial. Lo demás está en «⋯ Más»." : "Vista completa."); };
       $("#tcols").onclick = () => { st.estilo.cols = st.estilo.cols === 2 ? 1 : 2; guardarEstilo(); render(); };
       $("#amenos").onclick = () => { st.estilo.tam = Math.max(12, st.estilo.tam - 2); guardarEstilo(); };
       $("#amas").onclick = () => { st.estilo.tam = Math.min(44, st.estilo.tam + 2); guardarEstilo(); };
@@ -3467,6 +3502,15 @@ function vAjustes() {
   return {
     band: bandHTML({ tag: "Ajustes", titulo: "Estilo y <em>respaldo</em>", sub: `<span>Cómo ves los cifrados en este dispositivo</span><span><a href="#perfil" style="color:#fff">Tu nombre y @usuario están en Mi perfil →</a></span>` }),
     main: `
+      <section class="caja"><h3>Vista de la canción</h3><p class="status" style="margin:0 0 12px">Elige cuánta información ves al abrir una canción. Se guarda en tu perfil y lo puedes cambiar cuando quieras, también desde «⋯ Más» dentro de la canción.</p>
+        <div class="vistas" role="radiogroup" aria-label="Vista de la canción">
+          <button type="button" role="radio" aria-checked="${!e.minimal}" class="vistaop ${!e.minimal ? "on" : ""}" data-vista="completa">
+            <span class="vmuestra"><i class="vm-band"><b></b><s></s><s class="c"></s></i><i class="vm-ctl"></i><i class="vm-chips"><s></s><s></s><s></s></i><i class="vm-letra"></i><i class="vm-letra c"></i><i class="vm-panel"></i></span>
+            <span class="vtxt"><b>Completa</b><small>Artistas y ministerio, tonos de cada quien, secciones, pistas y notas.</small></span></button>
+          <button type="button" role="radio" aria-checked="${!!e.minimal}" class="vistaop ${e.minimal ? "on" : ""}" data-vista="minimal">
+            <span class="vmuestra min"><i class="vm-band"><b></b><s class="c"></s></i><i class="vm-ctl"></i><i class="vm-letra"></i><i class="vm-letra c"></i><i class="vm-letra"></i><i class="vm-letra c"></i></span>
+            <span class="vtxt"><b>Minimalista</b><small>Solo el título, el tono, capo y BPM, y luego la letra con sus acordes.</small></span></button>
+        </div></section>
       <section class="caja"><h3>Cómo se ven los cifrados</h3>
         <div class="grid2">
           <label class="lb">Tamaño de letra <small>${e.tam}px</small><input type="range" id="etam" min="12" max="44" step="1" value="${e.tam}"></label>
@@ -3491,6 +3535,7 @@ function vAjustes() {
       $$("[data-not]").forEach(b => b.onclick = () => { st.estilo.notacion = b.dataset.not; guardarEstilo(); render(); });
       $$("[data-tog]").forEach(b => b.onclick = () => { const k = b.dataset.tog; if (k === "cols") st.estilo.cols = st.estilo.cols === 2 ? 1 : 2; else st.estilo[k] = !st.estilo[k]; guardarEstilo(); render(); });
       $$("[data-tema]").forEach(b => b.onclick = () => aplicarTema(b.dataset.tema));
+      $$("[data-vista]").forEach(b => b.onclick = () => { st.estilo.minimal = b.dataset.vista === "minimal"; guardarEstilo(); render(); toast(st.estilo.minimal ? "Listo: las canciones se abren en vista minimalista." : "Listo: las canciones se abren en vista completa."); });
       const di = $("#dimp"); if (di) di.onclick = abrirImportar;
       const de = $("#dexp"); if (de) de.onclick = exportar;
       $("#dsal").onclick = async () => { if (await confirmar(D.nube ? "¿Cerrar sesión?" : "¿Borrar todo lo de este dispositivo?", D.nube ? "Se borra la copia local; tus datos siguen en la nube." : "No se puede deshacer.")) D.salir(); };
