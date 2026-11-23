@@ -888,11 +888,11 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=57"></script>
-<script src="cifrado.js?v=57"></script>
-<script src="senas.js?v=57"></script>
-<script src="datos.js?v=57"></script>
-<script src="pdf.js?v=57"></script>
+<script src="config.publico.js?v=58"></script>
+<script src="cifrado.js?v=58"></script>
+<script src="senas.js?v=58"></script>
+<script src="datos.js?v=58"></script>
+<script src="pdf.js?v=58"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1195,6 +1195,32 @@ function momentoDe(c) { const t = norm(c.titulo + " " + (c.etiquetas || []).join
 const ETIQUETAS_SUG = ["Alabanza", "Adoración", "Litúrgica", "Espíritu Santo", "Mariana", "Eucaristía", "Sanación", "Navidad", "Cuaresma", "Pascua", "Infantil", "Himno"];
 
 // ---------- Ruteo ----------
+// ---------- Direcciones limpias: #cancion/confiare-zamar ----------
+// Título + primer artista, sin acentos. Si dos canciones quedan igual, la segunda lleva 4 letras de su id.
+// Las direcciones viejas con el id siguen funcionando (y se cambian solas a la nueva).
+const slugTexto = t => norm(t).replace(/ñ/g, "n").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+let _slugs = { n: -1, t: 0, porId: new Map(), porSlug: new Map() };
+function mapaSlugs() {
+  const todas = D.lista("cif_canciones");
+  if (todas.length === _slugs.n && Date.now() - _slugs.t < 3000) return _slugs;
+  const porId = new Map(), porSlug = new Map();
+  todas.filter(c => !c.borrada).sort((a, b) => (a.creado || a.id).localeCompare(b.creado || b.id)).forEach(c => {
+    const art = (c.autor || "").split(/\s+[×x]\s+|,/)[0];
+    let base = [slugTexto(c.titulo), slugTexto(art)].filter(Boolean).join("-") || c.id.slice(0, 8);
+    if (porSlug.has(base)) base += "-" + c.id.slice(0, 4);
+    porId.set(c.id, base); porSlug.set(base, c.id);
+  });
+  return (_slugs = { n: todas.length, t: Date.now(), porId, porSlug });
+}
+/** Dirección de una canción (acepta la canción o su id). */
+const urlCan = x => { const id = typeof x === "string" ? x : x && x.id; return "#cancion/" + (mapaSlugs().porId.get(id) || id); };
+/** Encuentra la canción por su dirección: nombre limpio, id completo o el inicio del id. */
+function cancionDeRuta(x) {
+  if (!x) return null;
+  return D.uno("cif_canciones", x) || D.uno("cif_canciones", mapaSlugs().porSlug.get(x)) || (/^[0-9a-f]{6,}$/.test(x) ? D.lista("cif_canciones").find(c => c.id.startsWith(x)) : null)
+    // «nombre-ab12»: el sufijo es el inicio del id (por si en este dispositivo no hay otra con el mismo nombre)
+    || (/-([0-9a-f]{4})$/.test(x) ? D.lista("cif_canciones").find(c => !c.borrada && c.id.startsWith(x.slice(-4)) && x.startsWith(slugTexto(c.titulo))) || D.uno("cif_canciones", mapaSlugs().porSlug.get(x.slice(0, -5))) : null) || null;
+}
 function ruta() {
   const h = location.hash.replace(/^#\/?/, "");
   const [v, ...p] = h.split("/").map(decodeURIComponent);
@@ -1448,7 +1474,7 @@ function shell(band, main) {
 function rutaPadre() {
   const r = ruta();
   if (r.v === "cancion" && r.p[1] === "set") return "#set/" + r.p[2];
-  if (r.v === "editar") return "#cancion/" + r.p[0];
+  if (r.v === "editar") return urlCan(r.p[0]);
   return { set: "#sets", ministerio: "#ministerios", persona: "#amigos" }[r.v] || "#libreria";
 }
 function irAtras() { if (vengoDeApp) history.back(); else location.hash = rutaPadre(); }
@@ -1568,7 +1594,7 @@ function vLibreria() {
   const hayFiltro = st.fArtista || st.fTono || st.fTags.length || st.fMio || st.fPista || st.fPriv;
   const fila = c => {
     const mt = miTono(c.id);
-    return `<li><a class="srow" href="#cancion/${c.id}"><div><b>${esc(c.titulo)}</b><small>${artistasHTML(c, false) || "—"}${(c.etiquetas || []).length ? `<span class="etq"> · ${esc(c.etiquetas.join(", "))}</span>` : ""}</small></div><span class="chips">
+    return `<li><a class="srow" href="${urlCan(c)}"><div><b>${esc(c.titulo)}</b><small>${artistasHTML(c, false) || "—"}${(c.etiquetas || []).length ? `<span class="etq"> · ${esc(c.etiquetas.join(", "))}</span>` : ""}</small></div><span class="chips">
       ${chipPrivacidad(c)}${c.tono ? `<span class="chip tono">${esc(c.tono)}</span>` : ""}${mt ? `<span class="chip mio" title="Tu tono">★ ${esc(mt.tono)}</span>` : ""}${conPista.has(c.id) ? `<span class="chip pista">♫ pista</span>` : ""}${c.bpm ? `<span class="chip tono">${c.bpm} bpm</span>` : ""}</span></a></li>`;
   };
   let filas = "";
@@ -1632,7 +1658,8 @@ const claveVista = c => (ctxSet ? `set:${ctxSet.s.id}:${ctxSet.i}` : c.id);
 const puedeTonoOriginal = c => !c || !c.id || esSuper() || !!(yo() && c.creada_por === yo().id);
 let ctxSet = null, vivo = null;
 function vCancion(p) {
-  const c = D.uno("cif_canciones", p[0]);
+  const c = cancionDeRuta(p[0]);
+  if (c) { const limpia = urlCan(c).slice(9); if (p[0] !== limpia) history.replaceState(null, "", "#cancion/" + [limpia, ...p.slice(1)].map(encodeURIComponent).join("/")); }
   if (!c || c.borrada) return { band: bandHTML({ titulo: "No encontré esa canción" }), main: `<a class="btn ghost" href="#libreria">← A la librería</a>` };
   // contexto de set: #cancion/<id>/set/<setId>/<i>
   ctxSet = null;
@@ -1809,14 +1836,14 @@ function irItem(i) {
   const s = D.uno("cif_sets", ctxSet.s.id) || ctxSet.s;
   if (i < 0 || i >= s.items.length) return;
   if (st.dirigir && vivo) vivo.enviar({ i });
-  location.hash = `#cancion/${s.items[i].cancion_id}/set/${s.id}/${i}`;
+  location.hash = `${urlCan(s.items[i].cancion_id)}/set/${s.id}/${i}`;
 }
 function conectarVivo(setId) {
   if (vivo && vivo.id === setId) return;
   salirVivo();
   const ch = D.canalVivo(setId, pl => {
     if (!st.seguir || !ctxSet) return;
-    if (pl.i !== ctxSet.i) { const s = D.uno("cif_sets", setId); if (s && s.items[pl.i]) location.hash = `#cancion/${s.items[pl.i].cancion_id}/set/${setId}/${pl.i}`; }
+    if (pl.i !== ctxSet.i) { const s = D.uno("cif_sets", setId); if (s && s.items[pl.i]) location.hash = `${urlCan(s.items[pl.i].cancion_id)}/set/${setId}/${pl.i}`; }
     if (pl.sec) setTimeout(() => irSeccion(pl.sec), 300);
   });
   vivo = { id: setId, ...ch };
@@ -2160,7 +2187,7 @@ function itemHTML(s, it, i, puede, gente) {
   return `<li class="item" data-i="${i}">
     ${puede ? `<div class="mov"><button data-sube="${i}" aria-label="Subir">▲</button><button data-baja="${i}" aria-label="Bajar">▼</button></div>` : "<span></span>"}
     <span class="num">${i + 1}</span>
-    <div class="tit"><a href="#cancion/${it.cancion_id}/set/${s.id}/${i}">${esc(c.titulo)}</a><small>${esc(c.autor || "")}${it.nota ? " · " + esc(it.nota) : ""}${it.estructura ? " · estructura propia" : ""}</small></div>
+    <div class="tit"><a href="${urlCan(it.cancion_id)}/set/${s.id}/${i}">${esc(c.titulo)}</a><small>${esc(c.autor || "")}${it.nota ? " · " + esc(it.nota) : ""}${it.estructura ? " · estructura propia" : ""}</small></div>
     <div class="opts">${puede ? `<select data-itono="${i}" title="Tono">${opT}</select>
       <select class="ivoz ${it.persona_id ? "on" : ""}" data-iper="${i}" title="Voz principal: si tiene su tono guardado, la canción se pone en ese tono"><option value="">🎤 Voz principal</option>${gente.map(p => ({ p, t: D.uno("cif_tonos", it.cancion_id + "|" + p.id) })).sort((a, b) => (b.t ? 1 : 0) - (a.t ? 1 : 0) || (a.p.nombre || "").localeCompare(b.p.nombre || "")).map(({ p, t }) => `<option value="${p.id}" ${p.id === it.persona_id ? "selected" : ""}>🎤 ${esc(p.nombre)}${t ? ` · ★ ${t.tono}${t.capo ? " capo " + t.capo : ""}` : " · sin tono"}</option>`).join("")}</select>
       ${it.persona_id && !D.uno("cif_tonos", it.cancion_id + "|" + it.persona_id) && puedoAsignarA(it.persona_id) ? `<button class="btn xs" data-guardavoz="${i}" title="Guarda este tono en el perfil de la voz principal">★ Guardar ${esc(it.tono || orig)} como su tono</button>` : ""}
@@ -2194,7 +2221,7 @@ function vSet(id) {
   const quien = s.actualizado_por ? nombreDe(s.actualizado_por) : "";
   return {
     band: bandHTML({ tag: lit ? "Misa · " + (m ? m.nombre : "") : m ? m.nombre : "Set", titulo: esc(s.nombre), sub: `<span>${s.fecha ? new Date(s.fecha + "T12:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" }) : "Sin fecha"}</span><span>${s.items.length} canciones</span>${(s.invitados || []).length ? `<span>Con <b>${esc(s.invitados.map(nombreMin).join(", "))}</b></span>` : ""}${quien ? `<span>Último cambio: ${esc(quien)}</span>` : ""}`,
-      extra: `<div class="row">${s.items.length ? `<a class="navbtn on" href="#cancion/${s.items[0].cancion_id}/set/${s.id}/0">▶ Tocar ${lit ? "la misa" : "el set"}</a>` : ""}${puede && (rolEn(s.ministerio_id) === "admin" || rolEn(s.ministerio_id) === "musico") ? `<button class="navbtn" id="sinvita" title="Invitar a otros ministerios a este set">👥 Invitar ministerios${(s.invitados || []).length ? " · " + s.invitados.length : ""}</button>` : ""}<button class="navbtn" id="spdf" title="Exportar el set a PDF con su tono y estructura">⎙ PDF</button><a class="navbtn" href="#sets">← Sets</a></div>` }),
+      extra: `<div class="row">${s.items.length ? `<a class="navbtn on" href="${urlCan(s.items[0].cancion_id)}/set/${s.id}/0">▶ Tocar ${lit ? "la misa" : "el set"}</a>` : ""}${puede && (rolEn(s.ministerio_id) === "admin" || rolEn(s.ministerio_id) === "musico") ? `<button class="navbtn" id="sinvita" title="Invitar a otros ministerios a este set">👥 Invitar ministerios${(s.invitados || []).length ? " · " + s.invitados.length : ""}</button>` : ""}<button class="navbtn" id="spdf" title="Exportar el set a PDF con su tono y estructura">⎙ PDF</button><a class="navbtn" href="#sets">← Sets</a></div>` }),
     main: `
       ${puede ? `<div class="grid2"><label class="lb">Nombre<input class="field" id="snombre" value="${esc(s.nombre)}"></label><label class="lb">Fecha<input class="field" type="date" id="sfecha" value="${esc(s.fecha || "")}"></label></div>` : ""}
       ${cuerpo}
@@ -2630,9 +2657,9 @@ function enlazarEditor(base) {
     if (!base && fila.ministerio_id && D.nube && !["admin", "musico"].includes(rolEn(fila.ministerio_id))) fila.ministerio_id = null;
     if (fila.visibilidad === "ministerio" && !fila.ministerio_id) return toast("Elige de qué ministerio es la canción.");
     const r = await D.guardar("cif_canciones", fila);
-    st.editando = false; const id = r.id; ed = null; toast("Canción guardada."); location.hash = "#cancion/" + id;
+    st.editando = false; const id = r.id; ed = null; toast("Canción guardada."); location.hash = urlCan(id);
   };
-  $("#ecancel").onclick = () => { st.editando = false; const id = base && base.id; ed = null; location.hash = id ? "#cancion/" + id : "#libreria"; };
+  $("#ecancel").onclick = () => { st.editando = false; const id = base && base.id; ed = null; location.hash = id ? urlCan(id) : "#libreria"; };
   const bb = $("#eborrar"); if (bb) bb.onclick = async () => { if (await confirmar(`¿Borrar «${base.titulo}» de la librería?`, "Se quita para todos los ministerios (también de sus sets).")) { await D.borrar("cif_canciones", base); st.editando = false; ed = null; location.hash = "#libreria"; } };
 }
 
@@ -2983,7 +3010,7 @@ function subidasHTML(id, soyYo) {
     ${s.res === null ? `<p class="status">Buscando…</p>` : !s.res.length ? `<p class="status">${soyYo ? "Aún no subes canciones. Las que des de alta en «Nueva canción» aparecen aquí y en el banco." : "Aún no ha subido canciones al banco."}</p>`
       : `<ul class="songs">${lista.slice(0, 200).map(r => {
           const tengo = mias.has(tituloN(r.titulo)), enLib = tengo && canciones().find(c => tituloN(c.titulo) === tituloN(r.titulo));
-          return `<li><div class="srow brow"><div>${enLib ? `<a href="#cancion/${enLib.id}"><b>${esc(r.titulo)}</b></a>` : `<b>${esc(r.titulo)}</b>`}<small>${artistasHTML(r, false) || "—"}${r.ministerio ? `<span class="etq"> · ${esc(r.ministerio)}</span>` : ""}</small></div>
+          return `<li><div class="srow brow"><div>${enLib ? `<a href="${urlCan(enLib)}"><b>${esc(r.titulo)}</b></a>` : `<b>${esc(r.titulo)}</b>`}<small>${artistasHTML(r, false) || "—"}${r.ministerio ? `<span class="etq"> · ${esc(r.ministerio)}</span>` : ""}</small></div>
             <span class="chips">${r.tono ? `<span class="chip tono">${esc(r.tono)}</span>` : ""}${tengo ? `<span class="chip pista">✓ En tu librería</span>` : puede ? `<button class="btn xs badd" data-sadd="${r.id}">＋ Añadir a la librería</button>` : ""}</span></div></li>`;
         }).join("")}</ul>`}
   </section>`;
@@ -3415,7 +3442,7 @@ function vPersona(id) {
   const favs = (p.favoritas || []).map(cid => D.uno("cif_canciones", cid)).filter(c => c && !c.borrada && veCancion(c));
   return {
     band: bandHTML({ tag: soyYo ? "Mis tonos" : "Perfil", titulo: esc(p.nombre || "Sin nombre"), sub: [p.usuario && `<span>@${esc(p.usuario)}</span>`, p.voz && `<span>${esc(p.voz)}</span>`, mins.length && `<span>${esc(mins.join(" · "))}</span>`, `<span><b>${tonos.length}</b> tonos</span>`].filter(Boolean).join("") }),
-    main: `${cartaPerfil(p, { mio: false, extra: `${favs.length ? `<div class="favs"><b>❤️ Canciones favoritas</b><div class="row" style="gap:6px">${favs.map(c => `<a class="chip fav" href="#cancion/${c.id}">${esc(c.titulo)}</a>`).join("")}</div></div>` : ""}${soyYo ? `<a class="btn xs ghost" href="#perfil">✎ Editar mi perfil</a>` : ""}` })}
+    main: `${cartaPerfil(p, { mio: false, extra: `${favs.length ? `<div class="favs"><b>❤️ Canciones favoritas</b><div class="row" style="gap:6px">${favs.map(c => `<a class="chip fav" href="${urlCan(c)}">${esc(c.titulo)}</a>`).join("")}</div></div>` : ""}${soyYo ? `<a class="btn xs ghost" href="#perfil">✎ Editar mi perfil</a>` : ""}` })}
       ${!soyYo && !a && yo() ? `<div class="row"><button class="btn" id="pamigo">＋ Agregar como amigo</button></div>` : ""}
       ${esSuper() && !soyYo ? `<section class="caja asigtono" id="prolotro"><h3>🎼 ¿Qué hace ${esc((p.nombre || "").split(" ")[0])} en el ministerio?</h3>
         <p class="status" style="margin:0">Solo tú (desarrollador) lo cambias aquí; cada quien también lo marca en su perfil. Sirve para asignarle voces en los sets.</p>
@@ -3430,7 +3457,7 @@ function vPersona(id) {
           <button class="btn">Guardar tono</button></div></form>` : ""}
       ${subidasHTML(id, soyYo)}
       <h2 class="status" style="margin:0">TONOS GUARDADOS</h2>
-      ${tonos.length ? `<ul class="songs">${tonos.map(({ t, c }) => `<li><a class="srow" href="#cancion/${c.id}" data-vertono="${esc(t.tono)}" data-capo="${t.capo || 0}" data-cid="${c.id}"><div><b>${esc(c.titulo)}</b><small>${esc(c.autor || "—")} · original ${esc(c.tono || "")}</small></div><span class="chips"><span class="chip mio">★ ${esc(t.tono)}${t.capo ? " · capo " + t.capo : ""}</span>${puedoAsignarA(id) ? `<button class="xmini" data-tquita="${c.id}" title="Quitar este tono">✕</button>` : ""}</span></a></li>`).join("")}</ul>`
+      ${tonos.length ? `<ul class="songs">${tonos.map(({ t, c }) => `<li><a class="srow" href="${urlCan(c)}" data-vertono="${esc(t.tono)}" data-capo="${t.capo || 0}" data-cid="${c.id}"><div><b>${esc(c.titulo)}</b><small>${esc(c.autor || "—")} · original ${esc(c.tono || "")}</small></div><span class="chips"><span class="chip mio">★ ${esc(t.tono)}${t.capo ? " · capo " + t.capo : ""}</span>${puedoAsignarA(id) ? `<button class="xmini" data-tquita="${c.id}" title="Quitar este tono">✕</button>` : ""}</span></a></li>`).join("")}</ul>`
         : `<div class="empty"><strong>${soyYo ? "Aún no guardas tonos" : "Sin tonos guardados"}</strong><p>${soyYo ? "Abre una canción, ponla en tu tono y toca «★ Este es mi tono». Queda en tu perfil y lo ve tu equipo." : "Cuando guarde tonos aparecerán aquí."}</p></div>`}`,
     after() {
       const b = $("#pamigo"); if (b) b.onclick = async () => { await D.guardar("cif_amistades", { de: yo().id, para: id, estado: D.nube ? "pendiente" : "aceptada" }); toast(D.nube ? "Solicitud enviada." : "Agregado."); };
