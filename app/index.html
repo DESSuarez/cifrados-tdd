@@ -208,6 +208,11 @@ img.av{object-fit:cover;background:var(--surface)}
 .mctl input[type=color]{width:30px;height:30px;border:0;background:none;padding:0;cursor:pointer;flex:none}
 .mctl code{font:500 13px var(--mono);text-transform:uppercase}
 .mctl .sp{flex:1}
+.mctl.logoctl{height:auto;min-height:48px;flex-wrap:wrap;gap:6px;padding:6px 6px 6px 10px}
+.mctl.logoctl .btn{flex:none;padding-inline:10px}
+.mlogowrap{position:relative;flex:none;display:inline-flex}
+.mlogowrap #mlogoq{position:absolute;top:-6px;right:-8px;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--bg);background:var(--fg);color:var(--bg);font:800 10px/1 var(--body);display:grid;place-items:center;padding:0;cursor:pointer}
+.mlogowrap #mlogoq:hover{background:var(--flame);color:#fff}
 .mlogo{width:34px;height:34px;object-fit:contain;border-radius:50%;flex:none}
 .mlogo.vacio{width:auto;border-radius:0;display:flex;align-items:center;font:500 12px var(--mono);color:var(--muted)}
 .mdesc{height:auto;padding:12px 14px;resize:vertical;line-height:1.45}
@@ -893,11 +898,11 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=60"></script>
-<script src="cifrado.js?v=60"></script>
-<script src="senas.js?v=60"></script>
-<script src="datos.js?v=60"></script>
-<script src="pdf.js?v=60"></script>
+<script src="config.publico.js?v=61"></script>
+<script src="cifrado.js?v=61"></script>
+<script src="senas.js?v=61"></script>
+<script src="datos.js?v=61"></script>
+<script src="pdf.js?v=61"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -2872,7 +2877,7 @@ function vMinisterio(id) {
       ${puede ? `<form class="caja" id="fmarca"><h3>Perfil y marca</h3>
         <div class="marcagrid">
           <div class="mcampo"><b>Logo</b><small>PNG con fondo transparente</small>
-            <div class="mctl">${e.logo ? `<img class="mlogo" src="${esc(e.logo)}" alt="">` : `<span class="mlogo vacio">Sin logo</span>`}<span class="sp"></span><label class="btn xs ghost" style="cursor:pointer">${e.logo ? "Cambiar" : "Subir"}<input type="file" id="mlogo" accept="image/*" hidden></label>${e.logo ? `<button type="button" class="btn xs ghost" id="mlogoaj">Ajustar</button><button type="button" class="btn xs ghost" id="mlogoq" title="Quitar logo" aria-label="Quitar logo">✕</button>` : ""}</div></div>
+            <div class="mctl logoctl">${e.logo ? `<span class="mlogowrap"><img class="mlogo" src="${esc(e.logo)}" alt=""><button type="button" id="mlogoq" title="Quitar logo" aria-label="Quitar logo">✕</button></span>` : `<span class="mlogo vacio">Sin logo</span>`}<span class="sp"></span><label class="btn xs ghost" style="cursor:pointer">${e.logo ? "Cambiar" : "Subir"}<input type="file" id="mlogo" accept="image/*" hidden></label>${e.logo ? `<button type="button" class="btn xs ghost" id="mlogoaj">Ajustar</button>` : ""}</div></div>
           <label class="mcampo"><b>Fondo de la banda</b><small>encabezado de cada página</small><span class="mctl"><input type="color" name="color_oscuro" value="${esc(e.color_oscuro)}"><code>${esc(e.color_oscuro)}</code></span></label>
           <label class="mcampo"><b>Color principal</b><small>acordes y barras</small><span class="mctl"><input type="color" name="color_primario" value="${esc(e.color_primario)}"><code>${esc(e.color_primario)}</code></span></label>
           <label class="mcampo"><b>Color secundario</b><small>subtítulos</small><span class="mctl"><input type="color" name="color_secundario" value="${esc(e.color_secundario)}"><code>${esc(e.color_secundario)}</code></span></label>
