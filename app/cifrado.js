@@ -268,7 +268,7 @@
   function deAcordesArriba(texto) {
     const L = String(texto || "").replace(/\r\n?/g, "\n").replace(/\t/g, "    ").split("\n");
     const out = [];
-    const secRe = /^\s*\[?\s*(intro|verso|estrofa|pre-?coro|coro|puente|instrumental|interludio|final|outro|tag|solo|precoro|bridge|chorus|verse)\b[^\]]*\]?\s*:?\s*$/i;
+    const secRe = /^\s*\[?\s*(intro|verso|estrofa|pre-?coro|post-?coro|postcoro|coro|puente|instrumental|interludio|final|outro|tag|solo|precoro|bridge|chorus|verse)\b[^\]]*\]?\s*:?\s*$/i;
     for (let i = 0; i < L.length; i++) {
       const l = L[i];
       if (secRe.test(l)) { out.push("{c: " + l.trim().replace(/^\[|\]$|:$/g, "").trim() + "}"); continue; }
@@ -363,6 +363,7 @@
   }
   const COLORES_SEC = [[/coro|chorus/i, "--flame"], [/pre/i, "--sol"], [/verso|estrofa|verse/i, "--sea"], [/puente|bridge/i, "--lav"], [/intro|outro|final|instrumental|interludio|solo/i, "--baby-ink"], [/tag|vamp/i, "--rosa"]];
   function colorSeccion(n) {
+    if (/post/i.test(n) && /coro/i.test(n)) return "--rosa";
     const pre = /pre/i.test(n) && /coro/i.test(n);
     if (pre) return "--sol";
     for (const [re, c] of COLORES_SEC) if (re.test(n)) return c;
