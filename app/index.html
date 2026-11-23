@@ -893,11 +893,11 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=59"></script>
-<script src="cifrado.js?v=59"></script>
-<script src="senas.js?v=59"></script>
-<script src="datos.js?v=59"></script>
-<script src="pdf.js?v=59"></script>
+<script src="config.publico.js?v=60"></script>
+<script src="cifrado.js?v=60"></script>
+<script src="senas.js?v=60"></script>
+<script src="datos.js?v=60"></script>
+<script src="pdf.js?v=60"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1454,7 +1454,7 @@ function shell(band, main) {
       ${nav("perfil", "perfil", "Mi perfil", IC.perfil, "--rosa")}
       ${nav("ministerios", "ministerios", "Ministerios", IC.gente, "--rosa", pendMin().length + pendInter().length || "")}
       ${nav("amigos", "amigos", "Amigos y sus tonos", IC.amigos, "--sea", pendAmigos().length || "")}
-      ${m ? nav("ministerio/" + m.id, r.p[0] === m.id ? "ministerio" : "-", m.tipo === "solista" ? "Mi perfil de solista" : "Perfil del ministerio", IC.marca, "--flame") : ""}
+      ${m ? nav("ministerio/" + m.id, r.p[0] === m.id ? "ministerio" : "-", m.tipo === "solista" ? "Mi perfil de solista" : "Perfil de " + esc(m.nombre), IC.marca, "--flame") : ""}
       ${esSuper() ? nav("usuarios", "usuarios", "Usuarios", IC.gente, "--sol", D.nube ? "" : D.lista("cif_perfiles").length) : ""}
       ${nav("ajustes", "ajustes", "Estilo y respaldo", IC.ajus, "--baby-ink")}
       ${nav("senas", "senas", "Señas para dirigir", IC.mano, "--lav")}
@@ -2905,7 +2905,7 @@ function vMinisterio(id) {
       f.onsubmit = async ev => {
         ev.preventDefault();
         await D.guardar("cif_ministerios", { ...D.uno("cif_ministerios", id), logo: marcaEd.logo ? marcaEd.logo + (marcaEd.tam !== 100 ? "#t=" + marcaEd.tam : "") : null, color_oscuro: marcaEd.color_oscuro, color_primario: marcaEd.color_primario, color_secundario: marcaEd.color_secundario, descripcion: (marcaEd.descripcion || "").trim() || null });
-        marcaEd = null; toast("Perfil del ministerio guardado."); render();
+        marcaEd = null; toast(`Perfil de ${m.nombre} guardado.`); render();
       };
     },
   };
