@@ -842,10 +842,6 @@ select.fsel{padding:0 34px 0 14px;
 .perfilcampos .lb small{font-size:12.5px;margin-top:-2px}
 /* ---------- Vista minimalista de la canción ---------- */
 html[data-vista="minimal"][data-ruta="cancion"] :is(.tonosbar,.secchips,.panelx,.band .subarts,.band .areatag){display:none!important}
-html[data-vista="minimal"][data-ruta="cancion"] .band .wrap{padding-block:22px 0;gap:10px}
-html[data-vista="minimal"][data-ruta="cancion"] .titleblock{gap:6px}
-html[data-vista="minimal"][data-ruta="cancion"] .titleblock h1{font-size:clamp(26px,4.2vw,40px);line-height:1.05}
-html[data-vista="minimal"][data-ruta="cancion"] .band .sub{font-size:14px}
 html[data-vista="minimal"][data-ruta="cancion"] .ctrls .masbtn{display:inline-flex}
 html[data-vista="minimal"][data-ruta="cancion"] .ctrls:not(.abierta) .ctlmas{display:none}
 html[data-vista="minimal"][data-ruta="cancion"] .ctrls.abierta .ctlmas{display:flex;flex-wrap:wrap;gap:8px;flex-basis:100%;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
@@ -892,11 +888,11 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=56"></script>
-<script src="cifrado.js?v=56"></script>
-<script src="senas.js?v=56"></script>
-<script src="datos.js?v=56"></script>
-<script src="pdf.js?v=56"></script>
+<script src="config.publico.js?v=57"></script>
+<script src="cifrado.js?v=57"></script>
+<script src="senas.js?v=57"></script>
+<script src="datos.js?v=57"></script>
+<script src="pdf.js?v=57"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1298,8 +1294,11 @@ function trabajando(btn, promesa) {
       pill.style.top = Math.max(10, rb.top - rc.top + caja.scrollTop + (rb.height - pill.offsetHeight) / 2) + "px";
     }
   }, 140);
+  const hashDe = location.hash, dlgDe = btn.closest("dialog") ? (((btn.closest("dialog").querySelector("h2") || {}).textContent) || "").trim().slice(0, 40) : "";
+  const esEnvio = btn.type === "submit" || btn.closest("form") || /guardar|enviar|crear|subir|añadir|agregar|invit|pasar|aceptar|sí|si$/i.test(btn.textContent || "");
   const fin = ok => {
     clearTimeout(mostrar);
+    if (ok && esEnvio) borrLimpiar(hashDe, dlgDe);
     delete btn.dataset.cargando; btn.removeAttribute("aria-busy");
     if (btn.isConnected) { btn.disabled = estabaDesact; btn.classList.remove("cargando"); const g = btn.querySelector(".giro"); if (g) g.remove(); }
     if (!pill) return;
@@ -1322,6 +1321,65 @@ function trabajando(btn, promesa) {
 });
 const ocupado = () => st.editando || st.arrastrando || escribiendo() || hayDatosSinGuardar() || !!document.querySelector("dialog[open]");
 let renderPend = false, recargaPend = false;
+/** Para lo que llega en segundo plano (listas de la nube, etc.): si estás escribiendo, espera. */
+function renderSeguro() { if (ocupado()) { renderPend = true; return; } render(); }
+
+// ---------- Borradores: lo que escribes se guarda en el dispositivo hasta que se envía ----------
+// Cada campo de texto, área o lista se guarda al momento (localStorage) por pantalla + formulario + nombre del campo.
+// Si la app se recarga (versión nueva, el celular la cerró, se fue el internet), al volver a esa pantalla se rellena sola.
+// Al enviar con éxito se borran los borradores de esa pantalla. Nunca se guardan contraseñas ni buscadores. Duran 7 días.
+const BORR_KEY = "cifrados-borradores", BORR_DIAS = 7;
+const borrLeer = () => { const b = ls.get(BORR_KEY, {}), lim = Date.now() - BORR_DIAS * 864e5; for (const k in b) if (!b[k] || b[k].t < lim) delete b[k]; return b; };
+const BORR_CAMPO = 'input:not([type=search]):not([type=password]):not([type=range]):not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):not([type=hidden]), textarea, select';
+function borrLlave(el) {
+  if (!el.matches || !el.matches(BORR_CAMPO) || el.closest("[data-sinborrador], .login")) return null;
+  if (/busca/i.test(el.placeholder || "") || /^(q|bq|abq|sq)$/.test(el.id)) return null;
+  // solo formularios, ventanas y el editor de canciones (los filtros y buscadores no se recuerdan)
+  if (!el.closest("form, dialog") && !/^#(nueva|editar)/.test(location.hash)) return null;
+  const nom = el.name || el.id; if (!nom) return null;
+  const caja = el.form || el.closest("dialog, [id]");
+  const dlg = el.closest("dialog"), tit = dlg ? ((dlg.querySelector("h2") || {}).textContent || "").trim().slice(0, 40) : "";
+  return [location.hash || "#", dlg ? "dlg:" + tit : "", caja && caja.id ? caja.id : "", nom].join("|");
+}
+const valorDe = el => (el.tagName === "SELECT" ? el.value : el.value);
+const esOriginal = el => el.tagName === "SELECT" ? [...el.options].every(o => o.selected === o.defaultSelected) : el.value === el.defaultValue;
+let borrT = 0, borrCola = {};
+function borrGuardarYa() {
+  clearTimeout(borrT); if (!Object.keys(borrCola).length) return;
+  const b = borrLeer(); for (const [k, v] of Object.entries(borrCola)) { if (v === null) delete b[k]; else b[k] = { v, t: Date.now() }; }
+  borrCola = {}; ls.set(BORR_KEY, b);
+}
+function borrAnotar(e) {
+  const el = e.target, k = borrLlave(el); if (!k) return;
+  borrCola[k] = esOriginal(el) ? null : valorDe(el);
+  clearTimeout(borrT); borrT = setTimeout(borrGuardarYa, 300);
+}
+document.addEventListener("input", borrAnotar, true);
+document.addEventListener("change", borrAnotar, true);
+addEventListener("pagehide", borrGuardarYa); document.addEventListener("visibilitychange", () => { if (document.hidden) borrGuardarYa(); });
+/** Rellena con lo que quedó guardado los campos que siguen como venían (no pisa lo que ya escribiste). */
+function borrRestaurar(raiz) {
+  const b = borrLeer(); if (!Object.keys(b).length) return;
+  let n = 0;
+  (raiz.querySelectorAll ? raiz.querySelectorAll(BORR_CAMPO) : []).forEach(el => {
+    const k = borrLlave(el); if (!k || !b[k] || !esOriginal(el) || valorDe(el) === b[k].v) return;
+    if (el.tagName === "SELECT" && ![...el.options].some(o => o.value === b[k].v)) return;
+    el.value = b[k].v; tocados.add(el); n++;
+    el.dispatchEvent(new Event("input", { bubbles: true })); if (el.tagName === "SELECT") el.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  if (n && !borrAviso) { borrAviso = true; setTimeout(() => (borrAviso = false), 4000); toast(n === 1 ? "Recuperé lo que estabas escribiendo." : `Recuperé ${n} campos que estabas escribiendo.`); }
+}
+let borrAviso = false;
+/** Al enviar con éxito: ya no hacen falta los borradores de esa pantalla (o de esa ventana). */
+function borrLimpiar(hash, dlgTit) {
+  borrGuardarYa();
+  const b = borrLeer(), pre = (hash || "#") + "|" + (dlgTit ? "dlg:" + dlgTit : "");
+  for (const k in b) if (k.startsWith(dlgTit ? pre : (hash || "#") + "|")) delete b[k];
+  ls.set(BORR_KEY, b);
+}
+// se rellenan solos cuando aparece la pantalla o una ventana
+new MutationObserver(ms => { if (ms.some(m => [...m.addedNodes].some(n => n.nodeType === 1 && (n.matches(BORR_CAMPO) || n.querySelector && n.querySelector(BORR_CAMPO))))) setTimeout(() => borrRestaurar(document.body), 0); })
+  .observe(document.body, { childList: true, subtree: true });
 D.alCambiar(() => {
   if (ocupado()) { renderPend = true; return; }
   render();
@@ -2019,7 +2077,7 @@ function traerCancionesDelSet(s) {
   const k = s.id + ":" + faltan.join(",");
   if (!faltan.length || _setsTraidos.has(k)) return;
   _setsTraidos.add(k);
-  D.traer("cif_canciones", faltan).then(n => { if (n) render(); }).catch(e => console.warn("traer canciones del set", e));
+  D.traer("cif_canciones", faltan).then(n => { if (n) renderSeguro(); }).catch(e => console.warn("traer canciones del set", e));
 }
 /** Bloques de estructura de una canción en un set. */
 const bloquesDe = (it, c) => (it.estructura && it.estructura.length ? it.estructura : c.orden && c.orden.length ? c.orden : C.secciones(c.contenido));
@@ -2914,7 +2972,7 @@ function subidasHTML(id, soyYo) {
     s.cargando = true; s.t = Date.now();
     (D.nube ? D.consulta("cif_subidas", { p: id }) : Promise.resolve(D.lista("cif_canciones").filter(c => !c.borrada && c.creada_por === id).map(c => ({ ...c, ministerio: c.ministerio_id ? nombreMin(c.ministerio_id) : "" }))))
       .then(r => { s.res = r || []; s.error = ""; }).catch(e => { s.error = e.message || String(e); if (s.res === null) s.res = []; })
-      .finally(() => { s.cargando = false; if (ruta().v === "persona") render(); });
+      .finally(() => { s.cargando = false; if (ruta().v === "persona") renderSeguro(); });
   }
   const mias = new Set(canciones().map(c => tituloN(c.titulo)));
   const m = minActual(), puede = !!m && ["admin", "musico"].includes(rolEn(m.id));
@@ -3224,7 +3282,7 @@ async function cargarCuentas() {
   if (!D.nube || cuentas.cargando) return;
   cuentas.cargando = true; cuentas.error = "";
   try { cuentas.lista = (await D.fn("usuarios", { accion: "listar" })).usuarios; } catch (e) { cuentas.error = e.message; }
-  cuentas.cargando = false; render();
+  cuentas.cargando = false; renderSeguro();
 }
 const fechaCorta = iso => iso ? new Date(iso).toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "2-digit" }) : "";
 function vUsuarios() {
