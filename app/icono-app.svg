@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Ícono de la app Cifrados: corcheas con el aro de Tiempo de Dios, mismo fondo y naranja -->
+  <rect width="512" height="512" fill="#1B1C1A"/>
+  <g fill="none" stroke="#FF3D1A" stroke-linecap="round" stroke-linejoin="round">
+    <!-- aro -->
+    <ellipse cx="300" cy="84" rx="54" ry="30" stroke-width="26" transform="rotate(-8 300 84)"/>
+    <!-- plicas -->
+    <path d="M196 196 C 198 260, 200 320, 202 372" stroke-width="30"/>
+    <path d="M356 168 C 357 230, 358 290, 360 344" stroke-width="30"/>
+    <!-- barra que une las corcheas -->
+    <path d="M190 200 C 250 186, 300 174, 362 160" stroke-width="44"/>
+  </g>
+  <g fill="#FF3D1A">
+    <!-- cabezas -->
+    <ellipse cx="160" cy="384" rx="56" ry="40" transform="rotate(-22 160 384)"/>
+    <ellipse cx="320" cy="356" rx="56" ry="40" transform="rotate(-22 320 356)"/>
+  </g>
+</svg>
