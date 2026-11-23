@@ -290,7 +290,7 @@ h1 em{font-style:normal;color:var(--area)}
 /* Controles de la canción: en computadora todo a la vista; en el celular, «⋯ Más» y «Tonos» se despliegan */
 .ctlmas{display:contents}
 a.ctl{text-decoration:none;color:var(--fg)}
-.masbtn,.tonosres{display:none}
+.masbtn,.tonosres,.ctrls .masbtn{display:none}
 @media (max-width:640px){
   .ctrls{display:grid!important;grid-template-columns:1fr auto;gap:8px;align-items:center}
   .ctrls .tonobox{grid-column:1;grid-row:1;display:flex;min-width:0}
@@ -299,7 +299,7 @@ a.ctl{text-decoration:none;color:var(--fg)}
   .ctrls .autobox{grid-column:1;grid-row:2;display:flex;min-width:0}
   .ctrls .autobox #tauto{flex:1}
   .ctrls .sp{display:none}
-  .masbtn{display:inline-flex;grid-column:2;grid-row:2;white-space:nowrap;justify-content:center}
+  .masbtn,.ctrls .masbtn{display:inline-flex;grid-column:2;grid-row:2;white-space:nowrap;justify-content:center}
   .ctlmas{display:none}
   .ctrls.abierta .ctlmas{display:flex;flex-wrap:wrap;gap:8px;grid-column:1/-1;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
   .ctrls.abierta .ctlmas .seg{flex-basis:100%;width:100%}
@@ -846,11 +846,11 @@ select.fsel{padding:0 34px 0 14px;
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=48"></script>
-<script src="cifrado.js?v=48"></script>
-<script src="senas.js?v=48"></script>
-<script src="datos.js?v=48"></script>
-<script src="pdf.js?v=48"></script>
+<script src="config.publico.js?v=49"></script>
+<script src="cifrado.js?v=49"></script>
+<script src="senas.js?v=49"></script>
+<script src="datos.js?v=49"></script>
+<script src="pdf.js?v=49"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -2176,7 +2176,7 @@ function vEditor(id) {
       <aside class="preview"><div class="row" style="margin-bottom:8px"><b>Vista previa</b><span class="sp"></span><span class="chip tono">${esc(c.tono)}</span></div><div class="cuerpo" id="eprev">${C.aHTML(c.contenido, { tonoFinal: c.tono, orden: c.orden })}</div></aside>
     </div>
     <label class="lb">Notas<textarea class="field" id="enot" rows="2" placeholder="Tonos de referencia, dinámica, quién la canta…">${esc(c.notas || "")}</textarea></label>
-    <div class="row"><button class="btn" id="eguardar">Guardar canción</button><button class="btn ghost" id="ecancel">Cancelar</button><span class="sp"></span>${base ? `<button class="btn sm ghost" id="eborrar">Borrar de la librería</button>` : ""}</div>`;
+    <div class="row"><button class="btn" id="eguardar">Guardar canción</button><button class="btn ghost" id="ecancel">Cancelar</button><span class="sp"></span>${base ? `<button class="btn sm ghost" id="eborrar">🗑 Borrar del banco (para todos)</button>` : ""}</div>`;
   return {
     band: bandHTML({ tag: "Constructor", nav: `<button class="bandsave" id="eguardar2" type="button" ${ed.ini === JSON.stringify(ed.c) ? "disabled" : ""}>✓ Guardar</button>`, titulo: base ? "Editar <em>" + esc(base.titulo) + "</em>" : "Nueva <em>canción</em>", sub: `<span>Escribe la letra, toca la sílaba y pon el acorde. Así queda exacto.</span>` }),
     main,
@@ -2849,6 +2849,25 @@ async function agregarDelBanco(ids) {
   }
   return n;
 }
+/** Borrar del banco: el desarrollador cualquiera; los demás, las que pueden editar (quien la subió, el admin de su ministerio o el artista). */
+function puedeBorrarDelBanco(r) {
+  if (esSuper()) return true;
+  const c = D.uno("cif_canciones", r.id);
+  return !!(c && esMusico() && puedeEditarCancion(c));
+}
+async function borrarDelBanco(id) {
+  try {
+    let c = D.uno("cif_canciones", id);
+    if (!c && D.nube) { await D.traer("cif_canciones", [id]); c = D.uno("cif_canciones", id); }
+    if (!c) return toast("No encontré esa canción.");
+    if (!esSuper() && !puedeEditarCancion(c)) return toast("Solo la borra quien la subió, el admin de su ministerio o el artista.");
+    const n = (c.compartida_con || []).length + 1;
+    if (!(await confirmar(`¿Borrar «${c.titulo}» del banco?`, `Desaparece para todos: del banco, de ${n > 1 ? "las " + n + " librerías donde está" : "su librería"} y de los sets que la usan. No se puede deshacer desde la app.`))) return;
+    await D.borrar("cif_canciones", c);
+    if (banco.res) banco.res = banco.res.filter(x => x.id !== id);
+    toast(`«${c.titulo}» se borró del banco.`); render();
+  } catch (e) { toast("No se pudo borrar: " + (e.message || e)); }
+}
 let _bancoVisto = 0;
 function vBanco() {
   if ((banco.res === null || Date.now() - _bancoVisto > 20000) && !banco.cargando) { _bancoVisto = Date.now(); banco.error = ""; setTimeout(buscarBanco, 0); }
@@ -2888,7 +2907,7 @@ function vBanco() {
       <p class="status" id="bestado" style="margin:0">${banco.cargando ? "Buscando…" : banco.error ? "" : `${res.length} de ${enTab.length}${todo.length >= 1000 ? "+" : ""} canciones${banco.q ? " para «" + esc(banco.q) + "»" : ""} · ${res.length - faltan.length} ya están en tu librería`}${!puede && m ? " · Solo músicos y admins de " + esc(m.nombre) + " pueden añadir" : ""}</p>
       ${banco.error ? `<div class="empty"><strong>No se pudo leer el banco</strong><p>${esc(banco.error)}</p><p>Revisa que esté corrida la migración 011 en Supabase.</p></div>` : ""}
       <ul class="songs">${res.map(r => `<li><div class="srow brow"><div><b>${esc(r.titulo)}</b><small>${artistasHTML(r, false) || "—"}${r.ministerio ? `<span class="etq"> · subida por ${esc(r.ministerio)}</span>` : ""}${r.copias > 1 ? `<span class="etq"> · en ${r.copias} librerías</span>` : ""}</small></div>
-        <span class="chips">${r.tono ? `<span class="chip tono">${esc(r.tono)}</span>` : ""}${mias.has(tituloN(r.titulo)) ? `<span class="chip pista">✓ En tu librería</span>` : puede ? `<button class="btn xs badd" data-badd="${r.id}">＋ Añadir a la librería</button>` : ""}</span></div></li>`).join("")}</ul>
+        <span class="chips">${r.tono ? `<span class="chip tono">${esc(r.tono)}</span>` : ""}${mias.has(tituloN(r.titulo)) ? `<span class="chip pista">✓ En tu librería</span>` : puede ? `<button class="btn xs badd" data-badd="${r.id}">＋ Añadir a la librería</button>` : ""}${puedeBorrarDelBanco(r) ? `<button class="btn xs ghost bdel" data-bdel="${r.id}" title="Borrar del banco para todos" aria-label="Borrar «${esc(r.titulo)}» del banco">🗑</button>` : ""}</span></div></li>`).join("")}</ul>
       ${!banco.cargando && banco.res && !res.length ? `<div class="empty"><strong>Sin resultados</strong><p>${hayFiltro ? "Prueba quitando algún filtro." : "Prueba con otra parte del título o con el nombre del artista."}</p></div>` : ""}`,
     after() {
       $$("[data-btab]").forEach(b => b.onclick = () => { banco.tab = b.dataset.btab; banco.fArt = banco.fTono = banco.fMin = ""; banco.fTags = []; render(); });
@@ -2900,6 +2919,7 @@ function vBanco() {
       const bl = $("#bflimpia"); if (bl) bl.onclick = () => { banco.fArt = banco.fTono = banco.fMin = ""; banco.fTags = []; banco.faltan = false; render(); };
       const bq = $("#bq"); let t;
       bq.oninput = () => { banco.q = bq.value; clearTimeout(t); t = setTimeout(buscarBanco, 350); };
+      $$("[data-bdel]").forEach(b => b.onclick = () => borrarDelBanco(b.dataset.bdel));
       $$("[data-badd]").forEach(b => b.onclick = async () => {
         b.disabled = true; b.textContent = "Añadiendo…";
         try {
