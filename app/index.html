@@ -840,17 +840,20 @@ select.fsel{padding:0 34px 0 14px;
 .arroba b{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700}
 .arroba .field{padding-left:32px}
 .perfilcampos .lb small{font-size:12.5px;margin-top:-2px}
+.ualtainst{grid-column:1/-1;display:flex;flex-direction:column;gap:2px;font-weight:700;font-size:14px}
+.ualtainst small{font-weight:500;color:var(--muted);margin-left:6px}
+.ualtainst .rolchips{margin:4px 0 2px}
 .ualta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
 </style>
 </head>
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=51"></script>
-<script src="cifrado.js?v=51"></script>
-<script src="senas.js?v=51"></script>
-<script src="datos.js?v=51"></script>
-<script src="pdf.js?v=51"></script>
+<script src="config.publico.js?v=52"></script>
+<script src="cifrado.js?v=52"></script>
+<script src="senas.js?v=52"></script>
+<script src="datos.js?v=52"></script>
+<script src="pdf.js?v=52"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1974,7 +1977,7 @@ async function elegirVoces(setId, i, sec) {
   await D.guardar("cif_sets", { ...act, items });
   toast(pIds.length || cIds.length ? `${sec}: ${resumenVoces(items[i], sec)}` : `${sec}: sin asignar`);
 }
-const ROLES_MUSICA = ["Voz principal", "Coros", "Piano", "Teclados", "Guitarra acústica", "Guitarra eléctrica", "Bajo", "Batería", "Violín", "Dirección musical"];
+const ROLES_MUSICA = ["Voz principal", "Coros", "Piano", "Teclados", "Guitarra acústica", "Guitarra eléctrica", "Bajo", "Batería", "Percusión", "Violín", "Dirección musical"];
 const rolesDe = p => String((p && p.voz) || "").split(/\s*[,;·]\s*/).map(x => x.trim()).filter(Boolean);
 const esCantante = p => /voz|coro|cant|soprano|tenor|bar[ií]tono|contralto|alto/i.test((p && p.voz) || "");
 /** Para el modo Voces: todos los del set, primero quienes cantan (según su perfil), luego quienes dirigen o cantan y al final los demás. */
@@ -3161,6 +3164,8 @@ function vUsuarios() {
           <select class="field" name="ministerio"><option value="">Sin ministerio</option>${mins.map(m => `<option value="${m.id}" ${minActual() && m.id === minActual().id ? "selected" : ""}>${esc(m.nombre)}</option>`).join("")}</select>
           <select class="field" name="rol"><option value="musico">Músico</option><option value="admin">Admin</option><option value="lector">Solo ver</option></select>
           <input class="field" name="password" type="text" placeholder="Contraseña (opcional, mín. 8)" autocomplete="off">
+          <div class="ualtainst"><span>¿Qué toca o hace? <small>Opcional · puedes elegir varios</small></span>
+            <div class="rolchips" id="ualtarol">${ROLES_MUSICA.map(r => `<button type="button" class="tchip" data-arol="${esc(r)}" style="--c:var(--flame)">${esc(r)}</button>`).join("")}</div></div>
           <button class="btn" name="modo" value="invitar">Enviar invitación</button>
           <button class="btn ghost" name="modo" value="crear" type="submit">Crear con contraseña</button>
         </form></section>` : ""}
@@ -3171,15 +3176,19 @@ function vUsuarios() {
       const uq = $("#uq"); uq.oninput = () => { cuentas.q = uq.value; const pos = uq.selectionStart; render(); const n = $("#uq"); n.focus(); n.setSelectionRange(pos, pos); };
       const rec = $("#urec"); if (rec) rec.onclick = () => { cuentas.lista = null; cargarCuentas(); render(); };
       const f = $("#ualta");
+      $$("#ualtarol [data-arol]").forEach(b => b.onclick = () => b.classList.toggle("on"));
       if (f) f.onsubmit = async e => {
         e.preventDefault();
         const modo = (e.submitter && e.submitter.value) || "invitar";
+        const voz = $$("#ualtarol [data-arol].on").map(b => b.dataset.arol).join(", ");
         const body = { accion: modo, email: f.email.value.trim(), nombre: f.nombre.value.trim(), ministerio_id: f.ministerio.value || null, rol: f.rol.value, password: f.password.value, redirectTo: location.origin + location.pathname };
         if (modo === "crear" && body.password.length < 8) return toast("Para crear con contraseña escribe una de al menos 8 caracteres.");
         try {
           const r = await D.fn("usuarios", body);
-          toast(r.existia ? "Ya tenía cuenta: quedó agregado al ministerio." : modo === "crear" ? `Cuenta creada para ${body.email}. Pásale su contraseña.` : `Invitación enviada a ${body.email}.`);
-          f.reset(); cuentas.lista = null; await D.sincronizar(); cargarCuentas();
+          let extra = "";
+          if (voz && r.id) { try { await D.rpc("cif_poner_roles", { p: r.id, v: voz }); extra = ` · ${voz}`; } catch (er) { extra = /cif_poner_roles|function/i.test(er.message || "") ? " (falta correr la migración 017 para guardar su instrumento)" : ` (no se guardó su instrumento: ${er.message})`; } }
+          toast((r.existia ? "Ya tenía cuenta: quedó agregado al ministerio." : modo === "crear" ? `Cuenta creada para ${body.email}. Pásale su contraseña.` : `Invitación enviada a ${body.email}.`) + extra);
+          f.reset(); $$("#ualtarol .on").forEach(b => b.classList.remove("on")); cuentas.lista = null; await D.sincronizar(); cargarCuentas();
         } catch (er) { toast(er.message); }
       };
       $$("[data-umin]").forEach(s => s.onchange = async () => { const id = s.dataset.umin, m = s.value; s.blur(); if (!m) return; await D.guardar("cif_miembros", { ministerio_id: m, persona_id: id, rol: "musico" }); toast(`${nombreDe(id)} agregado como músico.`); });
