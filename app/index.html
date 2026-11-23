@@ -698,7 +698,130 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 .practica .grande{font:900 32px var(--display)}
 
 /* ---------- Login ---------- */
-.login{min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--band)}
+.login{min-height:100vh;display:grid;place-items:center;align-content:center;gap:14px;padding:24px;background:var(--band)}
+.loginconoce{color:#C9D2D1;font:600 13px var(--body);text-decoration:none}.loginconoce:hover{color:#fff}
+/* ================= Página pública: inicio, planes y suscripción ================= */
+.inicio{--i-max:1120px;background:var(--bg);color:var(--fg);min-height:100vh;font-family:var(--body)}
+.inicio .i-wrap{max-width:var(--i-max);margin:0 auto;padding:0 max(20px,env(safe-area-inset-left,0px))}
+.inicio em{font-style:normal;color:var(--flame)}
+.i-nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(12px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-left,0px)) 12px;background:color-mix(in srgb,#1B1C1A 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff}
+.i-nav nav{display:flex;align-items:center;gap:6px}
+.i-marca{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none}
+.i-marca b{display:block;font:900 17px var(--display);line-height:1}.i-marca small{font:500 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#A3ADAC}
+.i-logo{border-radius:9px;display:block}
+.i-lnk{background:none;border:0;color:inherit;font:700 14px var(--body);text-decoration:none;padding:10px 12px;border-radius:10px;cursor:pointer}
+.i-lnk:hover{background:color-mix(in srgb,currentColor 10%,transparent)}
+.i-btn{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:50px;padding:0 24px;border-radius:14px;border:2px solid var(--flame);background:var(--flame);color:#fff;font:800 16px var(--body);text-decoration:none;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.i-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px color-mix(in srgb,var(--flame) 35%,transparent)}
+.i-btn:disabled{opacity:.85;cursor:progress;transform:none}
+.i-btn.sm{height:40px;padding:0 16px;font-size:14px;border-radius:11px}
+.i-btn.ghost{background:transparent;color:var(--fg);border-color:var(--line)}
+.i-btn.ghost:hover{box-shadow:none;border-color:var(--fg)}
+.i-nav .i-btn.ghost,.i-btn.ghost.claro{color:#fff;border-color:rgba(255,255,255,.35)}
+.i-nav .i-btn.ghost:hover,.i-btn.ghost.claro:hover{border-color:#fff}
+.i-btn.full{width:100%}
+.i-eyebrow{display:inline-block;font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--flame)}
+.i-hero{background:#1B1C1A;color:#fff;border-bottom:8px solid var(--flame);overflow:hidden}
+.i-hero-in{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;padding-block:64px 72px}
+.i-hero h1{font:900 clamp(40px,6vw,72px)/1 var(--display);letter-spacing:-.02em;margin:14px 0 18px}
+.i-hero p{font-size:18px;line-height:1.55;color:#D6DCDB;margin:0 0 26px;max-width:560px}
+.i-ctas{display:flex;gap:10px;flex-wrap:wrap}
+.i-mini{font-size:12.5px;color:var(--muted);margin:14px 0 0}.i-hero .i-mini{color:#8F9A99}
+.i-demo{background:#FFFFFF;color:#1B1C1A;border-radius:22px;padding:20px 22px;box-shadow:0 30px 80px rgba(0,0,0,.45);transform:rotate(1.5deg);font-family:var(--body)}
+.i-demo-top{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.i-pill{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 11px;border-radius:99px;border:1.5px solid #DDE5E5;font:700 12.5px var(--body)}.i-pill b{color:#FF3D1A}
+.i-pill.on{background:#FF3D1A;border-color:#FF3D1A;color:#fff}
+.i-demo-sec{font:900 11px var(--display);letter-spacing:.12em;text-transform:uppercase;border-left:4px solid #FF3D1A;padding-left:8px;margin:12px 0 6px}
+.i-demo-sec.rosa{border-color:#D9558E}
+.i-ln{display:flex;flex-wrap:wrap;font-size:17px;line-height:1.2;margin-bottom:6px}
+.i-ln span{display:inline-flex;flex-direction:column;white-space:pre}
+.i-ln i{font:800 14px var(--body);font-style:normal;color:#B5541F;min-height:18px}
+.i-demo-voz{margin-top:12px;display:inline-block;padding:5px 11px;border-radius:99px;background:#F4F7F7;font:700 12px var(--body)}
+.i-sec{padding-block:72px}
+.i-sec.alt{background:var(--surface)}
+.i-sec h2,.i-cierre h2{font:900 clamp(30px,4vw,44px)/1.05 var(--display);letter-spacing:-.01em;margin:0 0 10px;text-align:center}
+.i-sub{color:var(--muted);font-size:16px;line-height:1.5;margin:0 0 26px;text-align:center}
+.i-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:34px}
+.i-feat{padding:22px;border:1.5px solid var(--line);border-radius:18px;background:var(--bg)}
+.i-feat h3{font:800 18px var(--display);margin:12px 0 6px}.i-feat p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.5}
+.i-ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:color-mix(in srgb,var(--flame) 12%,transparent)}
+.i-periodo{display:flex;width:max-content;margin:0 auto 26px;padding:4px;border-radius:99px;background:var(--bg);border:1.5px solid var(--line)}
+.i-periodo button{border:0;background:none;color:var(--fg);font:800 14px var(--body);padding:9px 18px;border-radius:99px;cursor:pointer}
+.i-periodo button.on{background:var(--fg);color:var(--bg)}
+.i-periodo button span{font-size:11px;color:#1DB954;margin-left:4px}.i-periodo button.on span{color:#7CE3A1}
+.i-periodo.mini{margin:12px 0 4px}.i-periodo.mini button{padding:7px 12px;font-size:12.5px}
+.i-planes{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+.i-plan{position:relative;display:flex;flex-direction:column;padding:26px 24px;border:2px solid var(--line);border-radius:22px;background:var(--bg)}
+.i-plan.dest{border-color:var(--flame);box-shadow:0 18px 50px color-mix(in srgb,var(--flame) 18%,transparent);transform:translateY(-8px)}
+.i-plan h3{font:900 26px var(--display);margin:0;color:var(--pc)}
+.i-lema{margin:2px 0 14px;color:var(--muted);font-size:14px}
+.i-precio{margin:0;display:flex;align-items:baseline;gap:8px}.i-precio b{font:900 40px var(--display)}.i-precio small{color:var(--muted);font-size:13px}
+.i-ahorro{margin:2px 0 16px;font:700 12.5px var(--body);color:#1DB954;min-height:18px}
+.i-ahorro.gris{color:var(--muted);font-weight:600}
+.i-personas{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 6px;font:700 13.5px var(--body)}
+.i-personas div{display:flex;align-items:center;gap:4px;border:1.5px solid rgba(255,255,255,.25);border-radius:12px;padding:3px}
+.i-personas button{width:32px;height:32px;border:0;border-radius:9px;background:rgba(255,255,255,.12);color:#fff;font:800 18px var(--body);cursor:pointer}
+.i-personas b{min-width:32px;text-align:center;font:900 17px var(--display)}
+.i-desglose{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:12.5px;color:#A3ADAC;margin:6px 0 4px}
+.i-plan ul{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:9px}
+.i-plan li,.i-resumen li{position:relative;padding-left:26px;font-size:14.5px;line-height:1.4}
+.i-plan li::before,.i-resumen li::before{content:"✓";position:absolute;left:0;top:0;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--pc,var(--flame)) 18%,transparent);color:var(--pc,var(--flame));font:900 11px var(--body)}
+.i-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:5px 12px;border-radius:99px;background:var(--flame);color:#fff;font:800 12px var(--body)}
+.i-nota{text-align:center;color:var(--muted);font-size:13px;margin:26px 0 0}
+.i-pasos ol{list-style:none;padding:0;margin:34px 0 0;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;counter-reset:p}
+.i-pasos li{counter-increment:p;display:flex;flex-direction:column;gap:6px;padding:20px;border-radius:18px;background:var(--surface)}
+.i-pasos li::before{content:counter(p);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--fg);color:var(--bg);font:900 15px var(--display)}
+.i-pasos li b{font:800 17px var(--display)}.i-pasos li span{color:var(--muted);font-size:14px;line-height:1.45}
+.i-cierre{background:#1B1C1A;color:#fff;text-align:center;padding-block:72px}
+.i-cierre p{color:#C9D2D1;margin:0 0 24px}
+.i-pie{border-top:1px solid var(--line);padding-block:22px calc(22px + env(safe-area-inset-bottom,0px));font-size:13px;color:var(--muted)}
+.i-pie .i-wrap{display:flex;align-items:center;gap:10px}.i-pie .sp{flex:1}.i-pie a{color:var(--fg);font-weight:700}
+/* suscripción */
+.i-checkout{padding-top:40px}
+.i-progreso{list-style:none;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:0;margin:0 0 30px}
+.i-progreso li{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:99px;background:var(--surface);color:var(--muted);font:700 14px var(--body)}
+.i-progreso li span{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--line);color:var(--fg);font:900 12px var(--body)}
+.i-progreso li.on{color:var(--fg);box-shadow:inset 0 0 0 1.5px var(--fg)}.i-progreso li.on span{background:var(--flame);color:#fff}
+.i-progreso li.hecho span{background:#1DB954;color:#fff}
+.i-co{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start;max-width:940px;margin:0 auto}
+.i-form,.i-listo{display:flex;flex-direction:column;gap:14px;padding:28px;border:1.5px solid var(--line);border-radius:22px;background:var(--bg)}
+.i-form h2,.i-listo h2{font:900 30px var(--display);margin:0;text-align:left}
+.i-form .i-sub,.i-listo .i-sub{text-align:left;margin:0}
+.i-form label{display:flex;flex-direction:column;gap:6px;font:700 14px var(--body)}
+.i-form input:not([type=checkbox]){height:50px;border:1.5px solid var(--line);border-radius:12px;padding:0 14px;background:var(--bg);color:var(--fg);font:500 16px var(--body)}
+.i-form input:focus{outline:none;border-color:var(--flame);box-shadow:0 0 0 3px color-mix(in srgb,var(--flame) 18%,transparent)}
+.i-form input[readonly]{background:var(--surface);color:var(--muted);font-family:var(--mono)}
+.i-form label.i-check{flex-direction:row;align-items:center;gap:10px;font-weight:500}
+.i-check input{width:18px;height:18px;accent-color:var(--flame)}
+.i-dos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.i-demoaviso{padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--sol) 20%,transparent);font-size:13.5px;line-height:1.45}
+.i-metodos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.i-metodos button{height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);font:700 14px var(--body);cursor:pointer}
+.i-metodos button.on{border-color:var(--flame);box-shadow:0 0 0 3px color-mix(in srgb,var(--flame) 15%,transparent)}
+.i-form .i-lnk{align-self:center;color:var(--muted)}
+.i-form .i-mini,.i-listo .i-mini{text-align:center;margin:0}
+.i-resumen{position:sticky;top:90px;padding:24px;border-radius:22px;background:#1B1C1A;color:#fff}
+.i-resumen h3{font:900 24px var(--display);margin:6px 0 0}.i-resumen .i-lema{color:#A3ADAC}
+.i-resumen .i-periodo{background:transparent;border-color:rgba(255,255,255,.25)}.i-resumen .i-periodo button{color:#fff}.i-resumen .i-periodo button.on{background:#fff;color:#1B1C1A}
+.i-resumen ul{list-style:none;padding:0;margin:14px 0;display:grid;gap:8px}.i-resumen li{font-size:13.5px;color:#D6DCDB}
+.i-total{display:flex;justify-content:space-between;align-items:baseline;padding-top:14px;border-top:1px solid rgba(255,255,255,.15);margin-bottom:8px}.i-total b{font:900 24px var(--display)}
+.i-resumen .i-lnk{color:#A3ADAC;padding-inline:0}
+.i-listo{max-width:560px;margin:0 auto;grid-column:1/-1;text-align:center;align-items:center}
+.i-listo h2,.i-listo .i-sub{text-align:center}
+.i-ok{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:#1DB954;color:#fff;font:900 34px var(--body);animation:entraPill .35s ease-out;box-shadow:0 0 0 10px color-mix(in srgb,#1DB954 18%,transparent)}
+.i-sigue{text-align:left;margin:4px 0;padding-left:20px;display:grid;gap:8px;font-size:14.5px;line-height:1.45;align-self:stretch}
+.i-recibo{align-self:stretch;display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:14px 16px;border-radius:14px;background:var(--surface);text-align:left;font-size:14px}.i-recibo small{grid-column:1/-1;color:var(--muted);font-family:var(--mono);font-size:11.5px}
+@media (max-width:900px){
+  .i-hero-in{grid-template-columns:1fr;padding-block:40px 56px}.i-demo{transform:none;max-width:460px}
+  .i-grid,.i-planes{grid-template-columns:1fr}.i-plan.dest{transform:none}
+  .i-pasos ol{grid-template-columns:1fr 1fr}
+  .i-co{grid-template-columns:1fr}.i-resumen{position:static;order:-1}
+}
+@media (max-width:560px){
+  .i-sec,.i-cierre{padding-block:52px}.i-pasos ol{grid-template-columns:1fr}
+  .i-marca small{display:none}.i-nav .i-lnk{padding:8px}
+  .i-form,.i-listo{padding:20px}.i-metodos button{font-size:12.5px}
+}
 .login .card{width:min(420px,100%);background:var(--bg);border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:14px;border-top:8px solid var(--flame)}
 .login h1{font-size:32px;color:var(--fg)}
 .login p{margin:0;color:var(--muted)}
@@ -708,6 +831,10 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 .colores{display:flex;gap:8px;flex-wrap:wrap}
 .colores button{width:34px;height:34px;border-radius:50%;border:3px solid var(--bg);box-shadow:0 0 0 1.5px var(--line)}
 .colores button.on{box-shadow:0 0 0 3px var(--fg)}
+.colorlibre{position:relative;display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px 0 4px;border-radius:99px;border:1.5px solid var(--line);background:var(--bg);font:700 13px var(--body);cursor:pointer}
+.colorlibre::before{content:"";width:26px;height:26px;border-radius:50%;flex:none;background:var(--cl,conic-gradient(#FF3D1A,#F2B33D,#1DB954,#98D5E0,#457A7F,#7E5BD0,#D9558E,#FF3D1A))}
+.colorlibre.on{box-shadow:0 0 0 3px var(--fg);border-color:transparent}
+.colorlibre input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:0;padding:0}
 .miembros{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .miembros li{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
 .miembros li>span:not(.av){flex:1;min-width:0}
@@ -898,11 +1025,12 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=62"></script>
-<script src="cifrado.js?v=62"></script>
-<script src="senas.js?v=62"></script>
-<script src="datos.js?v=62"></script>
-<script src="pdf.js?v=62"></script>
+<script src="config.publico.js?v=63"></script>
+<script src="cifrado.js?v=63"></script>
+<script src="senas.js?v=63"></script>
+<script src="datos.js?v=63"></script>
+<script src="pdf.js?v=63"></script>
+<script src="inicio.js?v=63"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -954,7 +1082,7 @@ const COLORES = { flame: "--flame", sea: "--sea", baby: "--baby-ink", sol: "--so
 function aplicarEstilo() {
   const r = document.documentElement.style, e = st.estilo;
   document.documentElement.dataset.vista = e.minimal ? "minimal" : "completa";
-  r.setProperty("--tam", e.tam + "px"); r.setProperty("--inter", e.inter); r.setProperty("--acorde", `var(${COLORES[e.color] || "--flame"})`);
+  r.setProperty("--tam", e.tam + "px"); r.setProperty("--inter", e.inter); r.setProperty("--acorde", /^#[0-9a-f]{6}$/i.test(e.color || "") ? e.color : `var(${COLORES[e.color] || "--flame"})`);
 }
 function guardarEstilo() {
   ls.set("cifrados-estilo", st.estilo); aplicarEstilo();
@@ -1510,7 +1638,15 @@ function render() {
   document.documentElement.dataset.ruta = ruta().v;
   const app = $("#app");
   if (D.modo === "red" && (!D.pinRed() || !yo() || !miPerfil())) { app.innerHTML = vRedEntrar(); enlazarRedEntrar(); return; }
-  if (D.nube && !yo()) { app.innerHTML = vLogin(); enlazarLogin(); return; }
+  // página pública: inicio, planes y suscripción (se ve con o sin sesión)
+  const r0 = ruta();
+  if (["conoce", "planes", "suscribir"].includes(r0.v) && window.INICIO) { app.innerHTML = INICIO.vista(r0, { logueado: !!yo() }); INICIO.enlazar(r0); return; }
+  if (D.nube && !yo()) {
+    // quien nunca ha entrado en este dispositivo ve primero el inicio; quien ya entró antes, el login
+    if (r0.v !== "entrar" && !ls.get("cifrados-ya-entro", false) && window.INICIO) { app.innerHTML = INICIO.vista({ v: "conoce", p: [] }, { logueado: false }); INICIO.enlazar({ v: "conoce", p: [] }); return; }
+    app.innerHTML = vLogin(); enlazarLogin(); return;
+  }
+  if (yo()) { ls.set("cifrados-ya-entro", true); if (r0.v === "entrar") history.replaceState(null, "", "#libreria"); }
   if (D.nube && (st.ponerClave || D.estado.ponerClave)) { app.innerHTML = vNuevaClave(); enlazarNuevaClave(); return; }
   const r = ruta();
   if (r.v !== "cancion") detenerAutoscroll();
@@ -1520,7 +1656,11 @@ function render() {
       r.v === "senas" ? vSenas() : r.v === "ministerios" ? vMinisterios() : r.v === "ajustes" ? vAjustes() : r.v === "perfil" ? vPerfil() : r.v === "amigos" ? vAmigos() : r.v === "usuarios" ? vUsuarios() : r.v === "persona" ? vPersona(r.p[0]) : r.v === "ministerio" ? vMinisterio(r.p[0]) : r.v === "banco" ? vBanco() : vLibreria();
   } catch (e) { console.error(e); out = { band: bandHTML({ titulo: "Algo falló" }), main: `<p class="status">${esc(e.message)}</p>`, }; }
   const y = window.scrollY;
+  // el menú lateral se dibuja de nuevo con cada pantalla: se guarda y se regresa su scroll para que no salte hasta arriba
+  const navAntes = $(".areanav"), sideAntes = $(".side");
+  const scNav = navAntes ? navAntes.scrollTop : 0, scSide = sideAntes ? sideAntes.scrollTop : 0;
   app.innerHTML = shell(out.band, out.main);
+  { const n = $(".areanav"), sd = $(".side"); if (n) n.scrollTop = scNav; if (sd) sd.scrollTop = scSide; }
   enlazarShell();
   if (out.after) out.after();
   if (r.v === "cancion" || r.v === "set") window.scrollTo(0, y);
@@ -2181,10 +2321,19 @@ function vocesPanelHTML(ctx, c, orden) {
     ${filas.map(p => { const r = rolesSec(it, p); return `<span class="vpsec" style="--sc:var(${C.colorSeccion(p)})">${esc(p)}</span><span class="vpcel">${chips(r.p, "pri")}</span><span class="vpcel">${chips(r.c, "cor")}</span>${puede ? `<button class="btn xs ghost" data-pvoz="${esc(p)}">${tieneVoces(it, p) ? "Cambiar" : "＋ Asignar"}</button>` : "<span></span>"}`; }).join("")}</div>
     ${sinNada ? `<p class="status" style="margin:8px 0 0">Aún no hay voces asignadas en esta canción.</p>` : ""}</section>`;
 }
+// Siempre aparecen en «Voces», aunque no tengan marcado su rol en el perfil.
+const VOCES_SIEMPRE = /^(ale su[aá]rez|ariel gonz[aá]lez)/i;
+/** Quién sale en la ventana de voces: del set, solo quienes cantan (Voz principal, Coros o Voz en su perfil),
+ *  Ale y Ariel, y quien ya está asignado ahí; además, tus amigos que son Voz principal aunque no estén en el set. */
+function vocesDisponibles(s, ya) {
+  const base = personasSet(s), ids = new Set(base.map(p => p.id));
+  const amigosVoz = amigos().map(id => D.uno("cif_perfiles", id)).filter(p => p && !ids.has(p.id) && rolesDe(p).includes("Voz principal"));
+  return cantantesDe(base.filter(p => esCantante(p) || VOCES_SIEMPRE.test(p.nombre || "") || ya.has(p.id)).concat(amigosVoz));
+}
 /** Ventana para elegir la voz principal (una o varias) y los coros de una sección. Lo ven todos los ministerios del set. */
 async function elegirVoces(setId, i, sec) {
   const s = D.uno("cif_sets", setId); if (!s) return;
-  const it = s.items[i], r = rolesSec(it, sec), P = new Set(r.p), Cc = new Set(r.c), gente = cantantesDe(personasSet(s));
+  const it = s.items[i], r = rolesSec(it, sec), P = new Set(r.p), Cc = new Set(r.c), gente = vocesDisponibles(s, new Set([...r.p, ...r.c]));
   const lista = (pre, ya, todos) => `<div class="compchk">${todos ? `<label><input type="checkbox" name="${pre}___todos" ${ya.has("__todos") ? "checked" : ""}> <b>Todos</b></label>` : ""}
     ${gente.map(p => `<label class="${esCantante(p) ? "canta" : ""}"><input type="checkbox" name="${pre}_${p.id}" ${ya.has(p.id) ? "checked" : ""}> ${esc(p.nombre)}${p.voz ? ` <small class="status">${esc(rolesDe(p).join(" · "))}</small>` : ""}</label>`).join("")}</div>`;
   const d = await dialogo(`<h2>Voces de «${esc(sec)}»</h2><p>Lo ven todos los ministerios del set.</p>
@@ -3640,12 +3789,13 @@ function vAjustes() {
           <label class="lb">Tamaño de letra <small>${e.tam}px</small><input type="range" id="etam" min="12" max="44" step="1" value="${e.tam}"></label>
           <label class="lb">Interlineado <small>${e.inter}</small><input type="range" id="einter" min="1.1" max="2" step="0.05" value="${e.inter}"></label>
         </div>
-        <div class="lb" style="margin-top:12px">Color de los acordes<div class="colores">${Object.keys(COLORES).map(k => `<button data-col="${k}" class="${e.color === k ? "on" : ""}" style="background:var(${COLORES[k]})" aria-label="${k}"></button>`).join("")}</div></div>
+        <div class="lb" style="margin-top:12px">Color de los acordes<div class="colores">${Object.keys(COLORES).map(k => `<button data-col="${k}" class="${e.color === k ? "on" : ""}" style="background:var(${COLORES[k]})" aria-label="${k}"></button>`).join("")}${(() => { const libre = /^#[0-9a-f]{6}$/i.test(e.color || ""); return `<label class="colorlibre ${libre ? "on" : ""}" title="Elegir cualquier color" style="${libre ? `--cl:${e.color}` : ""}"><input type="color" id="ecolorlibre" value="${libre ? e.color : "#2B7B8A"}" aria-label="Elegir cualquier color"><span>${libre ? esc(e.color.toUpperCase()) : "＋ Otro color"}</span></label>`; })()}</div></div>
         <div class="lb" style="margin-top:12px">Notación<div class="seg" role="radiogroup">${NOTACIONES.map(([k, l]) => `<button role="radio" aria-checked="${e.notacion === k}" class="${e.notacion === k ? "on" : ""}" data-not="${k}">${l}</button>`).join("")}</div></div>
         <div class="row" style="margin-top:12px">
           <button class="tchip ${e.sinAcordes ? "on" : ""}" data-tog="sinAcordes">Solo letra</button>
           <button class="tchip ${e.cols === 2 ? "on" : ""}" data-tog="cols">Dos columnas</button></div>
         <div class="muestra cuerpo" style="margin-top:14px">${C.aHTML(muestra, { tonoFinal: "D", ...opNotacion() })}</div></section>
+      <section class="caja"><h3>CifraDios para otros ministerios</h3><p class="status" style="margin:0 0 10px">La página pública con lo que hace la app, los planes y la suscripción (por ahora es una demostración: no cobra).</p><a class="btn sm ghost" href="#conoce">Ver la página de inicio y planes →</a></section>
       <section class="caja"><h3>Apariencia</h3><div class="row">${[["auto", "Auto"], ["dia", "Día"], ["noche", "Noche"], ["retro", "👾 Retro"]].map(([k, l]) => `<button class="tchip ${tema === k ? "on" : ""}" data-tema="${k}">${l}</button>`).join("")}</div></section>
       <section class="caja"><h3>Respaldo</h3><p>${sus ? "Exporta todo (canciones, tonos y sets de tus ministerios) a un archivo, o importa un respaldo, una exportación de SongbookPro o archivos ChordPro." : "Exportar e importar está disponible para ministerios con suscripción activa. Pide al desarrollador que la active."}</p>
         <div class="row">${sus && esMusico() ? `<button class="btn sm" id="dimp">Importar</button>` : ""}${sus ? `<button class="btn sm ghost" id="dexp">Exportar respaldo</button>` : ""}<span class="sp"></span><button class="btn sm ghost" id="dsal">${D.nube ? "Cerrar sesión" : "Borrar datos de este dispositivo"}</button></div>
@@ -3656,6 +3806,7 @@ function vAjustes() {
       $("#einter").oninput = ev => { st.estilo.inter = +ev.target.value; ev.target.previousElementSibling.textContent = st.estilo.inter; aplicarEstilo(); };
       $("#einter").onchange = guardarEstilo;
       $$("[data-col]").forEach(b => b.onclick = () => { st.estilo.color = b.dataset.col; guardarEstilo(); render(); });
+      const cl = $("#ecolorlibre"); if (cl) { cl.oninput = () => { st.estilo.color = cl.value; aplicarEstilo(); }; cl.onchange = () => { st.estilo.color = cl.value; guardarEstilo(); render(); }; }
       $$("[data-not]").forEach(b => b.onclick = () => { st.estilo.notacion = b.dataset.not; guardarEstilo(); render(); });
       $$("[data-tog]").forEach(b => b.onclick = () => { const k = b.dataset.tog; if (k === "cols") st.estilo.cols = st.estilo.cols === 2 ? 1 : 2; else st.estilo[k] = !st.estilo[k]; guardarEstilo(); render(); });
       $$("[data-tema]").forEach(b => b.onclick = () => aplicarTema(b.dataset.tema));
@@ -3916,9 +4067,9 @@ async function avisarATodos(base) {
 
 // ================= Login =================
 function vLogin() {
-  return `<div class="login"><form class="card" id="flog"><img src="app-icono-512.png" width="56" height="56" alt="" style="border-radius:12px;background:#1B1C1A"><h1>CifraDios</h1><p>Tiempo de Dios · la librería de canciones de todos los ministerios.</p>
+  return `<div class="login"><a class="loginconoce" href="#conoce">← Conoce CifraDios y sus planes</a><form class="card" id="flog"><img src="app-icono-512.png" width="56" height="56" alt="" style="border-radius:12px;background:#1B1C1A"><h1>CifraDios</h1><p>Tiempo de Dios · la librería de canciones de todos los ministerios.</p>
     <label class="lb" id="lnom" hidden>Nombre<input class="field" name="nombre" autocomplete="name"></label>
-    <label class="lb">Correo<input class="field" name="email" type="email" autocomplete="email" required></label>
+    <label class="lb">Correo<input class="field" name="email" type="email" autocomplete="email" required value="${esc(ls.get("cifrados-correo-login", ""))}"></label>
     <label class="lb">Contraseña<input class="field" name="pass" type="password" autocomplete="current-password" minlength="6" required></label>
     <button class="btn" id="lbtn">Entrar</button>
     <div class="row"><button type="button" class="btn sm ghost" id="lreg">Crear cuenta</button><span class="sp"></span><button type="button" class="btn sm ghost" id="lrec">Olvidé mi contraseña</button></div>
