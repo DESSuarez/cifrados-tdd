@@ -254,9 +254,13 @@
       gsap.registerPlugin(ScrollTrigger);
       const phone = $(".i-phone");
       if (phone) {
-        gsap.fromTo(phone, { rotateY: -12, rotateX: 5, scale: 0.95 }, { rotateY: 0, rotateX: 0, scale: 1, ease: "power2.out", scrollTrigger: { trigger: ".i-phone-wrap", start: "top 85%", end: "top 25%", scrub: 1 } });
-        gsap.fromTo(phone, { boxShadow: "0 0 0 2px #222, 0 40px 80px rgba(0,0,0,.55), 0 0 120px rgba(255,61,26,.08)" }, { boxShadow: "0 0 0 2px #222, 0 60px 120px rgba(0,0,0,.4), 0 0 200px rgba(255,61,26,.15)", ease: "power2.out", scrollTrigger: { trigger: ".i-phone-wrap", start: "top 85%", end: "top 25%", scrub: 1 } });
+        gsap.fromTo(phone, { scale: 0.92, opacity: 0.7 }, { scale: 1, opacity: 1, ease: "power2.out", scrollTrigger: { trigger: ".i-phone-wrap", start: "top 90%", end: "top 40%", scrub: 1 } });
       }
+    }
+    // Vanilla Tilt: el celular sigue el mouse
+    if (typeof VanillaTilt !== "undefined") {
+      const phone = $(".i-phone");
+      if (phone) VanillaTilt.init(phone, { max: 15, speed: 600, scale: 1.02, glare: true, "max-glare": 0.12, "glare-prerender": false });
     }
 
     $$("[data-periodo]").forEach(b => b.onclick = () => { est.anual = b.dataset.periodo === "anual"; ss.set("ini-anual", est.anual); const y = scrollY; window.render(); requestAnimationFrame(() => scrollTo(0, y)); });
