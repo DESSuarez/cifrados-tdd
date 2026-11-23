@@ -27,7 +27,7 @@
     const doc = new jsPDF({ unit: "pt", format: "letter", compress: true });
     const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
     const M = 50, PIE = 34, GUT = 26;
-    const mk = Object.assign({ nombre: "Tiempo de Dios", etiqueta: "Cifrados", oscuro: "#1B1C1A", primario: "#FF3D1A", secundario: "#98D5E0", logo: null }, op.marca || {});
+    const mk = Object.assign({ nombre: "Tiempo de Dios", etiqueta: "CifraDios", oscuro: "#1B1C1A", primario: "#FF3D1A", secundario: "#98D5E0", logo: null }, op.marca || {});
     const C_OSC = hex(mk.oscuro), C_PRI = hex(mk.primario), C_SEC = hex(mk.secundario), C_TXT = [27, 28, 26], C_MUT = [110, 118, 117];
     const cols = op.cols === 2 ? 2 : 1;
     const colW = (W - 2 * M - (cols - 1) * GUT) / cols;
@@ -208,7 +208,7 @@
     const hoy = new Date().toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" });
     for (let i = 1; i <= total; i++) {
       doc.setPage(i); fuente("normal", 8.5, [150, 158, 157]);
-      doc.text(san(`Generado el ${hoy} · ${mk.nombre} · Cifrados`), M, H - 24);
+      doc.text(san(`Generado el ${hoy} · ${mk.nombre} · CifraDios`), M, H - 24);
       doc.text(`${i} / ${total}`, W - M, H - 24, { align: "right" });
     }
     const nombre = (op.archivo || op.titulo || "cifrados").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-").toLowerCase();
