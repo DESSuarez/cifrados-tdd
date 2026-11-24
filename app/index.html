@@ -588,7 +588,10 @@ button.csvoz{cursor:pointer}
 @media (max-width:640px){.vpgrid{grid-template-columns:1fr 1fr}.vpsec{grid-column:1/-1;margin-top:6px}.vpth{display:none}.vpgrid .btn{grid-column:1/-1;justify-self:start}}
 .vozres{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
 .vozres .chip{border-left:4px solid var(--sc);font-size:12px}
-.csvoz{display:inline-flex;align-items:center;margin-left:8px;padding:2px 10px;border-radius:99px;background:#1B1C1A;color:#fff;border:2px solid var(--sc);font:800 12px var(--body);letter-spacing:0;text-transform:none;vertical-align:middle}
+.csvoz{display:inline-flex;align-items:center;margin-left:8px;padding:2px 10px;border-radius:99px;background:var(--vc,#1B1C1A);color:#fff;border:2px solid var(--vc,var(--sc));font:800 12px var(--body);letter-spacing:0;text-transform:none;vertical-align:middle}
+.csec.convoz{border-left:4px solid var(--pc);padding-left:10px}
+.csec.convoz .csn::before{background:var(--pc)}
+.colvoz{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
 @media (max-width:1100px){.item{grid-template-columns:auto 22px 1fr}.item .opts{grid-column:1/-1;justify-content:flex-start}}
 @media (max-width:640px){
   .item{padding:10px;gap:8px}
@@ -1220,15 +1223,15 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=72"></script>
-<script src="cifrado.js?v=72"></script>
-<script src="senas.js?v=72"></script>
-<script src="datos.js?v=72"></script>
-<script src="pdf.js?v=72"></script>
+<script src="config.publico.js?v=73"></script>
+<script src="cifrado.js?v=73"></script>
+<script src="senas.js?v=73"></script>
+<script src="datos.js?v=73"></script>
+<script src="pdf.js?v=73"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.8.1/dist/vanilla-tilt.min.js"></script>
-<script src="inicio.js?v=72"></script>
+<script src="inicio.js?v=73"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -2227,8 +2230,12 @@ function vCancion(p) {
         const puedeV = editaSet(ctxSet.s);
         $$(".csec[data-sec]").forEach(sec => {
           const h = sec.querySelector(".csn"); if (!h || h.querySelector(".csvoz,.csvozadd")) return;
-          if (tieneVoces(ctxSet.item, sec.dataset.sec)) h.insertAdjacentHTML("beforeend", ` <${puedeV ? "button type=\"button\"" : "span"} class="csvoz" data-cvoz="${esc(sec.dataset.sec)}" title="${puedeV ? "Cambiar quién canta" : ""}">🎤 ${esc(resumenVoces(ctxSet.item, sec.dataset.sec))}</${puedeV ? "button" : "span"}>`);
-          else if (puedeV) h.insertAdjacentHTML("beforeend", ` <button type="button" class="csvozadd" data-cvoz="${esc(sec.dataset.sec)}" title="¿Quién canta esta parte?">🎤 ＋</button>`);
+          const sn = sec.dataset.sec, cv = colorVozSec(ctxSet.s, ctxSet.item, sn);
+          if (tieneVoces(ctxSet.item, sn)) {
+            h.insertAdjacentHTML("beforeend", ` <${puedeV ? "button type=\"button\"" : "span"} class="csvoz" data-cvoz="${esc(sn)}" title="${puedeV ? "Cambiar quién canta" : ""}" ${cv ? `style="--vc:${cv}"` : ""}>🎤 ${esc(resumenVoces(ctxSet.item, sn))}</${puedeV ? "button" : "span"}>`);
+            if (cv) { sec.classList.add("convoz"); sec.style.setProperty("--pc", cv); }
+          }
+          else if (puedeV) h.insertAdjacentHTML("beforeend", ` <button type="button" class="csvozadd" data-cvoz="${esc(sn)}" title="¿Quién canta esta parte?">🎤 ＋</button>`);
         });
         $$("[data-cvoz]").forEach(b => b.onclick = ev => { ev.stopPropagation(); elegirVoces(ctxSet.s.id, ctxSet.i, b.dataset.cvoz); });
       }
@@ -2563,6 +2570,29 @@ const vocesSec = (it, sec) => rolesSec(it, sec).p;
 const tieneVoces = (it, sec) => { const r = rolesSec(it, sec); return r.p.length + r.c.length > 0; };
 const vocesTxt = ids => ids.map(nombreCorto).join(" + ");
 const resumenVoces = (it, sec) => { const r = rolesSec(it, sec); return [r.p.length ? vocesTxt(r.p) : "", r.c.length ? "coros: " + vocesTxt(r.c) : ""].filter(Boolean).join(" · "); };
+const COLORES_VOZ = ["#FF3D1A", "#7E5BD0", "#98D5E0", "#F2B33D", "#D9558E", "#457A7F"];
+function sincColores(s) {
+  const prev = s.colores || {}, colores = { ...prev }, usados = new Set();
+  const personas = new Set();
+  (s.items || []).forEach(it => {
+    if (it.persona_id) personas.add(it.persona_id);
+    if (it.voces) Object.values(it.voces).forEach(v => {
+      const r = typeof v === "object" && !Array.isArray(v) ? v : { p: Array.isArray(v) ? v : typeof v === "string" ? [v] : [] };
+      (r.p || []).concat(r.c || []).forEach(id => { if (id && id !== "__todos") personas.add(id); });
+    });
+  });
+  for (const [pid, c] of Object.entries(colores)) { if (personas.has(pid)) usados.add(c); else delete colores[pid]; }
+  for (const pid of personas) {
+    if (colores[pid]) continue;
+    colores[pid] = COLORES_VOZ.find(c => !usados.has(c)) || COLORES_VOZ[usados.size % COLORES_VOZ.length];
+    usados.add(colores[pid]);
+  }
+  return JSON.stringify(colores) !== JSON.stringify(prev) ? colores : null;
+}
+function colorVozSec(s, it, sec) {
+  const col = s.colores || {}, r = rolesSec(it, sec);
+  return r.p.map(id => col[id]).find(Boolean) || r.c.map(id => col[id]).find(Boolean) || null;
+}
 /** Modo «Voces» en la canción dentro de un set: cada parte, en el orden del set, con su voz principal y sus coros. */
 /** Con el modo Voces prendido, el PDF lleva quién canta cada parte: {«Coro»: "Ana + Luis · coros: Willy"} */
 function vocesPDF(it) {
@@ -2571,10 +2601,10 @@ function vocesPDF(it) {
   return Object.keys(out).length ? out : null;
 }
 function vocesPanelHTML(ctx, c, orden) {
-  const it = ctx.item || {}, puede = editaSet(ctx.s);
+  const it = ctx.item || {}, puede = editaSet(ctx.s), col = ctx.s.colores || {};
   const partes = (orden && orden.length ? orden : C.secciones(c.contenido));
   const vistas = new Set(), filas = partes.filter(p => (vistas.has(p) ? false : vistas.add(p)));
-  const chips = (ids, cls) => ids.length ? ids.map(id => `<span class="vchip ${cls}">${esc(id === "__todos" ? "Todos" : nombreDe(id))}</span>`).join("") : `<span class="vvacio">—</span>`;
+  const chips = (ids, cls) => ids.length ? ids.map(id => `<span class="vchip ${cls}" ${col[id] ? `style="--vc:${col[id]}"` : ""}>${col[id] ? `<span class="colvoz" style="background:${col[id]}"></span> ` : ""}${esc(id === "__todos" ? "Todos" : nombreDe(id))}</span>`).join("") : `<span class="vvacio">—</span>`;
   const sinNada = !filas.some(p => tieneVoces(it, p));
   return `<section class="vocespanel noesc"><div class="vphead"><b>🎤 Voces</b><small>${esc(ctx.s.nombre)} · ${puede ? "toca una parte para asignar" : "solo lectura"}</small></div>
     <div class="vpgrid"><span class="vpth">Parte</span><span class="vpth">Voz principal</span><span class="vpth">Coros</span><span></span>
@@ -2605,7 +2635,10 @@ async function elegirVoces(setId, i, sec) {
   const act = D.uno("cif_sets", setId), items = act.items.map(x => ({ ...x })), voces = { ...(items[i].voces || {}) };
   if (pIds.length || cIds.length) voces[sec] = { p: pIds, c: cIds }; else delete voces[sec];
   items[i] = { ...items[i], voces };
-  await D.guardar("cif_sets", { ...act, items });
+  const datosSet = { ...act, items };
+  const nc = sincColores(datosSet);
+  if (nc) datosSet.colores = nc;
+  await D.guardar("cif_sets", datosSet);
   toast(pIds.length || cIds.length ? `${sec}: ${resumenVoces(items[i], sec)}` : `${sec}: sin asignar`);
 }
 const ROLES_MUSICA = ["Voz principal", "Coros", "Piano", "Teclados", "Guitarra acústica", "Guitarra eléctrica", "Bajo", "Batería", "Percusión", "Violín", "Dirección musical"];
@@ -2616,7 +2649,7 @@ function cantantesDe(gente) {
   const peso = x => (esCantante(x) ? 0 : x.artista ? 1 : 2);
   return gente.slice().sort((a, b) => peso(a) - peso(b) || (a.nombre || "").localeCompare(b.nombre || ""));
 }
-function estructuraHTML(it, i, c, puede, gente = []) {
+function estructuraHTML(s, it, i, c, puede, gente = []) {
   const bl = bloquesDe(it, c), secs = [...new Set(C.secciones(c.contenido))], voces = it.voces || {};
   const usadas = [...new Set(bl)], cant = cantantesDe(gente);
   return `<div class="estr" data-estr="${i}">
@@ -2625,7 +2658,7 @@ function estructuraHTML(it, i, c, puede, gente = []) {
     ${puede && secs.length ? `<select class="fsel" data-addblq="${i}" aria-label="Agregar sección"><option value="">＋ Sección</option>${secs.map(s => `<option>${esc(s)}</option>`).join("")}</select>` : ""}
     ${puede && it.estructura ? `<button class="btn xs ghost" data-reset="${i}">Como la canción</button>` : ""}
   </div>
-  ${puede && usadas.length ? `<div class="vozsecs"><b>🎤 ¿Quién canta cada parte?</b>${usadas.map(sec => `<button type="button" class="vozsec ${tieneVoces(it, sec) ? "on" : ""}" data-vsec="${i}" data-sec="${esc(sec)}" style="--sc:var(${C.colorSeccion(sec)})"><span>${esc(sec)}</span><em>${tieneVoces(it, sec) ? esc(resumenVoces(it, sec)) : "＋ Asignar"}</em></button>`).join("")}</div>` : ""}`;
+  ${puede && usadas.length ? `<div class="vozsecs"><b>🎤 ¿Quién canta cada parte?</b>${usadas.map(sec => { const cv = colorVozSec(s, it, sec); return `<button type="button" class="vozsec ${tieneVoces(it, sec) ? "on" : ""}" data-vsec="${i}" data-sec="${esc(sec)}" style="--sc:${cv || `var(${C.colorSeccion(sec)})`}"><span>${esc(sec)}</span><em>${tieneVoces(it, sec) ? esc(resumenVoces(it, sec)) : "＋ Asignar"}</em></button>`; }).join("")}</div>` : ""}`;
 }
 function itemHTML(s, it, i, puede, gente) {
   const c = D.uno("cif_canciones", it.cancion_id) || { titulo: "(canción borrada)", tono: "", contenido: "" };
@@ -2637,14 +2670,14 @@ function itemHTML(s, it, i, puede, gente) {
     <span class="num">${i + 1}</span>
     <div class="tit"><a href="${urlCan(it.cancion_id)}/set/${s.id}/${i}">${esc(c.titulo)}</a><small>${esc(c.autor || "")}${it.nota ? " · " + esc(it.nota) : ""}${it.estructura ? " · estructura propia" : ""}</small></div>
     <div class="opts">${puede ? `<select data-itono="${i}" title="Tono">${opT}</select>
-      <select class="ivoz ${it.persona_id ? "on" : ""}" data-iper="${i}" title="Voz principal: si tiene su tono guardado, la canción se pone en ese tono"><option value="">🎤 Voz principal</option>${gente.map(p => ({ p, t: D.uno("cif_tonos", it.cancion_id + "|" + p.id) })).sort((a, b) => (b.t ? 1 : 0) - (a.t ? 1 : 0) || (a.p.nombre || "").localeCompare(b.p.nombre || "")).map(({ p, t }) => `<option value="${p.id}" ${p.id === it.persona_id ? "selected" : ""}>🎤 ${esc(p.nombre)}${t ? ` · ★ ${t.tono}${t.capo ? " capo " + t.capo : ""}` : " · sin tono"}</option>`).join("")}</select>
+      ${it.persona_id && (s.colores || {})[it.persona_id] ? `<span class="colvoz" style="background:${(s.colores || {})[it.persona_id]}"></span>` : ""}<select class="ivoz ${it.persona_id ? "on" : ""}" data-iper="${i}" title="Voz principal: si tiene su tono guardado, la canción se pone en ese tono"><option value="">🎤 Voz principal</option>${gente.map(p => ({ p, t: D.uno("cif_tonos", it.cancion_id + "|" + p.id) })).sort((a, b) => (b.t ? 1 : 0) - (a.t ? 1 : 0) || (a.p.nombre || "").localeCompare(b.p.nombre || "")).map(({ p, t }) => `<option value="${p.id}" ${p.id === it.persona_id ? "selected" : ""}>🎤 ${esc(p.nombre)}${t ? ` · ★ ${t.tono}${t.capo ? " capo " + t.capo : ""}` : " · sin tono"}</option>`).join("")}</select>
       ${it.persona_id && !D.uno("cif_tonos", it.cancion_id + "|" + it.persona_id) && puedoAsignarA(it.persona_id) ? `<button class="btn xs" data-guardavoz="${i}" title="Guarda este tono en el perfil de la voz principal">★ Guardar ${esc(it.tono || orig)} como su tono</button>` : ""}
       <input data-inota="${i}" value="${esc(it.nota || "")}" placeholder="Nota" style="width:110px">`
       : `<span class="chip tono">${esc(it.tono || orig)}</span>${it.persona_id ? `<span class="chip">${esc(nombreDe(it.persona_id))}</span>` : ""}`}
       <button class="btn xs ${abierto ? "on" : "ghost"}" data-abre="${it.id}" title="Estructura en bloques">▦ Estructura</button>
       ${puede ? `<button class="btn xs ghost" data-quita="${i}" aria-label="Quitar">✕</button>` : ""}</div>
-    ${abierto ? estructuraHTML(it, i, c, puede, gente) : ""}
-    ${!abierto && it.voces && Object.keys(it.voces).length ? `<div class="vozres">${Object.keys(it.voces).filter(sec => tieneVoces(it, sec)).map(sec => `<span class="chip" style="--sc:var(${C.colorSeccion(sec)})">${esc(sec)} · 🎤 ${esc(resumenVoces(it, sec))}</span>`).join("")}</div>` : ""}</li>`;
+    ${abierto ? estructuraHTML(s, it, i, c, puede, gente) : ""}
+    ${!abierto && it.voces && Object.keys(it.voces).length ? `<div class="vozres">${Object.keys(it.voces).filter(sec => tieneVoces(it, sec)).map(sec => { const cv = colorVozSec(s, it, sec); return `<span class="chip" style="--sc:${cv || `var(${C.colorSeccion(sec)})`}">${esc(sec)} · 🎤 ${esc(resumenVoces(it, sec))}</span>`; }).join("")}</div>` : ""}</li>`;
 }
 function vSet(id) {
   const s = D.uno("cif_sets", id);
@@ -2773,6 +2806,17 @@ function vSet(id) {
           });
         });
       });
+      // Auto-sync: si una persona asignada como voz ya tiene tono guardado pero el set no coincide, sincronizar
+      const its = itemsAct();
+      let sinc = false;
+      its.forEach((it, i) => {
+        if (!it.persona_id) return;
+        const t = D.uno("cif_tonos", it.cancion_id + "|" + it.persona_id);
+        if (t && t.tono && t.tono !== it.tono) { its[i] = { ...it, tono: t.tono, capo: t.capo || 0 }; sinc = true; }
+      });
+      if (sinc) guarda({ items: its });
+      const nc = sincColores(D.uno("cif_sets", id) || s);
+      if (nc) guarda({ colores: nc });
       $("#sborrar").onclick = async () => { if (await confirmar(`¿Borrar el set «${s.nombre}»?`, "Desaparece para todo el ministerio.")) { await D.borrar("cif_sets", s); location.hash = "#sets"; } };
     },
   };
