@@ -29,24 +29,39 @@
   const nav = logueado => `<header class="i-nav"><a href="#conoce" class="i-marca">${LOGO}<span><b>CifraDios</b><small>Tiempo de Dios</small></span></a>
     <nav><a href="#planes" class="i-lnk">Planes</a>${logueado ? `<a href="#libreria" class="i-btn sm">Abrir la app →</a>` : `<a href="#entrar" class="i-btn sm ghost">Entrar</a>`}</nav></header>`;
 
-  // ---------- Mockups para las secciones de features ----------
-  const mockTonos = `<div class="i-mock"><div class="i-m-bar">
+  // ---------- Mockups para las secciones de features (réplicas fieles de la app) ----------
+  const appFrame = c => `<div class="i-app-frame"><div class="i-af-notch"></div><div class="i-af-screen">${c}</div></div>`;
+
+  const mockTonos = appFrame(`<div class="i-af-band"><b>Tu bondad</b><small>KAYRÓS · Original G</small></div>
+    <div class="i-m-bar">
       <span class="i-m-tone">Original <b>G</b></span><span class="i-m-tone act">★ Mi tono <b>A</b></span>
       <span class="i-m-tone">Daniela <b>E</b></span><span class="i-m-tone">Set <b>D</b></span>
     </div>
-    <div class="i-m-sec">Coro</div>
-    <div class="i-m-line"><i>A</i><i>E/G#</i><i>F#m</i></div>
-    <div class="i-m-letra">Tu bondad nunca me abandona</div>
-    <div class="i-m-line"><i>D</i><i>A</i><i>E</i></div>
-    <div class="i-m-letra">Tu verdad siempre me ha cuidado</div></div>`;
+    <div class="i-af-body">
+      <div class="i-m-sec">Coro</div>
+      <div class="i-m-line"><i>A</i><i>E/G#</i><i>F#m</i></div>
+      <div class="i-m-letra">Tu bondad nunca me abandona</div>
+      <div class="i-m-line"><i>D</i><i>A</i><i>E</i></div>
+      <div class="i-m-letra">Tu verdad siempre me ha cuidado</div>
+      <div class="i-m-sec rosa">Puente</div>
+      <div class="i-m-line"><i>F#m</i><i>D</i><i>A</i></div>
+      <div class="i-m-letra">Santo, santo es el Señor</div>
+    </div>`);
 
-  const mockSet = `<div class="i-mock"><div class="i-m-head">
-      <b>Misa dominical</b><span class="i-m-live">● En vivo</span>
-    </div>
-    <div class="i-m-item on"><span>1</span><div><b>Santo, santo</b><small>Entrada · A</small></div></div>
-    <div class="i-m-item"><span>2</span><div><b>Piedad, piedad</b><small>Piedad · Em</small></div></div>
-    <div class="i-m-item"><span>3</span><div><b>Confiaré</b><small>Ofertorio · G</small></div></div>
-    <div class="i-m-item"><span>4</span><div><b>Tu bondad</b><small>Comunión · D</small></div></div></div>`;
+  const mockSet = appFrame(`<div class="i-af-band"><b>Misa dominical <span class="i-m-live">● En vivo</span></b></div>
+    <div class="i-af-body">
+      <div class="i-m-momento">ENTRADA</div>
+      <div class="i-m-item on"><span>1</span><div><b>Santo, santo</b><small>A</small></div></div>
+      <div class="i-m-momento">PIEDAD</div>
+      <div class="i-m-item"><span>2</span><div><b>Piedad, piedad</b><small>Em</small></div></div>
+      <div class="i-m-momento">OFERTORIO</div>
+      <div class="i-m-item"><span>3</span><div><b>Confiaré</b><small>G</small></div></div>
+      <div class="i-m-momento">COMUNIÓN</div>
+      <div class="i-m-item"><span>4</span><div><b>Tu bondad</b><small>D</small></div></div>
+      <div class="i-m-item"><span>5</span><div><b>Ven Espíritu</b><small>C</small></div></div>
+      <div class="i-m-momento">SALIDA</div>
+      <div class="i-m-item"><span>6</span><div><b>Gloria a Dios</b><small>Bb</small></div></div>
+    </div>`);
 
   const mockPdf = `<div class="i-mock i-m-pdf"><div class="i-m-cover">
       <div class="i-m-logo">K</div><b>KAIRÓS</b><small>Set dominical · 24 nov 2026</small>
@@ -58,26 +73,36 @@
       <div class="i-m-line"><i>F#m</i><i>D</i><i>A</i></div>
       <div class="i-m-letra">Santo, santo es el Señor</div></div></div>`;
 
-  const mockSenas = `<div class="i-mock i-m-senas">
-    <div class="i-m-sena"><span>☝️</span><div><b>Verso 1</b><small>Un dedo arriba</small></div></div>
-    <div class="i-m-sena"><span>✌️</span><div><b>Verso 2</b><small>Dos dedos</small></div></div>
-    <div class="i-m-sena"><span>✊</span><div><b>Coro</b><small>Puño cerrado</small></div></div>
-    <div class="i-m-sena"><span>🤚</span><div><b>Terminar</b><small>Palma abierta</small></div></div></div>`;
+  const mockSenas = appFrame(`<div class="i-af-band"><b>Manual de señas</b></div>
+    <div class="i-af-body">
+      <div class="i-m-sena"><span>☝️</span><div><b>Verso 1</b><small>Un dedo arriba</small></div></div>
+      <div class="i-m-sena"><span>✌️</span><div><b>Verso 2</b><small>Dos dedos</small></div></div>
+      <div class="i-m-sena"><span>✊</span><div><b>Coro</b><small>Puño cerrado</small></div></div>
+      <div class="i-m-sena"><span>🖐️</span><div><b>Final</b><small>Palma abierta</small></div></div>
+      <div class="i-m-sena"><span>🔄</span><div><b>Repetir</b><small>Dedo girando</small></div></div>
+      <div class="i-m-sena"><span>⬆️</span><div><b>Subir tono</b><small>Pulgar arriba</small></div></div>
+    </div>`);
 
-  // ---------- Mockup del celular 3D ----------
+  // ---------- Mockup del celular 3D (replica fiel de la librería real) ----------
   const mockPhone = `<div class="i-phone-wrap"><div class="i-phone">
     <div class="i-phone-notch"></div>
     <div class="i-phone-screen">
-      <div class="i-ps-bar"><b>CifraDios</b><span class="i-ps-ic">🔍</span></div>
-      <div class="i-ps-tabs"><span class="on">Tiempo de Dios</span><span>Otras</span><span>Litúrgicas</span></div>
-      <div class="i-ps-songs">
-        <div class="i-ps-row"><span class="dot" style="background:var(--flame)"></span><div><b>Tu bondad</b><small>KAYRÓS · G</small></div></div>
-        <div class="i-ps-row"><span class="dot" style="background:var(--baby)"></span><div><b>Confiaré</b><small>Zamar · A</small></div></div>
-        <div class="i-ps-row"><span class="dot" style="background:var(--lav)"></span><div><b>Santo, santo</b><small>Surgit Iglessia · D</small></div></div>
-        <div class="i-ps-row"><span class="dot" style="background:var(--sol)"></span><div><b>Piedad, piedad</b><small>KAYRÓS · Em</small></div></div>
-        <div class="i-ps-row"><span class="dot" style="background:var(--rosa)"></span><div><b>Ven Espíritu</b><small>Zamar · C</small></div></div>
-        <div class="i-ps-row"><span class="dot" style="background:var(--sea)"></span><div><b>Jesús, yo creo</b><small>Tiempo de Dios · F</small></div></div>
-        <div class="i-ps-row"><span class="dot" style="background:var(--flame)"></span><div><b>Gloria a Dios</b><small>KAYRÓS · Bb</small></div></div>
+      <div class="i-ps-band">
+        <div class="i-ps-bandtop"><span class="i-ps-hamb">☰</span><b>La <em>librería</em></b><span class="i-ps-cmdk">⌘K</span></div>
+        <div class="i-ps-sub">24 canciones</div>
+        <div class="i-ps-tabs"><span class="on">Tiempo de Dios</span><span>Otras</span><span>Litúrgicas</span></div>
+      </div>
+      <div class="i-ps-body">
+        <div class="i-ps-q">🔍 Buscar por título, autor…</div>
+        <div class="i-ps-songs">
+          <div class="i-ps-row"><div><b>Confiaré</b><small>Zamar</small></div><span class="i-ps-chip">A</span></div>
+          <div class="i-ps-row"><div><b>Gloria a Dios</b><small>KAYRÓS</small></div><span class="i-ps-chip">Bb</span><span class="i-ps-mio">★ G</span></div>
+          <div class="i-ps-row"><div><b>Jesús, yo creo</b><small>Tiempo de Dios</small></div><span class="i-ps-chip">F</span></div>
+          <div class="i-ps-row act"><div><b>Piedad, piedad</b><small>KAYRÓS</small></div><span class="i-ps-chip">Em</span></div>
+          <div class="i-ps-row"><div><b>Santo, santo</b><small>Surgit Iglessia</small></div><span class="i-ps-chip">D</span></div>
+          <div class="i-ps-row"><div><b>Tu bondad</b><small>KAYRÓS</small></div><span class="i-ps-chip">G</span><span class="i-ps-mio">★ A</span></div>
+          <div class="i-ps-row"><div><b>Ven Espíritu</b><small>Zamar</small></div><span class="i-ps-chip">C</span></div>
+        </div>
       </div>
       <div class="i-ps-mini"><small>▶ Tu bondad · G</small><div class="i-ps-prog"><span></span></div><small>2:14</small></div>
     </div>
@@ -109,14 +134,15 @@
     return `<div class="inicio">${nav(logueado)}
 
       <section class="i-hero"><div class="i-wrap i-hero-cen">
-        <span class="i-eyebrow">Música católica · Tiempo de Dios</span>
-        <h1>Tus cifrados,<br><em>listos para alabar.</em></h1>
-        <p class="i-hero-sub">La app para que tu ministerio toque cada canción en el tono correcto: acordes, letras y sets para la misa y el ensayo, sincronizados en el celular de todos.</p>
-        <div class="i-ctas"><a href="#suscribir/gratis" class="i-btn lg">Empieza gratis</a><a href="#planes" class="i-btn ghost claro">Ver planes</a></div>
-        <p class="i-mini">Sin tarjeta · Celular, tablet y computadora</p>
-      </div>
-      ${mockPhone}
-      </section>
+        <div class="i-hero-txt">
+          <span class="i-eyebrow">Música católica · Tiempo de Dios</span>
+          <h1>Tus cifrados,<br><em>listos para alabar.</em></h1>
+          <p class="i-hero-sub">La app para que tu ministerio toque cada canción en el tono correcto: acordes, letras y sets para la misa y el ensayo, sincronizados en el celular de todos.</p>
+          <div class="i-ctas"><a href="#suscribir/gratis" class="i-btn lg">Empieza gratis</a><a href="#planes" class="i-btn ghost claro">Ver planes</a></div>
+          <p class="i-mini">Sin tarjeta · Celular, tablet y computadora</p>
+        </div>
+        ${mockPhone}
+      </div></section>
 
       <div class="i-chips" aria-hidden="true"><div class="i-chips-row">
         ${[["🎚️","Tonos por artista"],["⛪","Sets litúrgicos"],["📡","En vivo"],["🎤","Voces"],["🖨️","PDF con tu marca"],["📶","Sin internet"],["🤝","Banco del colectivo"],["🤙","Señas"]].map(([ic,t])=>`<span class="i-chip">${ic} ${esc(t)}</span>`).join("")}
@@ -249,18 +275,10 @@
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visible"); obs.unobserve(e.target); } });
     }, { threshold: 0.12 });
     $$(".reveal").forEach(el => obs.observe(el));
-    // GSAP: animar el iPhone 3D al hacer scroll
-    if (typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
-      gsap.registerPlugin(ScrollTrigger);
-      const phone = $(".i-phone");
-      if (phone) {
-        gsap.fromTo(phone, { scale: 0.92, opacity: 0.7 }, { scale: 1, opacity: 1, ease: "power2.out", scrollTrigger: { trigger: ".i-phone-wrap", start: "top 90%", end: "top 40%", scrub: 1 } });
-      }
-    }
-    // Vanilla Tilt: el celular sigue el mouse
+    // Vanilla Tilt: el celular sigue el mouse (sutil)
     if (typeof VanillaTilt !== "undefined") {
       const phone = $(".i-phone");
-      if (phone) VanillaTilt.init(phone, { max: 15, speed: 600, scale: 1.02, glare: true, "max-glare": 0.12, "glare-prerender": false });
+      if (phone) VanillaTilt.init(phone, { max: 8, speed: 800, scale: 1.01, glare: true, "max-glare": 0.08, "glare-prerender": false });
     }
 
     $$("[data-periodo]").forEach(b => b.onclick = () => { est.anual = b.dataset.periodo === "anual"; ss.set("ini-anual", est.anual); const y = scrollY; window.render(); requestAnimationFrame(() => scrollTo(0, y)); });
