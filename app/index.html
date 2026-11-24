@@ -592,6 +592,12 @@ button.csvoz{cursor:pointer}
 .csec.convoz{border-left:4px solid var(--pc);padding-left:10px}
 .csec.convoz .csn::before{background:var(--pc)}
 .colvoz{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+/* Diagramas de acordes para guitarra */
+.diagstrip{display:flex;gap:10px;overflow-x:auto;padding:8px 0 4px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.diagstrip:empty{display:none}
+.diagcard{flex:0 0 auto;text-align:center;cursor:default}
+.diagcard .dnm{font:800 13px var(--display);margin-bottom:2px;white-space:nowrap}
+.diagcard svg{display:block}
 @media (max-width:1100px){.item{grid-template-columns:auto 22px 1fr}.item .opts{grid-column:1/-1;justify-content:flex-start}}
 @media (max-width:640px){
   .item{padding:10px;gap:8px}
@@ -1223,15 +1229,15 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=73"></script>
-<script src="cifrado.js?v=73"></script>
-<script src="senas.js?v=73"></script>
-<script src="datos.js?v=73"></script>
-<script src="pdf.js?v=73"></script>
+<script src="config.publico.js?v=74"></script>
+<script src="cifrado.js?v=74"></script>
+<script src="senas.js?v=74"></script>
+<script src="datos.js?v=74"></script>
+<script src="pdf.js?v=74"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.8.1/dist/vanilla-tilt.min.js"></script>
-<script src="inicio.js?v=73"></script>
+<script src="inicio.js?v=74"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1273,7 +1279,7 @@ const st = {
   tonoVista: {},  // por canción en esta sesión
   capo: {},
   editando: false, arrastrando: false, abiertos: new Set(),
-  dirigir: false, seguir: ls.get("cifrados-seguir", true), modoVoces: ls.get("cifrados-voces2", true),
+  dirigir: false, seguir: ls.get("cifrados-seguir", true), modoVoces: ls.get("cifrados-voces2", true), diagramas: ls.get("cifrados-diag", false),
 };
 // una sola notación: americano (C D E), latino (Do Re Mi) o Nashville (1 4 5)
 if (!st.estilo.notacion) st.estilo.notacion = st.estilo.nashville ? "nashville" : st.estilo.latina ? "latino" : "americano";
@@ -2164,6 +2170,7 @@ function vCancion(p) {
     ${esMusico() && puedeEditarCancion(c) ? `<a class="ctl noesc" href="#editar/${c.id}">✎ Editar</a>` : ""}
     <button class="ctl noesc" id="tprint" title="Exportar PDF (1 o 2 columnas)">⎙ PDF</button>
     ${ctxSet ? `<button class="ctl noesc ${st.modoVoces ? "on" : ""}" id="tvoces" title="Mostrar u ocultar la voz principal y los coros junto a cada parte de la letra (solo en sets)">🎤 Voces</button>` : ""}
+    ${!e.sinAcordes ? `<button class="ctl noesc ${st.diagramas ? "on" : ""}" id="tdiag" title="Diagramas de guitarra para cada acorde">🎸 Acordes</button>` : ""}
     </div>
   </div>
   <div class="tonosbar noesc ${st.tonosAbiertos ? "abierta" : ""}">
@@ -2179,6 +2186,7 @@ function vCancion(p) {
     ${ctxSet && editaSet(ctxSet.s) && ctxSet.item && ctxSet.item.tono !== tono ? `<button class="btn xs ghost" id="gset">Usar ${esc(tono)} en este set</button>` : ""}
   </div>
   ${secs.length > 1 ? `<div class="secchips noesc">${secs.map(s => `<button data-ir="${esc(s)}" style="--sc:var(${C.colorSeccion(s)})">${esc(s)}</button>`).join("")}</div>` : ""}
+  ${st.diagramas && !e.sinAcordes ? `<div class="diagstrip noesc">${diagStrip(c.contenido, semis, C.usaBemoles(tono))}</div>` : ""}
   <article class="cuerpo ${e.cols === 2 ? "dos" : ""} ${e.sinAcordes ? "sinacordes" : ""}" id="cuerpo">${html}</article>
   <div class="minipl noesc" id="minipl" hidden></div>
   <div class="panelx">
@@ -2243,6 +2251,7 @@ function vCancion(p) {
       $("#tmasopc").onclick = () => { st.ctlAbierta = !st.ctlAbierta; render(); };
       $("#ttonos").onclick = () => { st.tonosAbiertos = !st.tonosAbiertos; render(); };
       const tv = $("#tvoces"); if (tv) tv.onclick = () => { st.modoVoces = !st.modoVoces; ls.set("cifrados-voces2", st.modoVoces); render(); };
+      const td = $("#tdiag"); if (td) td.onclick = () => { st.diagramas = !st.diagramas; ls.set("cifrados-diag", st.diagramas); render(); };
       $$("[data-pvoz]").forEach(b => b.onclick = () => elegirVoces(ctxSet.s.id, ctxSet.i, b.dataset.pvoz));
       const ca = $("#cadd"); if (ca) ca.onclick = async () => {
         const m = minActual(); ca.disabled = true;
@@ -2570,6 +2579,100 @@ const vocesSec = (it, sec) => rolesSec(it, sec).p;
 const tieneVoces = (it, sec) => { const r = rolesSec(it, sec); return r.p.length + r.c.length > 0; };
 const vocesTxt = ids => ids.map(nombreCorto).join(" + ");
 const resumenVoces = (it, sec) => { const r = rolesSec(it, sec); return [r.p.length ? vocesTxt(r.p) : "", r.c.length ? "coros: " + vocesTxt(r.c) : ""].filter(Boolean).join(" · "); };
+// ---------- Diagramas de acordes (guitarra) ----------
+const DIAG_ACORDES = {
+  // [E2,A,D,G,B,E4] — -1 = muda, 0 = al aire
+  "C":    [-1,3,2,0,1,0], "D":    [-1,-1,0,2,3,2], "Dm":   [-1,-1,0,2,3,1],
+  "E":    [0,2,2,1,0,0],  "Em":   [0,2,2,0,0,0],   "F":    [1,1,2,3,3,1],
+  "G":    [3,2,0,0,0,3],  "A":    [-1,0,2,2,2,0],   "Am":   [-1,0,2,2,1,0],
+  "B":    [-1,2,4,4,4,2], "Bm":   [-1,2,4,4,3,2],
+  "D7":   [-1,-1,0,2,1,2],"E7":   [0,2,0,1,0,0],   "A7":   [-1,0,2,0,2,0],
+  "G7":   [3,2,0,0,0,1],  "C7":   [-1,3,2,3,1,0],   "B7":   [-1,2,1,2,0,2],
+  "Am7":  [-1,0,2,0,1,0], "Em7":  [0,2,2,0,3,0],    "Dm7":  [-1,-1,0,2,1,1],
+  "Fmaj7":[1,1,2,2,3,1],  "Cmaj7":[-1,3,2,0,0,0],
+  "Dsus4":[-1,-1,0,2,3,3],"Asus4":[-1,0,2,2,3,0],   "Esus4":[0,2,2,2,0,0],
+  "Dsus2":[-1,-1,0,2,3,0],"Asus2":[-1,0,2,2,0,0],
+  "Dadd9":[-1,-1,0,2,3,0],"Cadd9":[-1,3,2,0,3,0],
+  "F#m":  [2,2,4,4,2,2],  "C#m":  [-1,4,6,6,5,4],   "G#m":  [4,4,6,6,4,4],
+  "Ebm":  [-1,-1,1,3,4,2],"Bbm":  [-1,1,3,3,2,1],   "Fm":   [1,1,3,3,2,1],
+  "Bb":   [-1,1,3,3,3,1], "Eb":   [-1,-1,1,3,4,3],  "Ab":   [4,4,6,6,6,4],
+  "Db":   [-1,-1,3,1,2,1],"Gb":   [2,2,4,4,4,2],    "F#":   [2,2,4,4,4,2],
+};
+const BARRE_E = [0,2,2,1,0,0];
+const BARRE_Em = [0,2,2,0,0,0];
+const BARRE_A = [-1,0,2,2,2,0];
+const BARRE_Am = [-1,0,2,2,1,0];
+function derivaDiagrama(nombre) {
+  const m = /^([A-G][#b♯♭]?)(.*)$/.exec(nombre);
+  if (!m) return null;
+  const idx = C.notaIdx(m[1]), cal = m[2];
+  if (idx < 0) return null;
+  const menor = /^m(?!aj)/.test(cal);
+  // forma E (cejilla en traste = idx, o idx-1 si no es 0)
+  const trasteE = idx === 0 ? 0 : idx;
+  const baseE = menor ? BARRE_Em : BARRE_E;
+  // forma A (cejilla en traste = (idx+3)%12 o (idx+2)%12 según acorde)
+  const trasteA = ((idx - 5) % 12 + 12) % 12;
+  const baseA = menor ? BARRE_Am : BARRE_A;
+  if (cal === "" || cal === "m") {
+    if (trasteE <= 4) return baseE.map(f => f < 0 ? -1 : f + trasteE);
+    if (trasteA <= 5 && trasteA > 0) return baseA.map(f => f < 0 ? -1 : f + trasteA);
+    return baseE.map(f => f < 0 ? -1 : f + trasteE);
+  }
+  return null;
+}
+function obtDiagrama(nombre) {
+  if (DIAG_ACORDES[nombre]) return DIAG_ACORDES[nombre];
+  return derivaDiagrama(nombre);
+}
+function diagSVG(nombre, trastes) {
+  const W = 48, H = 60, mx = 8, my = 14, sw = (W - mx * 2) / 5, sh = (H - my - 4) / 4;
+  const minT = Math.min(...trastes.filter(f => f > 0));
+  const maxT = Math.max(...trastes.filter(f => f > 0));
+  const offset = maxT <= 4 ? 0 : minT - 1;
+  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  const c = "var(--fg)", bg = "var(--bg,#fff)";
+  // cejuela o indicador de traste
+  if (offset === 0) svg += `<rect x="${mx - 1}" y="${my - 2}" width="${sw * 5 + 2}" height="3" fill="${c}"/>`;
+  else svg += `<text x="${mx - 5}" y="${my + sh / 2 + 3}" font-size="8" fill="${c}" text-anchor="middle" font-family="var(--mono)">${offset + 1}</text>`;
+  // cuerdas
+  for (let i = 0; i < 6; i++) svg += `<line x1="${mx + i * sw}" y1="${my}" x2="${mx + i * sw}" y2="${my + sh * 4}" stroke="${c}" stroke-width="1" opacity=".5"/>`;
+  // trastes
+  for (let j = 0; j <= 4; j++) svg += `<line x1="${mx}" y1="${my + j * sh}" x2="${mx + 5 * sw}" y2="${my + j * sh}" stroke="${c}" stroke-width="${j === 0 ? 1.5 : 0.8}" opacity=".5"/>`;
+  // dedos, X, O
+  for (let i = 0; i < 6; i++) {
+    const f = trastes[i], x = mx + i * sw;
+    if (f < 0) svg += `<text x="${x}" y="${my - 4}" font-size="8" fill="${c}" text-anchor="middle" font-family="var(--mono)">×</text>`;
+    else if (f === 0 || f - offset === 0) svg += `<circle cx="${x}" cy="${my - 5}" r="2.5" fill="none" stroke="${c}" stroke-width="1.2"/>`;
+    else svg += `<circle cx="${x}" cy="${my + (f - offset - 0.5) * sh}" r="3.5" fill="${c}"/>`;
+  }
+  // cejilla
+  if (offset > 0) {
+    const cejPos = trastes.filter(f => f === minT);
+    if (cejPos.length >= 2) {
+      const primero = trastes.indexOf(minT), ultimo = trastes.lastIndexOf(minT);
+      svg += `<rect x="${mx + primero * sw - 3}" y="${my + (minT - offset - 0.5) * sh - 3.5}" width="${(ultimo - primero) * sw + 6}" height="7" rx="3.5" fill="${c}"/>`;
+    }
+  }
+  svg += "</svg>";
+  return svg;
+}
+function diagStrip(contenido, semis, bemoles) {
+  const vistos = new Set(), cards = [];
+  const re = /\[([A-G][^\]]*)\]/g;
+  let m;
+  while ((m = re.exec(contenido)) !== null) {
+    const raw = m[1];
+    if (!C.esAcorde(raw)) continue;
+    const ac = C.transportaAcorde(raw, semis, bemoles);
+    if (vistos.has(ac)) continue;
+    vistos.add(ac);
+    const tr = obtDiagrama(ac);
+    if (!tr) continue;
+    cards.push(`<div class="diagcard"><div class="dnm">${C.esc(ac)}</div>${diagSVG(ac, tr)}</div>`);
+  }
+  return cards.join("");
+}
 const COLORES_VOZ = ["#FF3D1A", "#7E5BD0", "#98D5E0", "#F2B33D", "#D9558E", "#457A7F"];
 function sincColores(s) {
   const prev = s.colores || {}, colores = { ...prev }, usados = new Set();
