@@ -3,7 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="La app de cifrados para ministerios de música católica: acordes, letras, transporte de tono, sets litúrgicos y pistas, sincronizados en el celular de todos. Tiempo de Dios.">
+<meta property="og:title" content="CifraDios · Tiempo de Dios">
+<meta property="og:description" content="Cifrados, letras y sets litúrgicos para tu ministerio de música católica. Cada quien en su tono, todos en la misma página.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cifrados.tiempodedios.mx">
+<meta property="og:image" content="https://cifrados.tiempodedios.mx/app-icono-512.png">
 <title>CifraDios · Tiempo de Dios</title>
 <link rel="icon" type="image/svg+xml" href="icono-app.svg?v=2">
 <link rel="icon" type="image/png" sizes="64x64" href="app-favicon.png?v=2">
@@ -916,6 +921,70 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
   .i-chips-row{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:8px}
   .i-app-frame{width:240px}
 }
+/* ---- Demos interactivos ---- */
+.i-ps-tabs span{cursor:pointer;transition:background .15s,color .15s}
+.i-ps-row[data-demo-song]{cursor:pointer;transition:background .15s}
+.i-ps-row[data-demo-song]:hover{background:rgba(255,255,255,.07)}
+.i-demo-back{cursor:pointer;font-size:20px;color:#8F9A99;width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.08);display:grid;place-items:center}
+.i-demo-back:hover{background:rgba(255,255,255,.15)}
+.i-demo-scroll{flex:1;overflow-y:auto;padding:8px 12px 20px;-webkit-overflow-scrolling:touch}
+#demoPhone .i-ps-body{overflow-y:auto;-webkit-overflow-scrolling:touch}
+.i-ps-vacio{padding:20px;text-align:center;color:#8F9A99;font:500 11px var(--body)}
+.i-phone-ctrls{display:flex;justify-content:center;padding:16px 0 0}
+.i-dm-btn{width:40px;height:40px;border-radius:50%;border:1.5px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;font-size:18px;cursor:pointer;display:grid;place-items:center;transition:border-color .2s,background .2s}
+.i-dm-btn:hover{border-color:var(--flame);background:color-mix(in srgb,var(--flame) 15%,transparent)}
+.i-phone-screen .csec,.i-af-screen .csec{font-size:9px;padding:4px 0 2px;margin:6px 0 2px}
+.i-phone-screen .csn,.i-af-screen .csn{font-size:10px}
+.i-phone-screen .cl,.i-af-screen .cl{margin:0;padding:0;line-height:1.3}
+.i-phone-screen .cl-con,.i-af-screen .cl-con{line-height:1.2}
+.i-phone-screen .cw,.i-af-screen .cw{font-size:12px}
+.i-phone-screen .cp,.i-af-screen .cp{font-size:11px}
+.i-phone-screen .ck,.i-af-screen .ck{font-size:11px;top:-1px}
+.i-phone-screen .ca-row,.i-af-screen .ca-row{gap:2px}
+.i-pdf-demo{position:relative}
+.i-pdf-colors{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+.i-pdf-dot{width:28px;height:28px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;transition:border-color .2s,transform .15s}
+.i-pdf-dot:hover{transform:scale(1.15)}
+.i-pdf-dot.on{border-color:#fff;box-shadow:0 0 10px color-mix(in srgb,var(--pdf-c,#7E5BD0) 40%,transparent)}
+.i-pdf-demo .i-m-cover{background:linear-gradient(135deg,color-mix(in srgb,var(--pdf-c) 30%,#1B1C1A),#1B1C1A)}
+.i-pdf-demo .i-m-logo{background:var(--pdf-c)}
+.i-pdf-demo .i-m-cover b{color:var(--pdf-c)}
+.i-pdf-demo .i-m-sec{border-color:var(--pdf-c);color:var(--pdf-c)}
+.i-pdf-demo .i-m-line i{color:var(--pdf-c)}
+.demo-light{background:#F5F7F6!important;color:#1B1C1A}
+.demo-light .i-ps-band,.demo-light .i-af-band{background:#E8EDEC}
+.demo-light .i-af-band b{color:#1B1C1A}
+#secSets .i-af-screen{max-height:460px;display:flex;flex-direction:column}
+#secSets .i-af-body{flex:1;overflow-y:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#secSets .i-af-body::-webkit-scrollbar{display:none}
+.demo-light .i-ps-bandtop b{color:#1B1C1A}
+.demo-light .i-ps-hamb,.demo-light .i-ps-cmdk{background:rgba(0,0,0,.08);color:#5A6665}
+.demo-light .i-ps-sub,.demo-light .i-af-band small{color:#5A6665}
+.demo-light .i-ps-tabs span{color:#5A6665}
+.demo-light .i-ps-tabs span.on{background:color-mix(in srgb,var(--flame) 12%,transparent);color:var(--flame)}
+.demo-light .i-ps-q{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.1);color:#5A6665}
+.demo-light .i-ps-row div b{color:#1B1C1A}
+.demo-light .i-ps-row div small{color:#5A6665}
+.demo-light .i-ps-row[data-demo-song]:hover{background:rgba(0,0,0,.04)}
+.demo-light .i-ps-mini{background:linear-gradient(transparent,#E8EDEC 30%)}
+.demo-light .i-ps-mini small{color:#5A6665}
+.demo-light .i-ps-prog{background:rgba(0,0,0,.1)}
+.demo-light .i-demo-back{background:rgba(0,0,0,.08);color:#5A6665}
+.demo-light .i-m-tone{border-color:rgba(0,0,0,.18);color:#5A6665}
+.demo-light .i-m-tone b{color:#1B1C1A}
+.demo-light .i-m-momento{color:#5A6665}
+.demo-light .i-m-item{border-color:rgba(0,0,0,.1)}
+.demo-light .i-m-item span{background:rgba(0,0,0,.08)}
+.demo-light .i-m-item b{color:#1B1C1A}
+.demo-light .i-m-item small{color:#5A6665}
+.demo-light .i-af-body{color:#1B1C1A}
+.demo-light .ck{color:var(--flame)}
+.demo-light .csec{color:var(--flame);border-color:var(--flame)}
+.demo-light .cw{color:#1B1C1A}
+.i-m-tone{cursor:pointer;transition:border-color .15s,background .15s,color .15s}
+.i-m-item{cursor:pointer;transition:border-color .15s,background .15s}
+.i-m-item:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04)}
+.demo-light .i-m-item:hover{border-color:rgba(0,0,0,.2);background:rgba(0,0,0,.03)}
 .login .card{width:min(420px,100%);background:var(--bg);border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:14px;border-top:8px solid var(--flame)}
 .login h1{font-size:32px;color:var(--fg)}
 .login p{margin:0;color:var(--muted)}
@@ -1151,15 +1220,15 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=70"></script>
-<script src="cifrado.js?v=70"></script>
-<script src="senas.js?v=70"></script>
-<script src="datos.js?v=70"></script>
-<script src="pdf.js?v=70"></script>
+<script src="config.publico.js?v=72"></script>
+<script src="cifrado.js?v=72"></script>
+<script src="senas.js?v=72"></script>
+<script src="datos.js?v=72"></script>
+<script src="pdf.js?v=72"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.8.1/dist/vanilla-tilt.min.js"></script>
-<script src="inicio.js?v=70"></script>
+<script src="inicio.js?v=72"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
