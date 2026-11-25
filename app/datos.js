@@ -208,7 +208,7 @@
     TABLAS.forEach(t => canal.on("postgres_changes", { event: "*", schema: "public", table: t }, p => {
       if (p.eventType === "DELETE") aplicar(t, [p.old], true); else aplicar(t, [p.new], false, true);
     }));
-    canal.subscribe(st => { if (st === "CHANNEL_ERROR" || st === "TIMED_OUT" || st === "CLOSED") { try { sb.removeChannel(canal); } catch (e) {} canal = null; setTimeout(escuchar, 5000); } });
+    canal.subscribe(st => { if (st === "SUBSCRIBED") sincronizar(); if (st === "CHANNEL_ERROR" || st === "TIMED_OUT" || st === "CLOSED") { try { sb.removeChannel(canal); } catch (e) {} canal = null; setTimeout(escuchar, 5000); } });
   }
 
   // ---------- RED LOCAL (servidor en la compu de quien dirige) ----------

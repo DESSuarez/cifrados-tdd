@@ -1229,15 +1229,15 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=74"></script>
-<script src="cifrado.js?v=74"></script>
-<script src="senas.js?v=74"></script>
-<script src="datos.js?v=74"></script>
-<script src="pdf.js?v=74"></script>
+<script src="config.publico.js?v=75"></script>
+<script src="cifrado.js?v=75"></script>
+<script src="senas.js?v=75"></script>
+<script src="datos.js?v=75"></script>
+<script src="pdf.js?v=75"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.8.1/dist/vanilla-tilt.min.js"></script>
-<script src="inicio.js?v=74"></script>
+<script src="inicio.js?v=75"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1514,8 +1514,8 @@ const pendMin = () => D.lista("cif_solicitudes").filter(s => s.estado === "pendi
 const hoyISO = () => new Date().toISOString().slice(0, 10);
 const suscrito = () => esSuper() || misMins().some(m => m.suscripcion_hasta && m.suscripcion_hasta >= hoyISO() && rolEn(m.id) !== "lector");
 // Tipos de canción y misa
-const MOMENTOS = [["entrada", "Entrada"], ["piedad", "Piedad"], ["gloria", "Gloria"], ["aleluya", "Aleluya"], ["ofertorio", "Ofertorio"], ["santo", "Santo"], ["cordero", "Cordero"], ["comunion", "Comunión"], ["salida", "Salida"]];
-const RE_MOMENTO = { entrada: /entrada|venimos|vine a adorar/, piedad: /piedad|kyrie|senor ten/, gloria: /\bgloria\b/, aleluya: /aleluya/, ofertorio: /ofertorio|ofrenda|te entrego|esto que/, santo: /\bsanto\b/, cordero: /cordero|agnus/, comunion: /comunion|eucarist|pan de vida|quedate/, salida: /salida|madre|maria|ave maria/ };
+const MOMENTOS = [["entrada", "Entrada"], ["piedad", "Piedad"], ["gloria", "Gloria"], ["aleluya", "Aleluya"], ["ofertorio", "Ofertorio"], ["santo", "Santo"], ["cordero", "Cordero"], ["comunion", "Comunión"], ["salida", "Salida"], ["mariano", "Mariano"]];
+const RE_MOMENTO = { entrada: /entrada|venimos|vine a adorar/, piedad: /piedad|kyrie|senor ten/, gloria: /\bgloria\b/, aleluya: /aleluya/, ofertorio: /ofertorio|ofrenda|te entrego|esto que/, santo: /\bsanto\b/, cordero: /cordero|agnus/, comunion: /comunion|eucarist|pan de vida|quedate/, salida: /salida/, mariano: /mariana|maria|ave maria|madre|virgen/ };
 const nombreMomento = k => (MOMENTOS.find(m => m[0] === k) || [k, "Otros"])[1];
 const esLiturgica = c => (c.etiquetas || []).some(t => norm(t).startsWith("liturg")) || /^misa\b/i.test(c.titulo || "");
 // Canción «de Tiempo de Dios»: uno de sus artistas es Tiempo de Dios o un ministerio del colectivo (igual que cif_es_tdd en SQL, migración 010).
@@ -1545,7 +1545,7 @@ function artistasHTML(c, links = true) {
     return links && m.id ? `<a class="art min" href="#ministerio/${m.id}" style="--c:${esc(m.color)}" title="Ver el perfil de ${esc(m.nombre)}">${inner}</a>` : `<span class="art min" style="--c:${esc(m.color)}">${inner}</span>`;
   }).join('<span class="artx">×</span>')}</span>`;
 }
-function momentoDe(c) { const t = norm(c.titulo + " " + (c.etiquetas || []).join(" ")); for (const [k] of MOMENTOS) if (RE_MOMENTO[k].test(t)) return k; return null; }
+function momentoDe(c) { if (c.momento) return c.momento; const t = norm(c.titulo + " " + (c.etiquetas || []).join(" ")); for (const [k] of MOMENTOS) if (RE_MOMENTO[k].test(t)) return k; return null; }
 const ETIQUETAS_SUG = ["Alabanza", "Adoración", "Litúrgica", "Espíritu Santo", "Mariana", "Eucaristía", "Sanación", "Navidad", "Cuaresma", "Pascua", "Infantil", "Himno"];
 
 // ---------- Ruteo ----------
@@ -2201,13 +2201,13 @@ function vCancion(p) {
     band: bandHTML({ tag: ctxSet ? "En vivo" : "Canción", titulo: esc(c.titulo), sub, extra: setbar }),
     main,
     after() {
-      const ponTono = t => { st.tonoVista[kv] = t; render(); if (rep.track && rep.auto) ajustarPitch(); };
+      const ponTono = t => { st.tonoVista[kv] = t; render(); if (rep.track && rep.auto) ajustarPitch(); if (st.dirigir && vivo && ctxSet) vivo.enviar({ i: ctxSet.i, tono: t, capo: st.capo[kv] || 0 }); };
       $("#tsel").onchange = ev => { ev.target.blur(); ponTono(ev.target.value); };
       $("#tmenos").onclick = () => ponTono(C.transportaTono(tono, -1));
       $("#tmas").onclick = () => ponTono(C.transportaTono(tono, 1));
       const cbar = $(".ctrls");
       if (cbar) { const pega = () => { const t = parseFloat(getComputedStyle(cbar).top) || 0; cbar.classList.toggle("pegado", scrollY > 0 && cbar.getBoundingClientRect().top <= t + 1); }; window.removeEventListener("scroll", window.__pega || (() => {})); window.__pega = pega; addEventListener("scroll", pega, { passive: true }); pega(); }
-      $("#capo").onchange = ev => { ev.target.blur(); st.capo[kv] = +ev.target.value; render(); };
+      $("#capo").onchange = ev => { ev.target.blur(); st.capo[kv] = +ev.target.value; render(); if (st.dirigir && vivo && ctxSet) vivo.enviar({ i: ctxSet.i, tono: st.tonoVista[kv] || tono, capo: st.capo[kv] }); };
       $$("[data-not]").forEach(b => b.onclick = () => {
         const k = b.dataset.not;
         if (k === "letra") st.estilo.sinAcordes = !st.estilo.sinAcordes; else { st.estilo.notacion = k; st.estilo.sinAcordes = false; }
@@ -2300,6 +2300,13 @@ function conectarVivo(setId) {
     if (!st.seguir || !ctxSet) return;
     if (pl.i !== ctxSet.i) { const s = D.uno("cif_sets", setId); if (s && s.items[pl.i]) location.hash = `${urlCan(s.items[pl.i].cancion_id)}/set/${setId}/${pl.i}`; }
     if (pl.sec) setTimeout(() => irSeccion(pl.sec), 300);
+    if (pl.tono && ctxSet) {
+      const kv = claveVista(cancionDeRuta(ctxSet.item && ctxSet.item.cancion_id) || {});
+      if (pl.tono !== st.tonoVista[kv] || (pl.capo || 0) !== (st.capo[kv] || 0)) {
+        const msg = `El director cambió a <b>${esc(pl.tono)}${pl.capo ? " capo " + pl.capo : ""}</b>`;
+        toast(msg); st.tonoVista[kv] = pl.tono; st.capo[kv] = pl.capo || 0; render();
+      }
+    }
   });
   vivo = { id: setId, ...ch };
 }
@@ -2805,7 +2812,7 @@ function vSet(id) {
   const quien = s.actualizado_por ? nombreDe(s.actualizado_por) : "";
   return {
     band: bandHTML({ tag: lit ? "Misa · " + (m ? m.nombre : "") : m ? m.nombre : "Set", titulo: esc(s.nombre), sub: `<span>${s.fecha ? new Date(s.fecha + "T12:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" }) : "Sin fecha"}</span><span>${s.items.length} canciones</span>${(s.invitados || []).length ? `<span>Con <b>${esc(s.invitados.map(nombreMin).join(", "))}</b></span>` : ""}${quien ? `<span>Último cambio: ${esc(quien)}</span>` : ""}`,
-      extra: `<div class="row">${s.items.length ? `<a class="navbtn on" href="${urlCan(s.items[0].cancion_id)}/set/${s.id}/0">▶ Tocar ${lit ? "la misa" : "el set"}</a>` : ""}${puede && (rolEn(s.ministerio_id) === "admin" || rolEn(s.ministerio_id) === "musico") ? `<button class="navbtn" id="sinvita" title="Invitar a otros ministerios a este set">👥 Invitar ministerios${(s.invitados || []).length ? " · " + s.invitados.length : ""}</button>` : ""}<button class="navbtn" id="spdf" title="Exportar el set a PDF con su tono y estructura">⎙ PDF</button><a class="navbtn" href="#sets">← Sets</a></div>` }),
+      extra: `<div class="row">${s.items.length ? `<a class="navbtn on" href="${urlCan(s.items[0].cancion_id)}/set/${s.id}/0">▶ Tocar ${lit ? "la misa" : "el set"}</a>` : ""}${puede && (rolEn(s.ministerio_id) === "admin" || rolEn(s.ministerio_id) === "musico") ? `<button class="navbtn" id="sinvita" title="Invitar a otros ministerios a este set">👥 Invitar ministerios${(s.invitados || []).length ? " · " + s.invitados.length : ""}</button>` : ""}<button class="navbtn" id="spdf" title="Exportar el set a PDF con su tono y estructura">⎙ PDF</button><button class="navbtn" id="sexportar" title="Descargar el set como archivo para compartir o usar sin internet">📥 Exportar</button><button class="navbtn" id="simportar" title="Importar un set exportado">📤 Importar</button><a class="navbtn" href="#sets">← Sets</a></div>` }),
     main: `
       ${puede ? `<div class="grid2"><label class="lb">Nombre<input class="field" id="snombre" value="${esc(s.nombre)}"></label><label class="lb">Fecha<input class="field" type="date" id="sfecha" value="${esc(s.fecha || "")}"></label></div>` : ""}
       ${cuerpo}
@@ -2819,6 +2826,29 @@ function vSet(id) {
       $("#spdf").onclick = () => abrirExportar({ multiple: true, minId: s.ministerio_id, titulo: s.nombre,
         subtitulo: [s.fecha ? new Date(s.fecha + "T12:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "", m ? m.nombre : ""].filter(Boolean).join(" · "),
         items: s.items.map(it => ({ it, c: D.uno("cif_canciones", it.cancion_id) })).filter(x => x.c).map(({ it, c }) => ({ c, tono: it.tono, capo: it.capo || 0, orden: it.estructura && it.estructura.length ? it.estructura : c.orden, nota: it.nota, momento: it.momento ? nombreMomento(it.momento) : "", persona: it.persona_id ? "Voz principal: " + nombreDe(it.persona_id) : "", voces: vocesPDF(it) })) });
+      $("#sexportar").onclick = () => {
+        const canciones = {};
+        s.items.forEach(it => { const c = D.uno("cif_canciones", it.cancion_id); if (c) canciones[c.id] = { id: c.id, titulo: c.titulo, autor: c.autor, tono: c.tono, contenido: c.contenido, bpm: c.bpm, compas: c.compas, etiquetas: c.etiquetas, momento: c.momento }; });
+        const datos = { version: 1, tipo: "set-cifradios", nombre: s.nombre, fecha: s.fecha, tipo_set: s.tipo, notas: s.notas, items: s.items.map(it => ({ cancion_id: it.cancion_id, tono: it.tono, capo: it.capo, momento: it.momento, nota: it.nota, estructura: it.estructura, persona_nombre: it.persona_id ? nombreDe(it.persona_id) : null })), canciones, exportado: new Date().toISOString() };
+        const blob = new Blob([JSON.stringify(datos, null, 2)], { type: "application/json" });
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${s.nombre.replace(/[^\w\s-]/g, "").trim() || "set"}.cifradios.json`; a.click(); URL.revokeObjectURL(a.href);
+        toast("Set exportado. Compártelo por WhatsApp o guárdalo para usarlo sin internet.");
+      };
+      $("#simportar").onclick = () => {
+        const inp = document.createElement("input"); inp.type = "file"; inp.accept = ".json,.cifradios.json";
+        inp.onchange = async () => {
+          try {
+            const txt = await inp.files[0].text(), datos = JSON.parse(txt);
+            if (datos.tipo !== "set-cifradios") return toast("Ese archivo no es un set de CifraDios.");
+            for (const c of Object.values(datos.canciones || {})) { if (!D.uno("cif_canciones", c.id)) await D.guardar("cif_canciones", c); }
+            const items = (datos.items || []).map(it => ({ id: D.uuid(), cancion_id: it.cancion_id, tono: it.tono, capo: it.capo || 0, momento: it.momento, nota: it.nota, estructura: it.estructura }));
+            const nuevo = { id: D.uuid(), nombre: datos.nombre + " (importado)", fecha: datos.fecha, tipo: datos.tipo_set || "normal", notas: datos.notas, ministerio_id: s.ministerio_id, items };
+            await D.guardar("cif_sets", nuevo);
+            toast(`Importado «${nuevo.nombre}» con ${items.length} canciones.`); location.hash = "#set/" + nuevo.id;
+          } catch (e) { toast("Error al importar: " + (e.message || e)); }
+        };
+        inp.click();
+      };
       if (!puede) return;
       const guarda = cambios => D.guardar("cif_sets", { ...(D.uno("cif_sets", id) || s), ...cambios });
       const itemsAct = () => (D.uno("cif_sets", id) || s).items.map(x => ({ ...x }));
@@ -2976,7 +3006,9 @@ function vEditor(id) {
     <details class="acor" data-acor="arts" ${ed.abiertos.has("arts") ? "open" : ""}><summary><b>Artistas</b><span class="acres" id="res-arts">${esc(resumenEd("arts"))}</span></summary>
       <div class="acbody"><small>Puede tener varios (p. ej. Tiempo de Dios × Surgit Iglessia). Si la escribió un ministerio, agrégalo: sale con su logo y su perfil.</small><div id="earts">${artistasEdHTML()}</div></div></details>
     <details class="acor" data-acor="tags" ${ed.abiertos.has("tags") ? "open" : ""}><summary><b>Etiquetas</b><span class="acres" id="res-tags">${esc(resumenEd("tags"))}</span></summary>
-      <div class="acbody"><small>Una canción puede estar en varias; «Litúrgica» la manda a esa pestaña.</small><div id="etags">${etiquetasHTML()}</div></div></details>
+      <div class="acbody"><small>Una canción puede estar en varias; «Litúrgica» la manda a esa pestaña.</small><div id="etags">${etiquetasHTML()}</div>
+      <div id="emombox" ${(c.etiquetas || []).some(t => norm(t) === "liturgica") ? "" : "hidden"}><label class="lb" style="margin-top:10px">Momento de la misa<select class="field" id="emom"><option value="">— Automático (por título) —</option>${MOMENTOS.map(([k, l]) => `<option value="${k}" ${c.momento === k ? "selected" : ""}>${l}</option>`).join("")}</select></label></div>
+      </div></details>
     <details class="acor" data-acor="vis" ${ed.abiertos.has("vis") ? "open" : ""}><summary><b>¿Quién la ve?</b><span class="acres" id="res-vis">${esc(resumenEd("vis"))}</span></summary>
       <div class="acbody"><small>En el banco, otros ministerios la pueden encontrar y añadir. «Solo un ministerio» la deja privada y la compartes con quien elijas.</small><div id="evis">${visibilidadHTML()}</div></div></details>
     </div>
@@ -3153,11 +3185,14 @@ function enlazarEditor(base) {
   };
   enlazarArts();
   const enlazarTags = () => {
-    $$("[data-qtag]").forEach(b => b.onclick = () => { c.etiquetas = c.etiquetas.filter(t => t !== b.dataset.qtag); $("#etags").innerHTML = etiquetasHTML(); enlazarTags(); });
-    $$("[data-ptag]").forEach(b => b.onclick = () => { c.etiquetas = c.etiquetas.concat(b.dataset.ptag); $("#etags").innerHTML = etiquetasHTML(); enlazarTags(); });
-    const it = $("#etagin"); it.onkeydown = ev => { if (ev.key === "Enter" || ev.key === ",") { ev.preventDefault(); const v = it.value.trim().replace(/^#/, ""); if (v && !c.etiquetas.some(t => norm(t) === norm(v))) c.etiquetas = c.etiquetas.concat(v); $("#etags").innerHTML = etiquetasHTML(); enlazarTags(); $("#etagin").focus(); } };
+    const actualizaTags = () => { $("#etags").innerHTML = etiquetasHTML(); enlazarTags(); const mb = $("#emombox"); if (mb) mb.hidden = !(c.etiquetas || []).some(t => norm(t) === "liturgica"); enlazarMom(); };
+    $$("[data-qtag]").forEach(b => b.onclick = () => { c.etiquetas = c.etiquetas.filter(t => t !== b.dataset.qtag); actualizaTags(); });
+    $$("[data-ptag]").forEach(b => b.onclick = () => { c.etiquetas = c.etiquetas.concat(b.dataset.ptag); actualizaTags(); });
+    const it = $("#etagin"); it.onkeydown = ev => { if (ev.key === "Enter" || ev.key === ",") { ev.preventDefault(); const v = it.value.trim().replace(/^#/, ""); if (v && !c.etiquetas.some(t => norm(t) === norm(v))) c.etiquetas = c.etiquetas.concat(v); actualizaTags(); $("#etagin").focus(); } };
   };
   c.etiquetas = c.etiquetas || []; enlazarTags();
+  const enlazarMom = () => { const m = $("#emom"); if (m) m.onchange = () => { c.momento = m.value || null; }; };
+  enlazarMom();
   const enlazarVis = () => {
     const box = $("#evis"), pinta = () => { box.innerHTML = visibilidadHTML(); enlazarVis(); };
     $$("[data-vis]", box).forEach(b => b.onclick = () => { c.visibilidad = b.dataset.vis; if (c.visibilidad === "ministerio" && !c.ministerio_id) c.ministerio_id = (minActual() || {}).id || null; pinta(); });
