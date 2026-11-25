@@ -186,6 +186,7 @@ img.av{object-fit:cover;background:var(--surface)}
 .pdfcols label+label span{border-left:1.5px solid var(--line)}
 .pdfcols input:checked+span{background:var(--area);color:var(--on-area)}
 .pdfcols input:focus-visible+span{outline:3px solid var(--baby)}
+fieldset:has([name="contenido"][value="letra"]:checked) #pdfnotlb{display:none}
 .pdffiltro summary{cursor:pointer;font-weight:700}
 .pdffiltro{border:1.5px dashed var(--line);border-radius:12px;padding:10px 12px}
 .pdfchk{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:4px 10px;max-height:180px;overflow:auto;margin:6px 0 10px}
@@ -1229,15 +1230,15 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=75"></script>
-<script src="cifrado.js?v=75"></script>
-<script src="senas.js?v=75"></script>
-<script src="datos.js?v=75"></script>
-<script src="pdf.js?v=75"></script>
+<script src="config.publico.js?v=76"></script>
+<script src="cifrado.js?v=76"></script>
+<script src="senas.js?v=76"></script>
+<script src="datos.js?v=76"></script>
+<script src="pdf.js?v=76"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.8.1/dist/vanilla-tilt.min.js"></script>
-<script src="inicio.js?v=75"></script>
+<script src="inicio.js?v=76"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -3339,19 +3340,23 @@ async function marcaDe(minId) {
 }
 /** Ventana «Exportar PDF». conf: {items:[{c,tono,capo,orden,nota,momento,persona}], titulo, subtitulo, multiple, minId, filtros, tonoMio} */
 async function abrirExportar(conf) {
-  const pr = ls.get("cifrados-pdf", { cols: 1, portada: true, indice: true });
+  const pr = ls.get("cifrados-pdf", { cols: 1, portada: true, indice: true, soloLetra: false, notacion: "americano" });
   const marcas = [["", "Tiempo de Dios"], ...(esSuper() ? D.lista("cif_ministerios") : misMins()).sort((a, b) => a.nombre.localeCompare(b.nombre)).map(m => [m.id, m.nombre])];
   const autores = conf.filtros ? [...new Set(canciones().flatMap(artistasDe))].sort((a, b) => a.localeCompare(b, "es")) : [];
   const mins = conf.filtros ? D.lista("cif_ministerios").sort((a, b) => a.nombre.localeCompare(b.nombre)) : [];
+  const NOTS = [["americano", "Am Dm G"], ["latino", "La m Re m Sol"], ["nashville", "6m 2m 5"]];
   const d = await dialogo(`<h2>Exportar PDF</h2>
-    <p>${conf.multiple ? `${conf.items.length} canciones${conf.filtros ? " de la lista actual (con tus filtros)" : ""}.` : `«${esc(conf.titulo)}» en el tono que estás viendo.`} Acordes sobre su sílaba, con el formato de Tiempo de Dios.</p>
-    <div class="seg pdfcols" role="radiogroup"><label><input type="radio" name="cols" value="1" ${pr.cols !== 2 ? "checked" : ""}><span>▤ Una columna</span></label><label><input type="radio" name="cols" value="2" ${pr.cols === 2 ? "checked" : ""}><span>▥ Dos columnas</span></label></div>
+    <p>${conf.multiple ? `${conf.items.length} canciones${conf.filtros ? " de la lista actual (con tus filtros)" : ""}.` : `«${esc(conf.titulo)}» en el tono que estás viendo.`}</p>
+    <fieldset style="border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;margin:0"><legend style="font-weight:700;padding:0 6px">Contenido del PDF</legend>
+      <div class="seg pdfcols" role="radiogroup" style="margin-bottom:8px"><label><input type="radio" name="contenido" value="acordes" ${!pr.soloLetra ? "checked" : ""}><span>🎵 Con acordes</span></label><label><input type="radio" name="contenido" value="letra" ${pr.soloLetra ? "checked" : ""}><span>📝 Solo letra</span></label></div>
+      <label class="lb" id="pdfnotlb">Notación de acordes<div class="seg pdfcols" role="radiogroup" style="margin-top:4px">${NOTS.map(([k, ej]) => `<label><input type="radio" name="pdfnot" value="${k}" ${(pr.notacion || "americano") === k ? "checked" : ""}><span>${ej}</span></label>`).join("")}</div></label>
+    </fieldset>
+    <div class="seg pdfcols" role="radiogroup" style="margin-top:10px"><label><input type="radio" name="cols" value="1" ${pr.cols !== 2 ? "checked" : ""}><span>▤ Una columna</span></label><label><input type="radio" name="cols" value="2" ${pr.cols === 2 ? "checked" : ""}><span>▥ Dos columnas</span></label></div>
     <label class="lb">Colores y logo<select class="field" name="marca">${marcas.map(([id, n]) => `<option value="${id}" ${id === (conf.minId || "") ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></label>
     ${conf.multiple ? `<label class="lb">Título<input class="field" name="titulo" value="${esc(conf.titulo || "Cancionero")}"></label>
       <div class="row"><label class="row"><input type="checkbox" name="portada" ${pr.portada ? "checked" : ""}> Portada</label><label class="row"><input type="checkbox" name="indice" ${pr.indice ? "checked" : ""}> Índice</label></div>` : ""}
     ${conf.tonoMio ? `<label class="lb">Tono<select class="field" name="tonos"><option value="orig">El original de cada canción</option><option value="mio">Mi tono cuando lo tengo guardado</option></select></label>` : ""}
     ${conf.items.some(x => x.voces) ? `<label class="row"><input type="checkbox" name="conVoces" ${st.modoVoces ? "checked" : ""}> 🎤 Incluir voces (quién canta cada parte)</label>` : ""}
-    <label class="row"><input type="checkbox" name="soloLetra" ${st.estilo.sinAcordes ? "checked" : ""}> Solo letra (para voces)</label>
     ${conf.filtros ? `<details class="pdffiltro"><summary>Elegir artistas o ministerios</summary><p class="status">Si marcas alguno, se exportan sus canciones en lugar de la lista actual.</p>
       <b>Artistas</b><div class="pdfchk">${autores.map((a, i) => `<label><input type="checkbox" name="a_${i}"> ${esc(a)}</label>`).join("")}</div>
       <b>Ministerios</b><div class="pdfchk">${mins.map(m => `<label><input type="checkbox" name="m_${m.id}"> ${esc(m.nombre)}</label>`).join("")}</div></details>` : ""}`, "Descargar PDF");
@@ -3363,15 +3368,16 @@ async function abrirExportar(conf) {
     if (aSel.length || mSel.length) d.titulo = d.titulo && d.titulo !== (conf.titulo || "Cancionero") ? d.titulo : "Cancionero · " + aSel.concat(mSel.map(nombreMin)).join(", ");
   }
   if (!items.length) return toast("No hay canciones para exportar.");
-  // voces: según la casilla (que empieza como el modo Voces de este dispositivo) y se recuerda para la próxima
   if (conf.items.some(x => x.voces)) { st.modoVoces = !!d.conVoces; ls.set("cifrados-voces2", st.modoVoces); if (!d.conVoces) items = items.map(x => ({ ...x, voces: null })); }
   if (d.tonos === "mio") items = items.map(x => { const t = miTono(x.c.id); return t ? { ...x, tono: t.tono, capo: t.capo || 0 } : x; });
   const cols = +d.cols === 2 ? 2 : 1;
-  ls.set("cifrados-pdf", { cols, portada: !!d.portada, indice: !!d.indice });
+  const soloLetra = d.contenido === "letra";
+  const notacion = d.pdfnot || "americano";
+  ls.set("cifrados-pdf", { cols, portada: !!d.portada, indice: !!d.indice, soloLetra, notacion });
   toast(items.length > 20 ? `Armando el PDF de ${items.length} canciones…` : "Armando el PDF…");
   try {
     const pags = await PDF.exportar({ canciones: items, titulo: conf.multiple ? d.titulo : conf.titulo, subtitulo: conf.subtitulo, marca: await marcaDe(d.marca || null),
-      cols, portada: conf.multiple && !!d.portada, indice: conf.multiple && !!d.indice, notacion: st.estilo.notacion, soloLetra: !!d.soloLetra });
+      cols, portada: conf.multiple && !!d.portada, indice: conf.multiple && !!d.indice, notacion, soloLetra });
     toast(`PDF listo: ${pags} página${pags === 1 ? "" : "s"}.`);
   } catch (e) { console.error(e); toast("No se pudo armar el PDF: " + (e.message || e)); }
 }
@@ -3485,7 +3491,8 @@ function vMinisterio(id) {
         const c = canciones().find(x => x.titulo === "Aquí Estoy") || canciones()[0];
         if (!c) return toast("No hay canciones en la librería.");
         toast("Armando el PDF de prueba…");
-        try { await PDF.exportar({ canciones: [{ c }], titulo: c.titulo, marca: { nombre: m.nombre, etiqueta: m.tipo === "solista" ? "CifraDios · Solista" : "CifraDios", oscuro: e.color_oscuro, primario: e.color_primario, secundario: e.color_secundario, logo: e.logo, tam: e.tam }, cols: ls.get("cifrados-pdf", {}).cols || 1, notacion: st.estilo.notacion, archivo: "prueba-" + m.nombre }); }
+        const pp = ls.get("cifrados-pdf", {});
+        try { await PDF.exportar({ canciones: [{ c }], titulo: c.titulo, marca: { nombre: m.nombre, etiqueta: m.tipo === "solista" ? "CifraDios · Solista" : "CifraDios", oscuro: e.color_oscuro, primario: e.color_primario, secundario: e.color_secundario, logo: e.logo, tam: e.tam }, cols: pp.cols || 1, notacion: pp.notacion || st.estilo.notacion, soloLetra: !!pp.soloLetra, archivo: "prueba-" + m.nombre }); }
         catch (er) { toast(er.message); }
       };
       if (!puede) return;
