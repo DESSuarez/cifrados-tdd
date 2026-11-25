@@ -27,51 +27,49 @@
 
   const LOGO = `<img src="app-favicon.png" width="34" height="34" alt="" class="i-logo">`;
   const nav = logueado => `<header class="i-nav"><a href="#conoce" class="i-marca">${LOGO}<span><b>CifraDios</b><small>Tiempo de Dios</small></span></a>
-    <nav><a href="#planes" class="i-lnk">Planes</a>${logueado ? `<a href="#libreria" class="i-btn sm">Abrir la app →</a>` : `<a href="#entrar" class="i-btn sm ghost">Entrar</a>`}</nav></header>`;
+    <nav><a href="#planes" class="i-lnk">Planes</a><button class="i-dm-btn" id="demoTheme" title="Modo claro / oscuro">${demo.oscuro ? "☀️" : "🌙"}</button>${logueado ? `<a href="#libreria" class="i-btn sm">Abrir la app →</a>` : `<a href="#entrar" class="i-btn sm ghost">Entrar</a>`}</nav></header>`;
 
   // ========== Demos interactivos: datos ==========
   const DEMO_SONGS = [
-    { id: "d1", titulo: "Aquí Estoy", autor: "KAYRÓS", tono: "A", miTono: "G", grupo: "tdd",
-      cp: "{c: Verso}\n[A]Tú eres el [D]principio y el final\n[A]Mi primer a[E]mor\n\n{c: Coro}\n[F#m]Aquí es[E]toy\n[D]Para ado[A]rarte\n[F#m]Aquí es[E]toy\n[D]Para ren[A]dirme" },
-    { id: "d2", titulo: "Confiaré", autor: "Zamar", tono: "A", grupo: "tdd",
-      cp: "{c: Coro}\n[A]En ti con[E]fiaré [F#m]siempre\n[D]Nada me [A]faltará\n\n{c: Verso}\n[A]Aunque camine [E]por el valle\n[F#m]De sombra, [D]no temeré" },
-    { id: "d3", titulo: "Santo, santo", autor: "Surgit", tono: "D", grupo: "lit",
-      cp: "{c: Santo}\n[D]Santo, [A]santo, [Bm]santo es el [G]Señor\n[D]Dios del [A]uni[D]verso\n\n{c: Hosanna}\n[G]Hosanna [D]en el [A]cielo\n[Bm]Bendito el [G]que [A]viene en [D]nombre del Señor" },
-    { id: "d4", titulo: "Piedad, piedad", autor: "KAYRÓS", tono: "Em", grupo: "lit",
-      cp: "{c: Piedad}\n[Em]Piedad, [Am]piedad\n[B7]Ten piedad de [Em]nosotros, Señor\n\n[Em]Piedad, [Am]piedad\n[B7]Ten piedad de [Em]nosotros" },
-    { id: "d5", titulo: "Gloria a Dios", autor: "KAYRÓS", tono: "Bb", miTono: "G", grupo: "lit",
-      cp: "{c: Gloria}\n[Bb]Gloria a [F]Dios en el [Gm]cielo\n[Eb]Y en la [Bb]tierra [F]paz\n[Gm]A los hombres que [Eb]ama el [F]Señor" },
-    { id: "d6", titulo: "Jesús, yo creo", autor: "Tiempo de Dios", tono: "F", grupo: "tdd",
-      cp: "{c: Coro}\n[F]Jesús, yo [Bb]creo\n[C]Creo en [Dm]ti\n[Bb]Creo que es[C]tás aquí en la [F]Eucaristía" },
-    { id: "d7", titulo: "Ven Espíritu", autor: "Zamar", tono: "C", grupo: "tdd",
-      cp: "{c: Coro}\n[C]Ven Espí[G]ritu [Am]Santo\n[F]Llena nuestros [C]corazones\n\n{c: Verso}\n[Am]Ven con tu [F]fuego\n[C]Enciende [G]todo en mí" },
-    { id: "d8", titulo: "Aleluya", autor: "Surgit", tono: "C", grupo: "lit",
-      cp: "{c: Aleluya}\n[C]Ale[G]lu[Am]ya, ale[F]luya\n[C]Ale[G]lu[C]ya" },
-    { id: "d9", titulo: "Cordero de Dios", autor: "Tiempo de Dios", tono: "Am", grupo: "lit",
-      cp: "{c: Cordero}\n[Am]Cordero de [Em]Dios\n[F]Que quitas el pe[G]cado\n[Am]Ten piedad de [E]nosotros" },
-    { id: "d10", titulo: "Gracias, Señor", autor: "Zamar", tono: "G", grupo: "tdd",
-      cp: "{c: Coro}\n[G]Gracias, [Em]Señor\n[C]Por tu a[D]mor\n[G]Gracias por [Em]todo\n[C]Lo que [D]das" },
-    { id: "d11", titulo: "Envíame", autor: "KAYRÓS", tono: "E", grupo: "tdd",
-      cp: "{c: Coro}\n[E]Envía[B]me, Se[C#m]ñor\n[A]A donde [E]tú quieras\n[B]Heme a[C#m]quí\n[A]Envía[B]me" },
-    { id: "d12", titulo: "Alma misionera", autor: "Tiempo de Dios", tono: "D", grupo: "tdd",
-      cp: "{c: Coro}\n[D]Señor, da[A]me tu [Bm]alma\n[G]Alma misio[A]nera\n[D]Dame tu [A]corazón\n[G]Corazón de [A]sal" },
+    { id: "d1", titulo: "Nadie Igual (Misericordia)", autor: "KAYRÓS", tono: "B", miTono: "G", grupo: "tdd",
+      cp: "{c: Verso}\n[B9]Misericordia, [B9/F#]misericordia\n¿Dónde te en[B9/G#]cuentran los que pre[B/E]guntan por ti?\n\n[B9]Misericordia, [B9/F#]misericordia\nMi alma te es[B9/G#]pera, tu has hecho [B/E]tanto por mi\n\n{c: Precoro}\nAl[B9]tísimo, ven a salvarnos\nAl[B9/F#]tísimo, cuento contigo\nAl[B9/G#]tísimo, ven con tu amor y [B/E]verdad\n\n{c: Coro}\nY [B9]álzate Dios, sobre los cielos\nY en [F#]toda la tierra, tu gloria, tu [G#m]gloria, des[E]cienda\n\nÁl[B9]zate Dios, ven a tu pueblo\nSe[F#]ñor manifiesta tu gloria, tu [G#m]gloria\nQue todos vean que no [E]hay nadie igual\nNo hay nadie igual, [B9]que Tú" },
+    { id: "d2", titulo: "En Ti Confío", autor: "Surgit Iglessia", tono: "F", grupo: "tdd",
+      cp: "{c: Verso}\n[F]En este encuentro [Bb9]santo\n[F]Muéstrame qué de[Bb9]cir\n[F]Abre Señor mis la[Dm]bios\n[Bb9]Y mi voz cantará para [C]Tí\n\n{c: Coro}\n[Bb9]Revélame el [F]misterio de tu co[C]razón\n[Bb9]Renuévame por [F]dentro dame di[C]rección\n[Bb9]Enséñame en se[C]creto tu sabidu[Dm]ría\nSáciame,[C]Señor, mi alma necesi[Bb9]ta de tu agua [C]viva" },
+    { id: "d3", titulo: "Poderoso Nombre", autor: "Zamar Adoración", tono: "E", grupo: "tdd",
+      cp: "{c: Verso}\n[A]    Preparo mi al[C#m]ma\n[A]    Sé que en este mo[C#m]mento provee[B]rás\n[A]    Libero mis car[C#m]gas\n[A]    Como en el pa[C#m]sado actua[B]rás\n\n{c: Precoro}\nPor fe [A]\nA[E]briste el mar y el pueblo fue salva[B]do\nPor fe [A]\nA[E]quellos tres danzaron en el fuego[B]\n\n{c: Coro}\nCosas gran[A]des sucede[E]rán\nSi pro[C#m]clamo y bendigo tu nom[B]bre\nJe[A]sús, Je[E]sús, de [C#m]ti yo quiero [B]más" },
+    { id: "d4", titulo: "Salmo 145", autor: "ANAWIM", tono: "E", grupo: "lit",
+      cp: "{c: Verso}\n[A]Te ala[E]baré a [B]Ti que eres Rey\n[A]Digno [E]serás de[B] alabar\n[A]Día [E]tras día [B]te bendeciré\n[A]Grande [E]eres Tú[B], insondable tu amor\n\n{c: Coro}\n[C#m]Tú eres bueno\n[A]Tú eres fiel\n[E]Y glorioso\n[B]Cantaré de tu victoria\n\n[C#m]Eres digno\n[A]De alabar\n[E]Oh, Señor\n[B]Tú eres Santo, Santo, Santo" },
+    { id: "d5", titulo: "Poderoso", autor: "Kayrós", tono: "G", miTono: "E", grupo: "tdd",
+      cp: "{c: Verso}\nEn tu pre[C]sencia, quiero ren[D]dirme\nEn tu pre[Em]sencia, puedo ser [Bm]libre\nEn tu pre[C]sencia, quiero en[D]tregarme\nEn tu pre[Em]sencia, humilde ala[Bm]barte\n\n{c: Pre-Coro}\n[C]  Por tu gracia encon[D]tré [-]la[Em] verdad\n[Bm]  Tu gran[C]deza me salva[D]rá\n\n{c: Coro}\nPode[C]roso, pode[G]roso, pode[Em]roso mi [D]Dios\nPode[C]roso, pode[G]roso, pode[Em]roso mi [D]Dios" },
+    { id: "d6", titulo: "Quién Contra Mí", autor: "Surgit Iglessia", tono: "Db", grupo: "tdd",
+      cp: "{c: Verso}\nQuién eres [Db9]Tú\nQue to[Gb]maste mi lugar\nEn esa [Db9]cruz\nQue qui[Gb]siste liberar\nMi esclavi[Ebm]tud\n\n{c: Coro}\nPero [Gb]Tú  [Db9]   nunca mi[Bbm]raste mi debili[Ab]dad\nSiempre [Gb]Tú  [Db9]   me das la [Bbm]mano para cami[Ab]nar\nsin miedo\n\n[Gb]   Disipa [Db9]mi temor,[Bbm]   sé Tú mi [Ab]fortaleza\n[Gb]   gobierna a[Db9]quí en mi cora[Ab]zón" },
+    { id: "d7", titulo: "En Tu Nombre Sáname", autor: "KAYRÓS × ZAMAR × ANAWÍM", tono: "F#", grupo: "tdd",
+      cp: "{c: Estrofa}\n[C#]Mira la sed de mi alma[G#m]    [D#m]\nY lo que hay en mi interior\nCon una sola palabra\nRevela mi condición\n\n{c: Precoro}\n[B]Levantas muertos\n[C#]Llueves en desiertos\n¿Podrás también hacerlo en mí?\n\n{c: Coro}\n[D#m]Ven manifiesta[B] tu [F#]poder     [C#]\n[D#m]Dile a mi cuer[B]po [F#]que tú eres[C#] rey\n[D#m]Dile a mi his[B]toria [F#]que has [C#]sido fiel\n[B]Jesús en tu nombre, sáname       [C#]" },
+    { id: "d8", titulo: "Confiaré", autor: "ZAMAR", tono: "G", grupo: "tdd",
+      cp: "{c: Verso}\nLa [Em]duda terminó, [C]sé que has vencido\nSolo espe[G]raré nunca me has fa[Dsus4]llado\nHe [Em]visto tu poder, anhelo tus promesas\nSolo es[G]peraré\nMi mundo habrás [Dsus4]cambiado\n\n{c: Coro}\nConfia[Em]ré, confia[C]ré en tu voluntad\nPermane[G]ciendo anclado a tu ver[Dsus4]dad\n\n{c: Puente}\nSé lo que ha[Em]rás en mí\nSé lo que ha[C]rás en mí\nAbre los [G]cielos\nDescanso en [Dsus4]ellos" },
+    { id: "d9", titulo: "Dios Del Presente", autor: "ARIA", tono: "D", grupo: "tdd",
+      cp: "{c: Verso}\n[D]Eres el Dios del pre[F#m]sente\nme pides que [Bm]suelte\ny confíe en [G]tí\n[D]nada sale de tus [F#m]manos\nconoces mis [Bm]pasos\ny cuidas de [G]mí\n\n{c: Coro}\n[D]Hija de mi [F#m]corazón\nya no [Bm]temas, aquí es[G]toy\n[D]hija de mis [F#m]sueños\nno tengas [Bm]miedo, aquí es[G]toy" },
+    { id: "d10", titulo: "Te Entrego Todo", autor: "Aria", tono: "C", grupo: "tdd",
+      cp: "{c: Verso}\n[C]He buscado tanto noche y [Am]día\nLa [C]Paz que solo encuentro en la ora[Am]ción\nHa[C]yo en tu presencia mi ale[Am]gría\nHay[C] tanta ternura en ti Je[G]sús\n\n{c: Coro}\nLo entregas [F]todo, no te guardas [C]nada\nEs tu de[F]seo, que me sepa a[C]mada" },
+    { id: "d11", titulo: "Todo Por Mí", autor: "Alex Patrón", tono: "E", grupo: "tdd",
+      cp: "{c: Verso}\nEn todas par[Eadd9]tes\nbusqué sin ce[B]sar\na quien me [C#m]ame\ny me pueda [Bsus4/F#]sanar\nde tanta sole[A]dad\ny se quiera que[B]dar\n\n{c: Coro}\n[E]No hay amor que pueda comparar\ncon [C#m]todo lo que tú me quieres dar\nme [A]amas tanto que quisiste [B]dar\ntodo por [A]mí\n[B]    todo por [Eadd9]mí" },
   ];
   const DEMO_SET = [
-    { momento: "ENTRADA", cancion: "d1", tonoSet: "G" },
+    { momento: "ENTRADA", cancion: "d1", tonoSet: "B" },
     { momento: "PIEDAD", cancion: "d4" },
     { momento: "GLORIA", cancion: "d5" },
     { momento: "ACLAMACIÓN", cancion: "d8" },
-    { momento: "OFERTORIO", cancion: "d2", tonoSet: "G" },
+    { momento: "OFERTORIO", cancion: "d2", tonoSet: "F" },
     { momento: "SANTO", cancion: "d3" },
-    { momento: "CORDERO", cancion: "d9" },
-    { momento: "COMUNIÓN", cancion: "d7" },
-    { momento: "COMUNIÓN", cancion: "d6" },
-    { momento: "COMUNIÓN", cancion: "d1" },
-    { momento: "ACCIÓN DE GRACIAS", cancion: "d10" },
-    { momento: "SALIDA", cancion: "d11" },
+    { momento: "CORDERO", cancion: "d7", tonoSet: "F#" },
+    { momento: "COMUNIÓN", cancion: "d6", tonoSet: "Db" },
+    { momento: "COMUNIÓN", cancion: "d9", tonoSet: "D" },
+    { momento: "COMUNIÓN", cancion: "d10", tonoSet: "C" },
+    { momento: "ACCIÓN DE GRACIAS", cancion: "d11", tonoSet: "E" },
+    { momento: "SALIDA", cancion: "d5", tonoSet: "G" },
   ];
   const dSong = id => DEMO_SONGS.find(c => c.id === id);
-  const demo = { vista: "lib", cancionId: null, oscuro: true, tab: "tdd", tonos: -2, notacion: "americano", setIdx: 0, setCancion: null, pdfColor: "#7E5BD0" };
+  const demo = { vista: "lib", cancionId: null, oscuro: true, tab: "tdd", tonos: 0, notacion: "americano", setIdx: 0, setCancion: null, pdfColor: "#7E5BD0" };
 
   // ========== Demos interactivos: renderizado ==========
   function demoPhoneHTML() {
@@ -114,7 +112,7 @@
       { l: "Original", t: c.tono, s: 0 },
       { l: "★ Mi tono", t: "G", s: CIF.distancia(c.tono, "G") },
       { l: "Daniela", t: "E", s: CIF.distancia(c.tono, "E") },
-      { l: "Set", t: "D", s: CIF.distancia(c.tono, "D") },
+      { l: "Set", t: "A", s: CIF.distancia(c.tono, "A") },
     ];
     const NOTS = [["americano", "A D G"], ["latino", "La Re Sol"], ["nashville", "1 4 5"]];
     return `<div class="i-af-band"><b>${esc(c.titulo)}</b><small>${esc(c.autor)} · Original ${c.tono}</small></div>
@@ -144,8 +142,7 @@
     return `<div class="i-phone-wrap"><div class="i-phone" id="demoPhoneFrame">
       <div class="i-phone-notch"></div>
       <div class="i-phone-screen${demo.oscuro ? "" : " demo-light"}" id="demoPhone">${demoPhoneHTML()}</div>
-    </div>
-    <div class="i-phone-ctrls"><button class="i-dm-btn" id="demoTheme" title="Cambiar modo claro / oscuro">${demo.oscuro ? "☀️" : "🌙"}</button></div></div>`;
+    </div></div>`;
   }
   function mockTonosHTML() {
     return `<div class="i-app-frame"><div class="i-af-notch"></div><div class="i-af-screen${demo.oscuro ? "" : " demo-light"}" id="demoTonos">${demoTonosHTML(demo.tonos, demo.notacion)}</div></div>`;
@@ -448,9 +445,10 @@
       // Celular: pestañas
       const tabBtn = e.target.closest("[data-demo-tab]");
       if (tabBtn) { demo.tab = tabBtn.dataset.demoTab; updatePhone(); return; }
-      // Toggle día/noche
+      // Toggle día/noche (sitio completo + mockups)
       if (e.target.closest("#demoTheme")) {
         demo.oscuro = !demo.oscuro;
+        root.classList.toggle("site-light", !demo.oscuro);
         $$(".i-phone-screen, .i-af-screen").forEach(s => s.classList.toggle("demo-light", !demo.oscuro));
         const btn = $("#demoTheme");
         if (btn) btn.textContent = demo.oscuro ? "☀️" : "🌙";
