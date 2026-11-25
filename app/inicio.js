@@ -71,7 +71,7 @@
     { momento: "SALIDA", cancion: "d11" },
   ];
   const dSong = id => DEMO_SONGS.find(c => c.id === id);
-  const demo = { vista: "lib", cancionId: null, oscuro: true, tab: "tdd", tonos: -2, setIdx: 0, pdfColor: "#7E5BD0" };
+  const demo = { vista: "lib", cancionId: null, oscuro: true, tab: "tdd", tonos: -2, notacion: "americano", setIdx: 0, setCancion: null, pdfColor: "#7E5BD0" };
 
   // ========== Demos interactivos: renderizado ==========
   function demoPhoneHTML() {
@@ -104,19 +104,22 @@
       </div>
       <div class="i-demo-scroll">${html}</div>`;
   }
-  function demoTonosHTML(semis) {
+  function demoTonosHTML(semis, notacion) {
     const c = dSong("d1");
     if (!c || !window.CIF) return "";
     const tonoFinal = CIF.transportaTono(c.tono, semis);
-    const html = CIF.aHTML(c.cp, { semis, tonoFinal });
+    const opNot = notacion === "latino" ? { latina: true } : notacion === "nashville" ? { nashville: true, tonoFinal } : {};
+    const html = CIF.aHTML(c.cp, { semis, tonoFinal, ...opNot });
     const BT = [
       { l: "Original", t: c.tono, s: 0 },
       { l: "★ Mi tono", t: "G", s: CIF.distancia(c.tono, "G") },
       { l: "Daniela", t: "E", s: CIF.distancia(c.tono, "E") },
       { l: "Set", t: "D", s: CIF.distancia(c.tono, "D") },
     ];
+    const NOTS = [["americano", "A D G"], ["latino", "La Re Sol"], ["nashville", "1 4 5"]];
     return `<div class="i-af-band"><b>${esc(c.titulo)}</b><small>${esc(c.autor)} · Original ${c.tono}</small></div>
       <div class="i-m-bar">${BT.map(b => `<span class="i-m-tone${b.s === semis ? " act" : ""}" data-demo-tonos="${b.s}">${b.l} <b>${b.t}</b></span>`).join("")}</div>
+      <div class="i-m-bar i-m-notbar">${NOTS.map(([k, ej]) => `<span class="i-m-tone i-m-not${k === notacion ? " act" : ""}" data-demo-not="${k}">${ej}</span>`).join("")}</div>
       <div class="i-af-body i-demo-scroll">${html}</div>`;
   }
   function demoSetHTML(idx) {
@@ -145,25 +148,51 @@
     <div class="i-phone-ctrls"><button class="i-dm-btn" id="demoTheme" title="Cambiar modo claro / oscuro">${demo.oscuro ? "☀️" : "🌙"}</button></div></div>`;
   }
   function mockTonosHTML() {
-    return `<div class="i-app-frame"><div class="i-af-notch"></div><div class="i-af-screen${demo.oscuro ? "" : " demo-light"}" id="demoTonos">${demoTonosHTML(demo.tonos)}</div></div>`;
+    return `<div class="i-app-frame"><div class="i-af-notch"></div><div class="i-af-screen${demo.oscuro ? "" : " demo-light"}" id="demoTonos">${demoTonosHTML(demo.tonos, demo.notacion)}</div></div>`;
+  }
+  function demoSetCancionHTML(idx) {
+    const it = DEMO_SET[idx];
+    if (!it) return "";
+    const c = dSong(it.cancion);
+    if (!c || !window.CIF) return "";
+    const tono = it.tonoSet || c.tono;
+    const semis = CIF.distancia(c.tono, tono);
+    const html = CIF.aHTML(c.cp, { semis, tonoFinal: tono });
+    return `<div class="i-af-band"><div style="display:flex;align-items:center;gap:6px"><span class="i-demo-back" data-demo-setback style="cursor:pointer">‹</span><b>${esc(c.titulo)}</b><span class="i-ps-chip" style="margin:0;font-size:10px">${tono}</span></div>
+      <small>${esc(c.autor)} · ${it.momento}</small></div>
+      <div class="i-af-body i-demo-scroll">${html}</div>`;
   }
   function mockSetHTML() {
-    return `<div class="i-app-frame"><div class="i-af-notch"></div><div class="i-af-screen${demo.oscuro ? "" : " demo-light"}"><div class="i-af-band"><b>Misa dominical <span class="i-m-live">● En vivo</span></b></div>
-      <div class="i-af-body" id="demoSetBody">${demoSetHTML(demo.setIdx)}</div></div></div>`;
+    const inner = demo.setCancion !== null ? demoSetCancionHTML(demo.setCancion) : `<div class="i-af-band"><b>Misa dominical <span class="i-m-live">● En vivo</span></b></div>
+      <div class="i-af-body" id="demoSetBody">${demoSetHTML(demo.setIdx)}</div>`;
+    return `<div class="i-app-frame"><div class="i-af-notch"></div><div class="i-af-screen${demo.oscuro ? "" : " demo-light"}" id="demoSetScreen">${inner}</div></div>`;
   }
   function mockPdfHTML() {
-    const C = [["#7E5BD0", "Lavanda"], ["#FF3D1A", "Flame"], ["#457A7F", "Deep sea"], ["#F2B33D", "Sol"], ["#D9558E", "Rosa"]];
+    const C = [
+      ["#7E5BD0", "Lavanda"], ["#FF3D1A", "Flame"], ["#457A7F", "Deep sea"], ["#F2B33D", "Sol"], ["#D9558E", "Rosa"],
+      ["#2B7B8A", "Teal"], ["#8B4513", "Madera"], ["#4A90D9", "Cielo"], ["#E85D75", "Coral"], ["#2ECC71", "Menta"],
+      ["#9B59B6", "Uva"], ["#E67E22", "Naranja"], ["#1ABC9C", "Turquesa"], ["#C0392B", "Vino"], ["#34495E", "Noche"],
+      ["#F39C12", "Oro"], ["#16A085", "Jade"], ["#8E44AD", "Morado"], ["#D35400", "Ladrillo"], ["#2980B9", "Azul"],
+    ];
     return `<div class="i-pdf-demo" id="demoPdf" style="--pdf-c:${demo.pdfColor}">
       <div class="i-pdf-colors">${C.map(([c, n]) => `<button class="i-pdf-dot${c === demo.pdfColor ? " on" : ""}" style="background:${c}" data-pdf-color="${c}" title="${n}"></button>`).join("")}</div>
-      <div class="i-mock i-m-pdf"><div class="i-m-cover">
+      <div class="i-mock i-m-pdf i-m-pdf-lg"><div class="i-m-cover">
         <div class="i-m-logo">K</div><b>KAYRÓS</b><small>Set dominical · 24 nov 2026</small>
       </div><div class="i-m-page">
         <div class="i-m-sec">Verso</div>
         <div class="i-m-line"><i>A</i><i>D</i></div>
         <div class="i-m-letra">Tú eres el principio y el final</div>
+        <div class="i-m-line"><i>A</i><i>E</i></div>
+        <div class="i-m-letra">Mi primer amor</div>
         <div class="i-m-sec rosa">Coro</div>
-        <div class="i-m-line"><i>F#m</i><i>E</i><i>A</i></div>
-        <div class="i-m-letra">Aquí estoy, para adorarte</div>
+        <div class="i-m-line"><i>F#m</i><i>E</i></div>
+        <div class="i-m-letra">Aquí estoy</div>
+        <div class="i-m-line"><i>D</i><i>A</i></div>
+        <div class="i-m-letra">Para adorarte</div>
+        <div class="i-m-line"><i>F#m</i><i>E</i></div>
+        <div class="i-m-letra">Aquí estoy</div>
+        <div class="i-m-line"><i>D</i><i>A</i></div>
+        <div class="i-m-letra">Para rendirme</div>
       </div></div></div>`;
   }
   const mockSenas = appFrame(`<div class="i-af-band"><b>Manual de señas</b></div>
@@ -343,12 +372,6 @@
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visible"); obs.unobserve(e.target); } });
     }, { threshold: 0.12 });
     $$(".reveal").forEach(el => obs.observe(el));
-    // Vanilla Tilt: el celular sigue el mouse (sutil)
-    if (typeof VanillaTilt !== "undefined") {
-      const phone = $(".i-phone");
-      if (phone) VanillaTilt.init(phone, { max: 8, speed: 800, scale: 1.01, glare: true, "max-glare": 0.08, "glare-prerender": false });
-    }
-
     // GSAP ScrollTrigger: scroll-lock en Sets en vivo
     if (typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
       gsap.registerPlugin(ScrollTrigger);
@@ -373,7 +396,7 @@
         });
       }
       // Colores del PDF cambian con el scroll
-      const PDF_C = ["#7E5BD0", "#FF3D1A", "#457A7F", "#F2B33D", "#D9558E"];
+      const PDF_C = ["#7E5BD0", "#FF3D1A", "#457A7F", "#F2B33D", "#D9558E", "#2B7B8A", "#8B4513", "#4A90D9", "#E85D75", "#2ECC71", "#9B59B6", "#E67E22", "#1ABC9C", "#C0392B", "#34495E", "#F39C12", "#16A085", "#8E44AD", "#D35400", "#2980B9"];
       const secPdf = $("#secPdf");
       const demoPdf = $("#demoPdf");
       if (secPdf && demoPdf) {
@@ -438,15 +461,32 @@
       if (tonoBtn) {
         demo.tonos = parseInt(tonoBtn.dataset.demoTonos);
         const screen = $("#demoTonos");
-        if (screen) screen.innerHTML = demoTonosHTML(demo.tonos);
+        if (screen) screen.innerHTML = demoTonosHTML(demo.tonos, demo.notacion);
         return;
       }
-      // Set: seleccionar canción
+      // Transposición: cambiar notación
+      const notBtn = e.target.closest("[data-demo-not]");
+      if (notBtn) {
+        demo.notacion = notBtn.dataset.demoNot;
+        const screen = $("#demoTonos");
+        if (screen) screen.innerHTML = demoTonosHTML(demo.tonos, demo.notacion);
+        return;
+      }
+      // Set: clic en canción → abrir vista
       const setItem = e.target.closest("[data-demo-set]");
       if (setItem) {
-        demo.setIdx = parseInt(setItem.dataset.demoSet);
-        const body = $("#demoSetBody");
-        if (body) body.innerHTML = demoSetHTML(demo.setIdx);
+        const idx = parseInt(setItem.dataset.demoSet);
+        demo.setIdx = idx;
+        demo.setCancion = idx;
+        const screen = $("#demoSetScreen");
+        if (screen) screen.innerHTML = demoSetCancionHTML(idx);
+        return;
+      }
+      // Set: regresar a la lista
+      if (e.target.closest("[data-demo-setback]")) {
+        demo.setCancion = null;
+        const screen = $("#demoSetScreen");
+        if (screen) { screen.innerHTML = `<div class="i-af-band"><b>Misa dominical <span class="i-m-live">● En vivo</span></b></div><div class="i-af-body" id="demoSetBody">${demoSetHTML(demo.setIdx)}</div>`; }
         return;
       }
       // PDF: cambiar color

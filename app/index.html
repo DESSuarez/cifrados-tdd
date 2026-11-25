@@ -759,13 +759,11 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 .i-chips-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:0 20px}
 .i-chip{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 16px;border-radius:99px;border:1.5px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#D6DCDB;font:600 13.5px var(--body);white-space:nowrap}
 /* iPhone 3D mockup en el hero */
-.i-phone-wrap{display:flex;justify-content:center;perspective:1200px}
-.i-phone{width:280px;height:580px;border-radius:44px;border:4px solid #3A3D3A;background:#111;box-shadow:0 0 0 2px #222,0 40px 80px rgba(0,0,0,.55),0 0 120px rgba(255,61,26,.08);position:relative;overflow:hidden;transform-style:preserve-3d;will-change:transform;cursor:grab;transition:box-shadow .4s ease;flex-shrink:0}
-.i-phone:hover{box-shadow:0 0 0 2px #222,0 60px 120px rgba(0,0,0,.4),0 0 200px rgba(255,61,26,.14)}
-.i-phone .js-tilt-glare{border-radius:40px}
-.i-phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:30px;background:#111;border-radius:0 0 18px 18px;z-index:2}
-.i-phone-notch::after{content:"";position:absolute;top:10px;left:50%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;background:#1E1F1E}
-.i-phone-screen{position:absolute;inset:4px;border-radius:40px;overflow:hidden;background:#1B1C1A;display:flex;flex-direction:column}
+.i-phone-wrap{display:flex;justify-content:center}
+.i-phone{width:220px;height:460px;border-radius:36px;border:3px solid #3A3D3A;background:#111;box-shadow:0 0 0 2px #222,0 24px 48px rgba(0,0,0,.5);position:relative;overflow:hidden;flex-shrink:0}
+.i-phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:90px;height:24px;background:#111;border-radius:0 0 14px 14px;z-index:2}
+.i-phone-notch::after{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:#1E1F1E}
+.i-phone-screen{position:absolute;inset:3px;border-radius:33px;overflow:hidden;background:#1B1C1A;display:flex;flex-direction:column}
 /* Phone interior: band header */
 .i-ps-band{background:#121311;padding:38px 14px 0;flex-shrink:0}
 .i-ps-bandtop{display:flex;align-items:center;gap:8px;padding-bottom:4px}
@@ -792,7 +790,7 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 .i-ps-mini .i-ps-prog{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.12);overflow:hidden}
 .i-ps-mini .i-ps-prog span{display:block;width:65%;height:100%;border-radius:2px;background:var(--flame)}
 .i-ps-mini small{font:600 10px var(--body);color:#8F9A99}
-@media(max-width:560px){.i-phone{width:240px;height:500px;border-radius:38px}.i-phone-screen{border-radius:34px}}
+@media(max-width:560px){.i-phone{width:190px;height:400px;border-radius:30px}.i-phone-screen{border-radius:27px}}
 /* App frame para showcase sections */
 .i-app-frame{width:280px;border-radius:36px;border:3px solid #3A3D3A;background:#111;position:relative;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25);margin:0 auto}
 .i-af-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:100px;height:24px;background:#111;border-radius:0 0 14px 14px;z-index:2}
@@ -814,6 +812,7 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 .i-m-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .i-m-tone{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:10px;border:1.5px solid rgba(255,255,255,.18);font:700 13px var(--body);color:#A3ADAC}
 .i-m-tone b{color:#fff}.i-m-tone.act{border-color:var(--flame);background:color-mix(in srgb,var(--flame) 15%,transparent);color:#fff}
+.i-m-notbar{margin-top:-8px}.i-m-notbar .i-m-tone{padding:4px 10px;font-size:12px}
 .i-m-sec{font:900 11px var(--display);letter-spacing:.12em;text-transform:uppercase;border-left:4px solid var(--ac,var(--flame));padding-left:8px;margin:14px 0 6px;color:var(--ac,var(--flame))}
 .i-m-sec.rosa{border-color:var(--rosa);color:var(--rosa)}
 .i-m-line{display:flex;gap:16px;margin-bottom:2px}.i-m-line i{font:800 14px var(--body);font-style:normal;color:var(--ac,var(--flame))}
@@ -952,10 +951,13 @@ textarea.letra{font:500 15px/1.6 var(--mono);min-height:360px}
 .i-phone-screen .ck,.i-af-screen .ck{font-size:11px;top:-1px}
 .i-phone-screen .ca-row,.i-af-screen .ca-row{gap:2px}
 .i-pdf-demo{position:relative}
-.i-pdf-colors{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
-.i-pdf-dot{width:28px;height:28px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;transition:border-color .2s,transform .15s}
+.i-pdf-colors{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;justify-content:flex-start}
+.i-pdf-dot{width:24px;height:24px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;transition:border-color .2s,transform .15s;flex-shrink:0}
 .i-pdf-dot:hover{transform:scale(1.15)}
 .i-pdf-dot.on{border-color:#fff;box-shadow:0 0 10px color-mix(in srgb,var(--pdf-c,#7E5BD0) 40%,transparent)}
+.i-m-pdf-lg{min-height:280px}
+.i-m-pdf-lg .i-m-page{padding:14px 16px}
+.i-m-pdf-lg .i-m-sec{margin:10px 0 4px}.i-m-pdf-lg .i-m-letra{margin-bottom:4px;font-size:14px}
 .i-pdf-demo .i-m-cover{background:linear-gradient(135deg,color-mix(in srgb,var(--pdf-c) 30%,#1B1C1A),#1B1C1A)}
 .i-pdf-demo .i-m-logo{background:var(--pdf-c)}
 .i-pdf-demo .i-m-cover b{color:var(--pdf-c)}
@@ -1230,15 +1232,15 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=76"></script>
-<script src="cifrado.js?v=76"></script>
-<script src="senas.js?v=76"></script>
-<script src="datos.js?v=76"></script>
-<script src="pdf.js?v=76"></script>
+<script src="config.publico.js?v=77"></script>
+<script src="cifrado.js?v=77"></script>
+<script src="senas.js?v=77"></script>
+<script src="datos.js?v=77"></script>
+<script src="pdf.js?v=77"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.8.1/dist/vanilla-tilt.min.js"></script>
-<script src="inicio.js?v=76"></script>
+<script src="inicio.js?v=77"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
