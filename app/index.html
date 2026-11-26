@@ -1261,15 +1261,15 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=79"></script>
-<script src="cifrado.js?v=79"></script>
-<script src="senas.js?v=79"></script>
-<script src="datos.js?v=79"></script>
-<script src="pdf.js?v=79"></script>
+<script src="config.publico.js?v=80"></script>
+<script src="cifrado.js?v=80"></script>
+<script src="senas.js?v=80"></script>
+<script src="datos.js?v=80"></script>
+<script src="pdf.js?v=80"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.8.1/dist/vanilla-tilt.min.js"></script>
-<script src="inicio.js?v=79"></script>
+<script src="inicio.js?v=80"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1733,6 +1733,7 @@ function trabajando(btn, promesa) {
 });
 const ocupado = () => st.editando || st.arrastrando || escribiendo() || hayDatosSinGuardar() || !!document.querySelector("dialog[open]");
 let renderPend = false, recargaPend = false;
+let _sincAuto = false, _sincTimer = null;
 /** Para lo que llega en segundo plano (listas de la nube, etc.): si estás escribiendo, espera. */
 function renderSeguro() { if (ocupado()) { renderPend = true; return; } render(); }
 
@@ -1793,6 +1794,7 @@ function borrLimpiar(hash, dlgTit) {
 new MutationObserver(ms => { if (ms.some(m => [...m.addedNodes].some(n => n.nodeType === 1 && (n.matches(BORR_CAMPO) || n.querySelector && n.querySelector(BORR_CAMPO))))) setTimeout(() => borrRestaurar(document.body), 0); })
   .observe(document.body, { childList: true, subtree: true });
 D.alCambiar(() => {
+  if (_sincAuto) return;
   if (ocupado()) { renderPend = true; return; }
   render();
 });
@@ -2822,9 +2824,28 @@ function itemHTML(s, it, i, puede, gente) {
     ${!abierto && it.voces && Object.keys(it.voces).length ? `<div class="vozres">${Object.keys(it.voces).filter(sec => tieneVoces(it, sec)).map(sec => { const cv = colorVozSec(s, it, sec); return `<span class="chip" style="--sc:${cv || `var(${C.colorSeccion(sec)})`}">${esc(sec)} · 🎤 ${esc(resumenVoces(it, sec))}</span>`; }).join("")}</div>` : ""}</li>`;
 }
 function vSet(id) {
-  const s = D.uno("cif_sets", id);
+  let s = D.uno("cif_sets", id);
   if (!s || s.borrada) return { band: bandHTML({ titulo: "No encontré ese set" }), main: `<a class="btn ghost" href="#sets">← Sets</a>` };
-  const m = D.uno("cif_ministerios", s.ministerio_id), puede = editaSet(s), lit = s.tipo === "liturgico";
+  const puede = editaSet(s);
+  if (puede) {
+    const its = (s.items || []).map(x => ({ ...x }));
+    let sinc = false, cambios = {};
+    its.forEach((it, i) => {
+      if (!it.persona_id) return;
+      const t = D.uno("cif_tonos", it.cancion_id + "|" + it.persona_id);
+      if (t && t.tono && t.tono !== it.tono) { its[i] = { ...it, tono: t.tono, capo: t.capo || 0 }; sinc = true; }
+    });
+    if (sinc) cambios.items = its;
+    const nc = sincColores(s);
+    if (nc) cambios.colores = nc;
+    if (Object.keys(cambios).length) {
+      _sincAuto = true;
+      D.guardar("cif_sets", { ...s, ...cambios });
+      setTimeout(() => { _sincAuto = false; }, 200);
+      s = D.uno("cif_sets", id);
+    }
+  }
+  const m = D.uno("cif_ministerios", s.ministerio_id), lit = s.tipo === "liturgico";
   const gente = personasSet(s);
   traerCancionesDelSet(s);
   let cuerpo;
@@ -2971,17 +2992,31 @@ function vSet(id) {
           });
         });
       });
-      // Auto-sync: si una persona asignada como voz ya tiene tono guardado pero el set no coincide, sincronizar
-      const its = itemsAct();
-      let sinc = false;
-      its.forEach((it, i) => {
-        if (!it.persona_id) return;
-        const t = D.uno("cif_tonos", it.cancion_id + "|" + it.persona_id);
-        if (t && t.tono && t.tono !== it.tono) { its[i] = { ...it, tono: t.tono, capo: t.capo || 0 }; sinc = true; }
-      });
-      if (sinc) guarda({ items: its });
-      const nc = sincColores(D.uno("cif_sets", id) || s);
-      if (nc) guarda({ colores: nc });
+      clearInterval(_sincTimer);
+      _sincTimer = setInterval(() => {
+        if (ruta().v !== "set") { clearInterval(_sincTimer); _sincTimer = null; return; }
+        const act = D.uno("cif_sets", id);
+        if (!act) return;
+        const its = act.items.map(x => ({ ...x }));
+        let sinc = false, cambios = {};
+        its.forEach((it, i) => {
+          if (!it.persona_id) return;
+          const t = D.uno("cif_tonos", it.cancion_id + "|" + it.persona_id);
+          if (t && t.tono && t.tono !== it.tono) { its[i] = { ...it, tono: t.tono, capo: t.capo || 0 }; sinc = true; }
+        });
+        if (sinc) cambios.items = its;
+        const nc = sincColores(act);
+        if (nc) cambios.colores = nc;
+        if (Object.keys(cambios).length) {
+          _sincAuto = true;
+          D.guardar("cif_sets", { ...act, ...cambios });
+          setTimeout(() => { _sincAuto = false; }, 200);
+          its.forEach((it, i) => {
+            const sel = document.querySelector(`[data-itono="${i}"]`);
+            if (sel && sel.value !== (it.tono || "")) sel.value = it.tono;
+          });
+        }
+      }, 1000);
       $("#sborrar").onclick = async () => { if (await confirmar(`¿Borrar el set «${s.nombre}»?`, "Desaparece para todo el ministerio.")) { await D.borrar("cif_sets", s); location.hash = "#sets"; } };
     },
   };
