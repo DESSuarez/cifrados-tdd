@@ -11,6 +11,7 @@
   const CHICAS = new Set(["cif_miembros", "cif_ministerios", "cif_perfiles", "cif_solicitudes", "cif_amistades", "cif_anuncios", "cif_intercambios"]);
   const CON_AUTOR = new Set(["cif_canciones", "cif_sets", "cif_tracks"]); // tienen columna actualizado_por
   const LLAVE = { cif_tonos: r => r.cancion_id + "|" + r.persona_id, cif_miembros: r => r.ministerio_id + "|" + r.persona_id };
+  const SOLO_LOCAL = { cif_sets: ["colores"] };
   const llaveDe = (t, r) => (LLAVE[t] ? LLAVE[t](r) : r.id);
   const cfg = window.CIFRADOS_CONFIG || {};
   const nube = !!(cfg.supabaseUrl && cfg.supabaseAnonKey && window.supabase);
@@ -135,14 +136,17 @@
       for (const [k, it] of items) {
         let error;
         if (it.op === "upsert") {
+          let fila = it.fila;
+          const strip = SOLO_LOCAL[it.tabla];
+          if (strip) { fila = { ...fila }; for (const k of strip) delete fila[k]; }
           const conflicto = it.tabla === "cif_tonos" ? "cancion_id,persona_id" : it.tabla === "cif_miembros" ? "ministerio_id,persona_id" : "id";
-          ({ error } = await sb.from(it.tabla).upsert(it.fila, { onConflict: conflicto }));
+          ({ error } = await sb.from(it.tabla).upsert(fila, { onConflict: conflicto }));
           // Un upsert también tiene que pasar la regla de INSERTAR. Al cambiar una fila que ya existe y que esa regla no
           // permite crear (p. ej. el admin acepta la solicitud de otra persona, o un ministerio invitado edita un set),
           // la base lo rechaza aunque sí se pueda ACTUALIZAR: entonces se reintenta como update.
           if (error && (error.code === "42501" || /row-level security/i.test(error.message || ""))) {
-            let q = sb.from(it.tabla).update(it.fila);
-            for (const k of conflicto.split(",")) q = q.eq(k, it.fila[k]);
+            let q = sb.from(it.tabla).update(fila);
+            for (const k of conflicto.split(",")) q = q.eq(k, fila[k]);
             ({ error } = await q);
           }
         } else {

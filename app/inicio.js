@@ -53,20 +53,38 @@
       cp: "{c: Verso}\n[C]He buscado tanto noche y [Am]día\nLa [C]Paz que solo encuentro en la ora[Am]ción\nHa[C]yo en tu presencia mi ale[Am]gría\nHay[C] tanta ternura en ti Je[G]sús\n\n{c: Coro}\nLo entregas [F]todo, no te guardas [C]nada\nEs tu de[F]seo, que me sepa a[C]mada" },
     { id: "d11", titulo: "Todo Por Mí", autor: "Alex Patrón", tono: "E", grupo: "tdd",
       cp: "{c: Verso}\nEn todas par[Eadd9]tes\nbusqué sin ce[B]sar\na quien me [C#m]ame\ny me pueda [Bsus4/F#]sanar\nde tanta sole[A]dad\ny se quiera que[B]dar\n\n{c: Coro}\n[E]No hay amor que pueda comparar\ncon [C#m]todo lo que tú me quieres dar\nme [A]amas tanto que quisiste [B]dar\ntodo por [A]mí\n[B]    todo por [Eadd9]mí" },
+    { id: "d12", titulo: "Vine A Adorarte", autor: "Misa", tono: "D", grupo: "lit",
+      cp: "{c: Verso}\n[D]Tú eres la [A]luz\nQue bri[Em]llo en las ti[Gadd9]nieblas\n[D]Abrió mis [A]ojos pude [Gadd9]ver\n\n[D]Mi cora[A]zón ado[Em]ra Tu hermo[Gadd9]sura\nEspe[D]ranza de mi [A]vida eres [Gadd9]Tú\n\n{c: Coro}\nVine a ado[D]rarte\nVine a pos[A]trarme\nVine a de[Bm]cir que eres mi[Gadd9] Dios\nSolo tú eres [D]grande\nSolo tu eres [A/C#]digno\neres asom[Bm]broso para[Gadd9] mi" },
+    { id: "d13", titulo: "Piedad", autor: "Surgit", tono: "Em", grupo: "lit",
+      cp: "{c: Parte 1}\nSe[Em]ñor, ten pie[Am]dad de no[Em]so[B7]o[Em]tros\nSe[Em]ñor, ten pie[Am]dad de no[Em]so[B7]o[Em]tros\n\n{c: Parte 2}\n[G]Cristo, ten pie[Am]dad de no[Em]so[B7]o[Em]tros\n[G]Cristo, ten pie[Am]dad de no[Em]so[B7]o[Em]tros" },
+    { id: "d14", titulo: "Gloria Al Señor", autor: "KAYRÓS", tono: "D", grupo: "lit",
+      cp: "{c: Verso}\n[G]Señor Dios del uni[D]verso\n[A]No hay nadie como Tú[Bm] [A]\nTú eres [G]fuerte [D]y leal\n[A]Tú calmas toda tem[Bm]pes[-]tad\n\n{c: Coro}\n[G]Glo[D]ria, [A]gloria al Se[Bm]ñor[A]\n[G]Siempre haz es[D]tado a mi fa[A]vor\nTu [G]mano es mi fir[D]meza\nTu [A]brazo mi va[Bm]lor\nPor [G]eso canto ¡[D]Gloria al Se[A]ñor!" },
+    { id: "d15", titulo: "Aleluya (Celta)", autor: "Música Litúrgica", tono: "A", grupo: "lit",
+      cp: "{c: Cancion}\n[A]Aale lu [E]ya [D]Aale [E]lu ya\n[A]Aale lu [E]ya [D]Aale [E]lu ya" },
+    { id: "d16", titulo: "Te Entrego", autor: "Misa", tono: "D", grupo: "lit",
+      cp: "{c: Verso}\n[D]Haz lo que quieras con[G]migo\n[Bm]Haz lo que quieras de [A]mí\n[Em]Hoy yo te ofrezco mi [Bm]vida\n[G]Hoy yo me rindo ante [A]Ti\n\n{c: Coro}\nTe en[D]trego\nTodo lo que [Em]soy, todo [F#m]lo que [Bm]tengo\nTodo lo que [A]quiero y todo [D]lo que [G]sueño\nA [Em]Ti Señor Je[A]sús" },
+    { id: "d17", titulo: "Santo (Luna)", autor: "Misa", tono: "Am", grupo: "lit",
+      cp: "[A7]Saaanto[Dm]oo [G]saaantoo[C]o\n[Am]Santo es el Se[Dm]ñor, Dios del [E]u[E7]niver[Am]so\n\n[A7]Lleeenos estaa[Dm]an, el [G]cielo y la [C]tierra\n[Am]De tu [Dm]gloria, [E]ho[E7]saaan[Am]naaa\n\n[A7]Hooosan[Dm]naaa, [G]hooosanna[C]aa\n[Am]hooosanna[Dm]aa [E]En [E7]el [Am]cielo" },
+    { id: "d18", titulo: "Cordero", autor: "Tradicional", tono: "C", grupo: "lit",
+      cp: "[C]Cooordero de [Am]Dios\nque [Dm]quitas el pe[G]cado del [C]mundo\nTen pie[Am]dad de no[F]sotros\n[G]ten pie[C]dad\n\n[C]Cooordero de [Am]Dios\nque [Dm]quitas el pe[G]cado del [C]mundo\n[Am]Daaanos la [F]paz\n[G]dános[C]la" },
+    { id: "d19", titulo: "Eucaristía", autor: "Kairy Márquez", tono: "G", grupo: "lit",
+      cp: "{c: Verso}\nA[G]hí en la Eucaris[D/F#]tía\nEs[Am]tá tu presencia Se[D]ñor\nA[G]hí en la Eucaris[D/F#]tía\nEs[Am]tá la prueba de que [C]Tú vives [D]Cristo\n\n{c: Coro}\nTu [G]cuer[-]po[D/F#], Tu [-][Em]sangre\n[D]Me da [C]vida Se[Am]ñor\nMe da [C]vida[D]" },
+    { id: "d20", titulo: "Gloria (Salida)", autor: "Misa", tono: "C", grupo: "lit",
+      cp: "{c: Coro}\n[C]Gloria[G/B] al Se[Am]ñor\nque [G]reina en el [C]cielo[C7]\n[F]Y en la tierra [C]paz\na los [G]hombres que ama [C]él\n\n{c: Verso}\n[C]Señor te [G/B]ala - [C]bamos\n[F]Señor te bende[C]ci[C7]mos\n[F]Todos te ado[C]ramos\n[G]Gracias por tu [C]gloria" },
+    { id: "d21", titulo: "Madre Presente", autor: "Flávio Vitor Jr.", tono: "Db", grupo: "lit",
+      cp: "{c: Verso}\n[Db]Un bello [Bbm]manto azul\nEstá so[Gb]bre mí\nY mi [Ebm]casa cubier[Db]ta está\nLa [Bbm]madre de Dios\nElla [Gb]cuida de mí\nElla[Ebm7] intercede\n\n{c: Coro}\nMadre pre[Ab]sente\nEl hijo siempre a[Gb]tiende\nY yo soy depen[Ab]diente\nDe ese abrazo de A[Bbm7]mor" },
   ];
   const DEMO_SET = [
-    { momento: "ENTRADA", cancion: "d1", tonoSet: "B" },
-    { momento: "PIEDAD", cancion: "d4" },
-    { momento: "GLORIA", cancion: "d5" },
-    { momento: "ACLAMACIÓN", cancion: "d8" },
-    { momento: "OFERTORIO", cancion: "d2", tonoSet: "F" },
-    { momento: "SANTO", cancion: "d3" },
-    { momento: "CORDERO", cancion: "d7", tonoSet: "F#" },
-    { momento: "COMUNIÓN", cancion: "d6", tonoSet: "Db" },
-    { momento: "COMUNIÓN", cancion: "d9", tonoSet: "D" },
-    { momento: "COMUNIÓN", cancion: "d10", tonoSet: "C" },
-    { momento: "ACCIÓN DE GRACIAS", cancion: "d11", tonoSet: "E" },
-    { momento: "SALIDA", cancion: "d5", tonoSet: "G" },
+    { momento: "ENTRADA", cancion: "d12", tonoSet: "D" },
+    { momento: "PIEDAD", cancion: "d13", tonoSet: "Em" },
+    { momento: "GLORIA", cancion: "d14", tonoSet: "D" },
+    { momento: "ACLAMACIÓN", cancion: "d15", tonoSet: "A" },
+    { momento: "OFERTORIO", cancion: "d16", tonoSet: "D" },
+    { momento: "SANTO", cancion: "d17", tonoSet: "Am" },
+    { momento: "CORDERO", cancion: "d18", tonoSet: "C" },
+    { momento: "COMUNIÓN", cancion: "d19", tonoSet: "G" },
+    { momento: "SALIDA", cancion: "d20", tonoSet: "C" },
+    { momento: "MARIANO", cancion: "d21", tonoSet: "Db" },
   ];
   const dSong = id => DEMO_SONGS.find(c => c.id === id);
   const demo = { vista: "lib", cancionId: null, oscuro: true, tab: "tdd", tonos: 0, notacion: "americano", setIdx: 0, setCancion: null, pdfColor: "#7E5BD0" };
@@ -378,11 +396,15 @@
         const range = () => Math.max(0, setBody.scrollHeight - setBody.clientHeight);
         ScrollTrigger.create({
           trigger: secSets,
-          start: "center center",
-          end: () => "+=" + (range() || 600),
+          start: "top 30%",
+          end: () => "+=" + Math.max(500, DEMO_SET.length * 60),
           pin: true,
-          scrub: 0.8,
+          pinSpacing: true,
+          anticipatePin: 1,
+          scrub: 1.2,
+          invalidateOnRefresh: true,
           onUpdate: self => {
+            if (demo.setCancion !== null) return;
             const r = range();
             if (r > 0) {
               setBody.scrollTop = r * self.progress;
