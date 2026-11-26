@@ -6,11 +6,11 @@
    Sin config de Supabase la app corre en "modo local" (un solo dispositivo), útil para probar. */
 (function () {
   "use strict";
-  const TABLAS = ["cif_canciones", "cif_tonos", "cif_sets", "cif_tracks", "cif_ministerios", "cif_miembros", "cif_perfiles", "cif_solicitudes", "cif_amistades", "cif_anuncios", "cif_intercambios", "cif_views"];
+  const TABLAS = ["cif_canciones", "cif_tonos", "cif_sets", "cif_tracks", "cif_ministerios", "cif_miembros", "cif_perfiles", "cif_solicitudes", "cif_amistades", "cif_anuncios", "cif_intercambios", "cif_views", "cif_estrellas"];
   // tablas chicas: se bajan completas para notar las bajas
   const CHICAS = new Set(["cif_miembros", "cif_ministerios", "cif_perfiles", "cif_solicitudes", "cif_amistades", "cif_anuncios", "cif_intercambios"]);
   const CON_AUTOR = new Set(["cif_canciones", "cif_sets", "cif_tracks"]); // tienen columna actualizado_por
-  const LLAVE = { cif_tonos: r => r.cancion_id + "|" + r.persona_id, cif_miembros: r => r.ministerio_id + "|" + r.persona_id, cif_views: r => r.cancion_id + "|" + r.persona_id };
+  const LLAVE = { cif_tonos: r => r.cancion_id + "|" + r.persona_id, cif_miembros: r => r.ministerio_id + "|" + r.persona_id, cif_views: r => r.cancion_id + "|" + r.persona_id, cif_estrellas: r => r.cancion_id + "|" + r.persona_id };
   const SOLO_LOCAL = { cif_sets: ["colores"] };
   const llaveDe = (t, r) => (LLAVE[t] ? LLAVE[t](r) : r.id);
   const cfg = window.CIFRADOS_CONFIG || {};
@@ -25,7 +25,7 @@
   function db() {
     if (dbp) return dbp;
     dbp = new Promise((res, rej) => {
-      const r = indexedDB.open("cifrados-tdd", 6);
+      const r = indexedDB.open("cifrados-tdd", 7);
       r.onupgradeneeded = () => {
         const d = r.result;
         TABLAS.forEach(t => { if (!d.objectStoreNames.contains(t)) d.createObjectStore(t); });
@@ -139,7 +139,7 @@
           let fila = it.fila;
           const strip = SOLO_LOCAL[it.tabla];
           if (strip) { fila = { ...fila }; for (const k of strip) delete fila[k]; }
-          const conflicto = it.tabla === "cif_tonos" || it.tabla === "cif_views" ? "cancion_id,persona_id" : it.tabla === "cif_miembros" ? "ministerio_id,persona_id" : "id";
+          const conflicto = it.tabla === "cif_tonos" || it.tabla === "cif_views" || it.tabla === "cif_estrellas" ? "cancion_id,persona_id" : it.tabla === "cif_miembros" ? "ministerio_id,persona_id" : "id";
           ({ error } = await sb.from(it.tabla).upsert(fila, { onConflict: conflicto }));
           // Un upsert también tiene que pasar la regla de INSERTAR. Al cambiar una fila que ya existe y que esa regla no
           // permite crear (p. ej. el admin acepta la solicitud de otra persona, o un ministerio invitado edita un set),
@@ -151,7 +151,7 @@
           }
         } else {
           let q = sb.from(it.tabla).delete();
-          if (it.tabla === "cif_tonos" || it.tabla === "cif_views") q = q.eq("cancion_id", it.fila.cancion_id).eq("persona_id", it.fila.persona_id);
+          if (it.tabla === "cif_tonos" || it.tabla === "cif_views" || it.tabla === "cif_estrellas") q = q.eq("cancion_id", it.fila.cancion_id).eq("persona_id", it.fila.persona_id);
           else if (it.tabla === "cif_miembros") q = q.eq("ministerio_id", it.fila.ministerio_id).eq("persona_id", it.fila.persona_id);
           else q = q.eq("id", it.fila.id);
           ({ error } = await q);
