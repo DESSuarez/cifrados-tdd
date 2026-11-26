@@ -279,6 +279,7 @@ h1{font-family:var(--display);font-weight:900;font-stretch:112%;font-size:clamp(
 h1 em{font-style:normal;color:var(--area)}
 .sub{font-family:var(--mono);font-size:13px;color:#C9D2D1;display:flex;gap:6px 14px;flex-wrap:wrap}
 .sub b{color:#fff;font-weight:500}
+.viewstat{opacity:.7;font-size:12px}
 .navbtn{background:transparent;border:1.5px solid #4A4D49;color:#fff;border-radius:999px;height:36px;min-width:36px;padding:0 14px;font-weight:600;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
 .navbtn:hover{border-color:var(--baby);color:var(--baby)}
 .navbtn.on{background:var(--area);border-color:var(--area);color:var(--on-area)}
@@ -393,6 +394,7 @@ label.lb small{font-weight:500;color:var(--muted)}
 .chip.tono{font-family:var(--mono);font-weight:500;color:var(--fg)}
 .chip.mio{background:var(--flame-soft);color:var(--flame);border-color:transparent}
 .chip.pista{background:var(--baby-soft);color:var(--baby-ink);border-color:transparent}
+.chip.vw{background:transparent;color:var(--muted);border-color:var(--line);font-size:11px}
 .tchip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:99px;border:1.5px solid var(--line);font-size:13px;font-weight:700;color:var(--fg);background:var(--bg);cursor:pointer}
 .tchip:hover{border-color:var(--c,var(--area))}
 .tchip.on{background:var(--c,var(--area));border-color:var(--c,var(--area));color:#fff}
@@ -1261,15 +1263,15 @@ html[data-vista="minimal"][data-ruta="cancion"] #cuerpo{margin-top:18px}
 <body data-area="musica">
 <div id="app"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.publico.js?v=80"></script>
-<script src="cifrado.js?v=80"></script>
-<script src="senas.js?v=80"></script>
-<script src="datos.js?v=80"></script>
-<script src="pdf.js?v=80"></script>
+<script src="config.publico.js?v=81"></script>
+<script src="cifrado.js?v=81"></script>
+<script src="senas.js?v=81"></script>
+<script src="datos.js?v=81"></script>
+<script src="pdf.js?v=81"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.8.1/dist/vanilla-tilt.min.js"></script>
-<script src="inicio.js?v=80"></script>
+<script src="inicio.js?v=81"></script>
 <script>
 "use strict";
 const D = DATOS, C = CIF, esc = C.esc;
@@ -1506,6 +1508,39 @@ function chipPrivacidad(c) {
 const canciones = () => D.lista("cif_canciones").filter(c => !c.borrada && veCancion(c)).sort((a, b) => a.titulo.localeCompare(b.titulo, "es", { sensitivity: "base" }));
 const tonosDe = cid => D.lista("cif_tonos").filter(t => t.cancion_id === cid);
 const miTono = cid => yo() && D.uno("cif_tonos", cid + "|" + yo().id);
+
+// ---------- Views: aperturas + tiempo por canción ----------
+const _vw = { cid: null, t0: 0, pausado: false };
+function viewsDe(cid) { return D.lista("cif_views").filter(v => v.cancion_id === cid); }
+function enSets(cid) { return D.lista("cif_sets").filter(s => !s.borrada && s.items.some(it => it.cancion_id === cid)).length; }
+function totalViews(cid) { const vs = viewsDe(cid); return { aperturas: vs.reduce((s, v) => s + (v.aperturas || 0), 0), segundos: vs.reduce((s, v) => s + (v.segundos || 0), 0), personas: vs.length, enSets: enSets(cid) }; }
+function fmtTiempo(seg) { if (seg < 60) return seg + "s"; const m = Math.floor(seg / 60), s = seg % 60; return m + ":" + String(s).padStart(2, "0"); }
+function registrarView(cid) {
+  pararView();
+  if (!yo()) return;
+  _vw.cid = cid; _vw.t0 = Date.now(); _vw.pausado = false;
+  const k = cid + "|" + yo().id, prev = D.uno("cif_views", k);
+  _sincAuto = true;
+  D.guardar("cif_views", { cancion_id: cid, persona_id: yo().id, aperturas: (prev ? prev.aperturas : 0) + 1, segundos: prev ? prev.segundos : 0 });
+  setTimeout(() => { _sincAuto = false; }, 200);
+}
+function pararView() {
+  if (!_vw.cid || !yo()) return;
+  const seg = Math.round((Date.now() - _vw.t0) / 1000);
+  if (seg >= 3) {
+    const k = _vw.cid + "|" + yo().id, prev = D.uno("cif_views", k);
+    if (prev) { _sincAuto = true; D.guardar("cif_views", { ...prev, segundos: (prev.segundos || 0) + seg }); setTimeout(() => { _sincAuto = false; }, 200); }
+  }
+  _vw.cid = null; _vw.t0 = 0;
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && _vw.cid) { pararView(); _vw.pausado = true; }
+  else if (!document.hidden && _vw.pausado && ruta().v === "cancion") {
+    const p = ruta().p, c = cancionDeRuta(p[0]);
+    if (c) { _vw.cid = c.id; _vw.t0 = Date.now(); _vw.pausado = false; }
+  }
+});
+
 /** ¿Puedo cambiar esta canción? Quien la subió, el admin de su ministerio o los músicos y admins del ministerio que es su artista
  *  (igual que cif_puede_editar en SQL, migración 013). */
 function puedeEditarCancion(c) {
@@ -1891,7 +1926,7 @@ function render() {
   if (yo()) { ls.set("cifrados-ya-entro", true); if (r0.v === "entrar") history.replaceState(null, "", "#libreria"); }
   if (D.nube && (st.ponerClave || D.estado.ponerClave)) { app.innerHTML = vNuevaClave(); enlazarNuevaClave(); return; }
   const r = ruta();
-  if (r.v !== "cancion") detenerAutoscroll();
+  if (r.v !== "cancion") { detenerAutoscroll(); pararView(); }
   let out;
   try {
     out = r.v === "cancion" ? vCancion(r.p) : r.v === "sets" ? vSets() : r.v === "set" ? vSet(r.p[0]) : r.v === "nueva" ? vEditor(null) : r.v === "editar" ? vEditor(r.p[0]) :
@@ -2054,9 +2089,9 @@ function vLibreria() {
   if (st.fPriv) lista = lista.filter(esPrivada);
   const hayFiltro = st.fArtista || st.fTono || st.fTags.length || st.fMio || st.fPista || st.fPriv;
   const fila = c => {
-    const mt = miTono(c.id);
+    const mt = miTono(c.id), nv = viewsDe(c.id).reduce((s, v) => s + (v.aperturas || 0), 0);
     return `<li><a class="srow" href="${urlCan(c)}"><div><b>${esc(c.titulo)}</b><small>${artistasHTML(c, false) || "—"}${(c.etiquetas || []).length ? `<span class="etq"> · ${esc(c.etiquetas.join(", "))}</span>` : ""}</small></div><span class="chips">
-      ${chipPrivacidad(c)}${c.tono ? `<span class="chip tono">${esc(c.tono)}</span>` : ""}${mt ? `<span class="chip mio" title="Tu tono">★ ${esc(mt.tono)}</span>` : ""}${conPista.has(c.id) ? `<span class="chip pista">♫ pista</span>` : ""}${c.bpm ? `<span class="chip tono">${c.bpm} bpm</span>` : ""}</span></a></li>`;
+      ${chipPrivacidad(c)}${c.tono ? `<span class="chip tono">${esc(c.tono)}</span>` : ""}${mt ? `<span class="chip mio" title="Tu tono">★ ${esc(mt.tono)}</span>` : ""}${conPista.has(c.id) ? `<span class="chip pista">♫ pista</span>` : ""}${c.bpm ? `<span class="chip tono">${c.bpm} bpm</span>` : ""}${nv ? `<span class="chip vw" title="${nv} aperturas">👁 ${nv}</span>` : ""}</span></a></li>`;
   };
   let filas = "";
   if (st.tab === "liturgicas" && !q) {
@@ -2180,8 +2215,10 @@ function vCancion(p) {
       ${D.modo !== "local" ? `<span class="setvivo"><button class="navbtn ${st.dirigir ? "on" : ""}" id="dirigir" title="Los demás ven la canción y sección que tú marques" aria-label="Dirigir">📡<span class="lbl"> Dirigir</span></button><button class="navbtn ${st.seguir ? "on" : ""}" id="seguir" title="Abrir lo que marque quien dirige" aria-label="${st.seguir ? "Siguiendo" : "Seguir"}">${st.seguir ? '<span class="vivoind"><i></i><span class="lbl">Siguiendo</span></span>' : '<span class="lbl">Seguir</span><span class="lblc">◎</span>'}</button></span>` : ""}
       <span class="setflechas"><button class="navbtn" id="prev" ${ctxSet.i <= 0 ? "disabled" : ""} aria-label="Canción anterior">‹<span class="flt"> Anterior</span></button><button class="navbtn" id="next" ${ctxSet.i >= n - 1 ? "disabled" : ""} aria-label="Siguiente canción"><span class="flt">Siguiente </span>›</button></span></div>`;
   }
+  const vw = totalViews(c.id);
   const sub = [c.autor && `<span class="subarts">${artistasHTML(c)}</span>`, `<span>Original <b>${esc(original)}</b></span>`, c.bpm && `<span><b>${c.bpm}</b> bpm</span>`, c.compas && `<span><b>${esc(c.compas)}</b></span>`, capo ? `<span>Capo <b>${capo}</b> · formas de <b>${esc(forma)}</b></span>` : "",
-    esPrivada(c) && `<span>🔒 Solo <b>${esc(nombreMin(c.ministerio_id))}</b>${(c.compartida_con || []).length ? " · compartida con " + esc(c.compartida_con.map(nombreMin).join(", ")) : ""}</span>`].filter(Boolean).join("");
+    esPrivada(c) && `<span>🔒 Solo <b>${esc(nombreMin(c.ministerio_id))}</b>${(c.compartida_con || []).length ? " · compartida con " + esc(c.compartida_con.map(nombreMin).join(", ")) : ""}</span>`,
+    vw.aperturas ? `<span class="viewstat">👁 ${vw.aperturas}${vw.personas > 1 ? " · " + vw.personas + " personas" : ""}${vw.segundos ? " · ⏱ " + fmtTiempo(Math.round(vw.segundos / vw.aperturas)) + " prom" : ""}${vw.enSets ? " · 📋 " + vw.enSets + " set" + (vw.enSets > 1 ? "s" : "") : ""}</span>` : ""].filter(Boolean).join("");
   const opTonos = C.TONOS.filter(t => t.endsWith("m") === original.endsWith("m")).map(t => `<option ${t === tono ? "selected" : ""}>${t}</option>`).join("");
 
   const main = `
@@ -2235,6 +2272,7 @@ function vCancion(p) {
     band: bandHTML({ tag: ctxSet ? "En vivo" : "Canción", titulo: esc(c.titulo), sub, extra: setbar }),
     main,
     after() {
+      if (_vw.cid !== c.id) registrarView(c.id);
       const ponTono = t => { st.tonoVista[kv] = t; render(); if (rep.track && rep.auto) ajustarPitch(); if (st.dirigir && vivo && ctxSet) vivo.enviar({ i: ctxSet.i, tono: t, capo: st.capo[kv] || 0 }); };
       $("#tsel").onchange = ev => { ev.target.blur(); ponTono(ev.target.value); };
       $("#tmenos").onclick = () => ponTono(C.transportaTono(tono, -1));
